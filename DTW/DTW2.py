@@ -10,9 +10,10 @@ def DTW (A, B, n, w, dist):
 	na = len(A)
 	nb = len(B)
 
-	w = max(abs(na-nb), w)
+	w = max(abs(na-nb)+1, w)
 	D = np.full((na, nb), math.inf)
 	d = np.full((na, nb), -1)
+	# print (w)
 
 	d[0][0] = dist(A[0],B[0],n)
 	D[0][0] = d[0][0]
@@ -28,7 +29,7 @@ def DTW (A, B, n, w, dist):
 
 	
 	for i in range(1, na):
-		for j in range(max(1, i-w), min(nb, i+w)):
+		for j in range(max(1, i-w+1), min(nb, i+w)):
 			if d[i][j]==-1:
 				d[i][j] = dist(A[i], B[j], n)
 			D[i][j] = min(D[i-1][j-1], D[i][j-1], D[i-1][j])  + d[i][j]
@@ -60,4 +61,4 @@ def manhattan(A, B, n):
 # d = [[-.87,-.88],[-.84,-.91],[-.85,-.84],[-.23,-.24],
 # 	[1.95,1.92],[1.36,1.41],[.6,.51],[0,.03],[-.29,-.18]]
 # DTW(c,d,2,10,euclidean)
-DTW([0,1,1,2,3,2,],[1,1,2],1,1,euclidean)
+#DTW([0,1,1,2,3,2,],[1,1,2,5,4,4],1,1,euclidean)
