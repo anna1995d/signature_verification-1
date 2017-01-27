@@ -34,7 +34,7 @@ def DTW (A, B, n, w, dist):
 				d[i][j] = dist(A[i], B[j], n)
 			D[i][j] = min(D[i-1][j-1], D[i][j-1], D[i-1][j])  + d[i][j]
 
-	print(D)
+	#print(D)
 	return D[na-1][nb-1]
 
 def euclidean(A, B, n):
