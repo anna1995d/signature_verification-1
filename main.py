@@ -1,17 +1,20 @@
 import os
-import itertools
 
-from dtw.data import extract_user
+from dtw.data import Data
 from dtw.dtw import DTW
 
 PATH = os.path.dirname(__file__)
 
 
 if __name__ == '__main__':
+    window_size = 4
+    user_count = 40
+    sample_count = 40
     file_path_template = os.path.join(PATH, 'data/SVC2004/Task1/U{user}S{sample}.txt')
 
-    extracted_data = [extract_user(1, i or 1, file_path_template) for i in range(40, step=10)]
+    data = Data(user_count, sample_count, file_path_template)
 
-    for x, y in itertools.product(extracted_data[:1], extracted_data[1:]):
-        dtw = DTW(x, y, 4, DTW.euclidean)
-        print(dtw.calculate())
+    for user in range(1, user_count):
+        for x, y in data.get_combinations(user):
+            dtw = DTW(x, y, window_size, DTW.euclidean)
+            print(dtw.calculate())
