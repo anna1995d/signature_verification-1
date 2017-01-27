@@ -14,7 +14,7 @@ class DTW(object):
     def __init__(self, first_vec, second_vec, window_size, dist_func=None):
         self.first_vec = first_vec
         self.second_vec = second_vec
-        self.window_size = max(window_size, abs(first_vec.shape[0] - second_vec.shape[0]))
+        self.window_size = max(window_size, abs(first_vec.shape[0] - second_vec.shape[0])+1)
         self.dist_func = dist_func or DTW.euclidean
 
     def calculate(self):
