@@ -5,16 +5,12 @@ class DTW(object):
 
     @staticmethod
     def euclidean(first_vec, second_vec):
-        return np.sqrt(np.sum(np.power(first_vec - second_vec, 2)))
-
-    @staticmethod
-    def manhattan(first_vec, second_vec):
-        return np.sum(np.absolute(first_vec - second_vec))
+        return np.linalg.norm(first_vec - second_vec)
 
     def __init__(self, first_vec, second_vec, window_size, dist_func=None):
         self.first_vec = first_vec
         self.second_vec = second_vec
-        self.window_size = max(window_size, abs(first_vec.shape[0] - second_vec.shape[0])+1)
+        self.window_size = max(window_size, abs(first_vec.shape[0] - second_vec.shape[0]) + 1)
         self.dist_func = dist_func or DTW.euclidean
 
     def calculate(self):
