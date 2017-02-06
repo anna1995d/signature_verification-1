@@ -33,11 +33,11 @@ if __name__ == '__main__':
         for user in range(user_count):
             for x, y in data.get_combinations(user, forged=False):
                 dtw = DTW(x, y, window_size, DTW.euclidean)
-                f.write(dtw.calculate())
+                f.write(str(dtw.calculate()) + '\n')
 
     forged_threshold = list()
     with open(PATH + 'forged.txt', 'a') as f:
         for user in range(user_count):
             for x, y in data.get_combinations(user, forged=True):
                 dtw = DTW(x, y, window_size, DTW.euclidean)
-                f.write(dtw.calculate())
+                f.write(str(dtw.calculate()) + '\n')
