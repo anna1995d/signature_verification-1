@@ -9,10 +9,10 @@ PATH = os.path.dirname(__file__)
 
 if __name__ == '__main__':
     with open(PATH + 'genuine.txt', 'r') as f:
-        px = np.sort(np.array(f.read().split('\n')).astype(np.float))
+        px = np.sort(np.array(f.read().split('\n')[0]).astype(np.float))
 
     with open(PATH + 'forged.txt', 'r') as f:
-        nx = np.sort(np.array(f.read().split('\n')).astype(np.float))
+        nx = np.sort(np.array(f.read().split('\n')[0]).astype(np.float))
 
     threshold = 0
     min_dist = np.matmul(px, px.T) + np.matmul(nx, nx.T)
