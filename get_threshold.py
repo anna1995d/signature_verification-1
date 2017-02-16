@@ -8,10 +8,10 @@ PATH = os.path.dirname(__file__)
 
 
 if __name__ == '__main__':
-    with open(PATH + 'genuine.txt', 'a') as f:
+    with open(PATH + 'genuine.txt', 'r') as f:
         px = np.sort(map(int, f.read().split('\n')))
 
-    with open(PATH + 'forged.txt', 'a') as f:
+    with open(PATH + 'forged.txt', 'r') as f:
         nx = np.sort(map(int, f.read().split('\n')))
 
     threshold = 0
