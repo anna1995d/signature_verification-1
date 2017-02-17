@@ -5,7 +5,7 @@ import itertools
 
 import numpy as np
 
-from rnn.seq2seq_autoencoder import LSTMAutoencoder
+from rnn.seq2seq_autoencoder import LSTMAutoencoder, LSTMEncoder
 
 from dtw.data import Data
 from dtw.dtw import DTW
@@ -62,6 +62,12 @@ def generate_padded_input_data():
 def run_autoencoder():
     autoencoder = LSTMAutoencoder(input_length=max_length, input_dimension=2, encoded_length=50)
     autoencoder.fit(train_input=train_input, output_path=rnn_output_path, nb_epoch=nb_epoch)
+    return autoencoder
+
+
+def get_encoder():
+    run_autoencoder()
+    return LSTMEncoder(input_length=max_length, input_dimension=2, encoded_length=50, load_path=rnn_output_path)
 
 
 if __name__ == '__main__':
@@ -80,3 +86,5 @@ if __name__ == '__main__':
 
     data = generate_data()
     train_input, max_length = generate_masked_input_data()
+
+    encoder = get_encoder()
