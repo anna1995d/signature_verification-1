@@ -48,8 +48,8 @@ class Data(object):
         self.forge = [Data.extract_forged("%.3d" % i, forged_sample_count, forger_count, forged_file_path_template)
                       for i in range(user_count)]
 
-        genuine = [*itertools.chain.from_iterable(self.genuine)]
-        forge = [*itertools.chain.from_iterable(self.forge)]
+        genuine = [_ for _ in itertools.chain.from_iterable(self.genuine)]
+        forge = [_ for _ in itertools.chain.from_iterable(self.forge)]
 
         x = np.array(genuine + forge)
         y = np.concatenate((np.zeros((len(forge), 1)), np.ones((len(genuine), 1))))
