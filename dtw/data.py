@@ -53,7 +53,7 @@ class Data(object):
 
         x = np.array(genuine + forge)
         y = np.concatenate((np.zeros((len(forge), 1)), np.ones((len(genuine), 1))))
-        x, y = shuffle(x, y)
+        x, y = shuffle(x, y, random_state=100)
 
         self.train_x = x[:(len(x) * train_slice_per) // 100]
         self.train_y = y[:(len(y) * train_slice_per) // 100]
@@ -61,7 +61,6 @@ class Data(object):
 
         self.dev_x = x[(len(x) * train_slice_per) // 100:]
         self.dev_y = y[(len(y) * train_slice_per) // 100:]
-        self.dev_max_len = len(max(self.dev_x, key=lambda elem: len(elem)))
 
     def get_combinations(self, user, forged=False):
         if not forged:

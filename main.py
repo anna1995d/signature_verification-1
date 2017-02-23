@@ -28,7 +28,7 @@ genuine_file_path_template = os.path.join(PATH, 'data/Genuine/{user}/{sample}_{u
 forged_file_path_template = os.path.join(PATH, 'data/Forged/{user}/{sample}_{forger}_{user}.HWR')
 
 # Auto encoder Configuration
-encoded_length = 100
+encoded_length = 200
 input_dim = 2
 ae_nb_epoch = 100
 
@@ -98,8 +98,7 @@ def train():
     encoder = get_encoder(train_max_len)
     encoded_x = encoder.predict(x)
 
-    dev_max_len = data.dev_max_len
-    dev_x = generate_padded_input_data(data.dev_x, dev_max_len)
+    dev_x = generate_padded_input_data(data.dev_x, train_max_len)
     dev_y = data.dev_y
 
     return get_classifier(encoded_x, y), encoder.predict(dev_x), dev_y

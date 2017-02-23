@@ -44,16 +44,10 @@ class Classifier(object):
             Dense(encoded_length, input_shape=(encoded_length,), init='uniform', activation='sigmoid')
         )
         self.classifier.add(Dropout(dropout))
-        self.classifier.add(
-            Dense(encoded_length, init='uniform', activation='sigmoid')
-        )
+        self.classifier.add(Dense(encoded_length, init='uniform', activation='sigmoid'))
         self.classifier.add(Dropout(dropout))
-        self.classifier.add(
-            Dense(1, init='uniform', activation='sigmoid')
-        )
-        self.classifier.compile(
-            loss='binary_crossentropy', optimizer='sgd', metrics=['binary_accuracy', 'binary_crossentropy']
-        )
+        self.classifier.add(Dense(1, init='uniform', activation='sigmoid'))
+        self.classifier.compile(loss='binary_crossentropy', optimizer='sgd', metrics=['binary_accuracy'])
 
     def fit(self, train_x, train_y, nb_epoch=10, batch_size=32, verbose=1):
         self.classifier.fit(train_x, train_y, nb_epoch=nb_epoch, batch_size=batch_size, verbose=verbose)
