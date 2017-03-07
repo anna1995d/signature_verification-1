@@ -1,2 +1,1 @@
-from dtw.dtw import *
-from dtw.data import *
+from dtw.dtw import DTW
