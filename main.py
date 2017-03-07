@@ -60,10 +60,12 @@ def pad_sequence(x):
 
 
 def get_encoded_data(data):
-    x = pad_sequence(data.genuine + data.forge)
+    x = pad_sequence(data.train)
 
     ae = train_auto_encoder(x, data.max_len)  # Auto Encoder
+
     e = load_encoder(data.max_len)  # Encoder
+
     enc_x = e.predict(x)  # Encoded Data
 
     return enc_x
@@ -86,4 +88,3 @@ def run_dtw(data):
 if __name__ == '__main__':
     d = get_data()
     enc_d = get_encoded_data(d)
-    print(enc_d.shape)

@@ -39,15 +39,15 @@ class Data(object):
 
     def __init__(self, usr_cnt, gen_smp_cnt, frg_smp_cnt, frg_cnt, gen_path_temp, frg_path_temp):
 
-        gen = [Data.extract_genuine('{:03d}'.format(i), gen_smp_cnt, gen_path_temp) for i in range(usr_cnt)]
-        frg = [Data.extract_forged('{:03d}'.format(i), frg_smp_cnt, frg_cnt, frg_path_temp) for i in range(usr_cnt)]
+        self.gen = [Data.extract_genuine('{:03d}'.format(i), gen_smp_cnt, gen_path_temp) for i in range(usr_cnt)]
+        self.frg = [
+            Data.extract_forged('{:03d}'.format(i), frg_smp_cnt, frg_cnt, frg_path_temp) for i in range(usr_cnt)
+            ]
 
-        self.genuine = [*itertools.chain.from_iterable(gen)]
-        self.forge = [*itertools.chain.from_iterable(frg)]
-        self.max_len = max(map(lambda x: x.shape[0], itertools.chain(self.genuine, self.forge)))
+        self.train = [*itertools.chain.from_iterable(self.gen + self.frg)]
+        self.max_len = max(map(lambda x: x.shape[0], self.train))
 
-    # TODO: Fix it ...
     def get_combinations(self, user, forged=False):
         if not forged:
-            return itertools.combinations(self.genuine[user], 2)
-        return itertools.product(self.genuine[user], self.forge[user])
+            return itertools.combinations(self.gen[user], 2)
+        return itertools.product(self.gen[user], self.frg[user])
