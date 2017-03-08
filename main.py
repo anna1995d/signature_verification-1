@@ -55,8 +55,8 @@ def load_encoder(max_len):
     return e
 
 
-def pad_sequence(x):
-    return sequence.pad_sequences(x)
+def pad_sequence(x, max_len=None):
+    return sequence.pad_sequences(x, maxlen=max_len)
 
 
 def get_encoded_data(data):
@@ -66,9 +66,10 @@ def get_encoded_data(data):
 
     e = load_encoder(data.max_len)  # Encoder
 
-    enc_x = e.predict(x)  # Encoded Data
+    enc_gen = [e.predict(pad_sequence(gen, data.max_len)) for gen in d.gen]  # Encoded Genuine Data
+    enc_frg = [e.predict(pad_sequence(frg, data.max_len)) for frg in d.frg]  # Encoded Forged Data
 
-    return enc_x
+    return enc_gen, enc_frg
 
 
 def run_dtw(data):
@@ -87,4 +88,4 @@ def run_dtw(data):
 
 if __name__ == '__main__':
     d = get_data()
-    enc_d = get_encoded_data(d)
+    e_gen, e_frg = get_encoded_data(d)
