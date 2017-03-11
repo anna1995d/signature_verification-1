@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import itertools
 import os
 
+import numpy as np
 from keras.preprocessing import sequence
 
 from data.data import Data
@@ -72,20 +74,50 @@ def get_encoded_data(data):
     return enc_gen, enc_frg
 
 
-def run_dtw(data):
-    with open(PATH + 'genuine.txt', 'a') as f:
-        for user in range(usr_cnt):
-            for x, y in data.get_combinations(user, forged=False):
+def save_dtw_distances(data):
+    with open(PATH + 'dtw_genuine.txt', 'a') as f:
+        for usr in range(usr_cnt):
+            for x, y in data.get_combinations(usr, forged=False):
                 dtw = DTW(x, y, win_len, DTW.euclidean)
                 f.write(str(dtw.calculate()) + '\n')
 
-    with open(PATH + 'forged.txt', 'a') as f:
-        for user in range(usr_cnt):
-            for x, y in data.get_combinations(user, forged=True):
+    with open(PATH + 'dtw_genuine_forged.txt', 'a') as f:
+        for usr in range(usr_cnt):
+            for x, y in data.get_combinations(usr, forged=True):
                 dtw = DTW(x, y, win_len, DTW.euclidean)
                 f.write(str(dtw.calculate()) + '\n')
+
+
+def save_encoded_distances(gen, frg):
+    for usr in range(usr_cnt):
+        with open(PATH + 'encoded_genuine_{usr}.txt'.format(usr=usr), 'a') as f:
+            for x, y in itertools.combinations(gen[usr], 2):
+                f.write(str(np.linalg.norm(x - y)) + '\n')
+
+    for usr in range(usr_cnt):
+        with open(PATH + 'encoded_genuine_forged_{usr}.txt'.format(usr=usr), 'a') as f:
+            for x, y in itertools.product(gen[usr], frg[usr]):
+                f.write(str(np.linalg.norm(x - y)) + '\n')
+
+
+def save_dtw_threshold():
+    with open(PATH + 'dtw_genuine.txt', 'r') as f:
+        px = np.sort(np.array(f.read().split('\n')[:-1]).astype(np.float))
+
+    with open(PATH + 'dtw_genuine_forged.txt', 'r') as f:
+        nx = np.sort(np.array(f.read().split('\n')[:-1]).astype(np.float))
+
+    ax = itertools.chain(px, nx)
+    mini = min(enumerate(ax), key=lambda x: np.linalg.norm(px[px < x[1]] - x[1]) + np.linalg.norm(nx[nx > x[1]] - x[1]))
+    mind = np.linalg.norm(px[px < mini[1]] - mini[1]) + np.linalg.norm(nx[nx > mini[1]] - mini[1])
+
+    with open(PATH + 'dtw_threshold.txt', 'w') as f:
+        f.write('Threshold: {t}\nMin Distance: {d}\n'.format(t=str(mini[1]), d=str(mind)))
 
 
 if __name__ == '__main__':
     d = get_data()
     e_gen, e_frg = get_encoded_data(d)
+
+    save_encoded_distances(e_gen, e_frg)
+    save_dtw_distances(d)
