@@ -1,0 +1,6 @@
+ipython
+jupyter
+matplotlib
+tensorflow
+keras
+h5py
