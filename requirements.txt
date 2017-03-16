@@ -3,4 +3,5 @@ jupyter
 matplotlib
 tensorflow
 keras
+numpy
 h5py
