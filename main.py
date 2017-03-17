@@ -112,7 +112,7 @@ def save_encoded_distances(gen, frg, ct):
 
     for usr in range(usr_cnt):
         logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_{usr}.txt'.format(usr=usr)))
-        with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr), 'a')) as f:
+        with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr)), 'a') as f:
             for x, y in itertools.combinations(gen[usr], 2):
                 f.write(str(np.linalg.norm(x - y)) + '\n')
 
