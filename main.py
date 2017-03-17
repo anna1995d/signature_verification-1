@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 
 import itertools
+import logging
 import os
 
 import numpy as np
+from keras.layers import LSTM, GRU
 from keras.preprocessing import sequence
 
 from data.data import Data
 from dtw.dtw import DTW
-from rnn.seq2seq import LSTMAutoEncoder, LSTMEncoder
+from rnn.seq2seq import AutoEncoder, Encoder
 
 PATH = os.path.dirname(__file__)
+
+logging.basicConfig(filename='seq2seq.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
 
 # Export Configuration
 mdl_save_temp = os.path.join(PATH, '{name}_model.dat')
@@ -28,12 +33,14 @@ gen_path_temp = os.path.join(PATH, 'data_set/Genuine/{user}/{sample}_{user}.HWR'
 frg_path_temp = os.path.join(PATH, 'data_set/Forged/{user}/{sample}_{forger}_{user}.HWR')
 
 # Auto encoder Configuration
-enc_len = 200
+enc_len = 100
 inp_dim = 2
-ae_nb_epoch = 200
+ae_nb_epoch = 10
+cell_type = 'lstm'
 
 
 def get_data():
+    logger.info('Getting Data')
     return Data(
         usr_cnt=usr_cnt,
         gen_smp_cnt=gen_smp_cnt,
@@ -44,30 +51,39 @@ def get_data():
     )
 
 
-def train_auto_encoder(x, max_len):
-    ae = LSTMAutoEncoder(inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
+def train_auto_encoder(x, max_len, ct):
+    logger.info('Training Auto Encoder')
+    cell = LSTM if ct == 'lstm' else GRU
+    ae = AutoEncoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
     ae.fit(tr_inp=x, nb_epoch=ae_nb_epoch)
-    ae.save(path=mdl_save_temp.format(name='auto_encoder'))
+    ae.save(path=mdl_save_temp.format(name='{cell_type}_auto_encoder_{enc_len}_{epoch}'.format(
+        cell_type=ct, enc_len=enc_len, epoch=ae_nb_epoch
+    )))
     return ae
 
 
-def load_encoder(max_len):
-    e = LSTMEncoder(inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
-    e.load(path=mdl_save_temp.format(name='auto_encoder'))
+def load_encoder(max_len, ct):
+    logger.info('Loading Encoder')
+    cell = LSTM if ct == 'lstm' else GRU
+    e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
+    e.load(path=mdl_save_temp.format(name='{cell_type}_auto_encoder_{enc_len}_{epoch}'.format(
+        cell_type=ct, enc_len=enc_len, epoch=ae_nb_epoch
+    )))
     return e
 
 
 def pad_sequence(x, max_len=None):
+    logger.info('Padding Sequences')
     return sequence.pad_sequences(x, maxlen=max_len)
 
 
-def get_encoded_data(data):
+def get_encoded_data(data, ct):
     x = pad_sequence(data.train)
 
-    ae = train_auto_encoder(x, data.max_len)  # Auto Encoder
+    train_auto_encoder(x, data.max_len, ct)  # Auto Encoder
+    e = load_encoder(data.max_len, ct)  # Encoder
 
-    e = load_encoder(data.max_len)  # Encoder
-
+    logger.info('Encoding Data')
     enc_gen = [e.predict(pad_sequence(gen, data.max_len)) for gen in d.gen]  # Encoded Genuine Data
     enc_frg = [e.predict(pad_sequence(frg, data.max_len)) for frg in d.frg]  # Encoded Forged Data
 
@@ -75,6 +91,7 @@ def get_encoded_data(data):
 
 
 def save_dtw_distances(data):
+    logger.info('Saving DTW Distances')
     with open(PATH + 'dtw_genuine.txt', 'a') as f:
         for usr in range(usr_cnt):
             for x, y in data.get_combinations(usr, forged=False):
@@ -88,19 +105,26 @@ def save_dtw_distances(data):
                 f.write(str(dtw.calculate()) + '\n')
 
 
-def save_encoded_distances(gen, frg):
+def save_encoded_distances(gen, frg, ct):
+    dir_path = os.path.join(PATH, 'models/{ct}-{enc_len}-{epoch}'.format(ct=ct, enc_len=enc_len, epoch=ae_nb_epoch))
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+
     for usr in range(usr_cnt):
-        with open(PATH + 'encoded_genuine_{usr}.txt'.format(usr=usr), 'a') as f:
+        logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_{usr}.txt'.format(usr=usr)))
+        with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr), 'a')) as f:
             for x, y in itertools.combinations(gen[usr], 2):
                 f.write(str(np.linalg.norm(x - y)) + '\n')
 
     for usr in range(usr_cnt):
-        with open(PATH + 'encoded_genuine_forged_{usr}.txt'.format(usr=usr), 'a') as f:
+        logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_forged_{usr}.txt'.format(usr=usr)))
+        with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
             for x, y in itertools.product(gen[usr], frg[usr]):
                 f.write(str(np.linalg.norm(x - y)) + '\n')
 
 
 def save_dtw_threshold():
+    logger.info('Saving DTW Threshold')
     with open(PATH + 'dtw_genuine.txt', 'r') as f:
         px = np.sort(np.array(f.read().split('\n')[:-1]).astype(np.float))
 
@@ -117,7 +141,11 @@ def save_dtw_threshold():
 
 if __name__ == '__main__':
     d = get_data()
-    e_gen, e_frg = get_encoded_data(d)
-
-    save_encoded_distances(e_gen, e_frg)
+    for cell_type, enc_len in itertools.product(['lstm', 'gru'], range(100, 1001, 100)):
+        logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
+            cell_type=cell_type, enc_len=enc_len)
+        )
+        e_gen, e_frg = get_encoded_data(d, cell_type)
+        save_encoded_distances(e_gen, e_frg, cell_type)
+        logger.info('Finished!')
     save_dtw_distances(d)

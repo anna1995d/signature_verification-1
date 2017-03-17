@@ -1,1 +1,1 @@
-from rnn.seq2seq import LSTMAutoEncoder, LSTMEncoder
+from rnn.seq2seq import AutoEncoder, Encoder
