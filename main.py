@@ -10,11 +10,15 @@ from keras.preprocessing import sequence
 
 from data.data import Data
 from dtw.dtw import DTW
-from rnn.seq2seq import AutoEncoder, Encoder
+from rnn.seq2seq import Autoencoder, Encoder
 
 PATH = os.path.dirname(__file__)
 
-logging.basicConfig(filename='seq2seq.log', level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s')
+# Logger Configuration
+log_frm = '(%(asctime)s) %(name)s [%(levelname)s]: %(message)s'
+log_fl = 'seq2seq.log'
+log_lvl = logging.INFO
+logging.basicConfig(filename=log_fl, level=log_lvl, format=log_frm)
 logger = logging.getLogger(__name__)
 
 # Export Configuration
@@ -32,11 +36,17 @@ frg_cnt = 4
 gen_path_temp = os.path.join(PATH, 'data_set/Genuine/{user}/{sample}_{user}.HWR')
 frg_path_temp = os.path.join(PATH, 'data_set/Forged/{user}/{sample}_{forger}_{user}.HWR')
 
-# Auto encoder Configuration
-enc_len = 100
+# Autoencoder Configuration
 inp_dim = 2
-ae_nb_epoch = 10
-cell_type = 'lstm'
+enc_lens_str = 100
+enc_lens_fns = 1000
+enc_lens_stp = 100
+enc_lens = range(enc_lens_str, enc_lens_fns + 1, enc_lens_stp)
+ae_epochs_str = 10
+ae_epochs_fns = 100
+ae_epochs_stp = 10
+ae_epochs = range(ae_epochs_str, ae_epochs_fns + 1, ae_epochs_stp)
+cell_types = ['lstm', 'gru']
 
 
 def get_data():
@@ -51,24 +61,20 @@ def get_data():
     )
 
 
-def train_auto_encoder(x, max_len, ct):
-    logger.info('Training Auto Encoder')
+def train_autoencoder(x, max_len, epc, el, ct):
+    logger.info('Training Autoencoder')
     cell = LSTM if ct == 'lstm' else GRU
-    ae = AutoEncoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
-    ae.fit(tr_inp=x, nb_epoch=ae_nb_epoch)
-    ae.save(path=mdl_save_temp.format(name='{cell_type}_auto_encoder_{enc_len}_{epoch}'.format(
-        cell_type=ct, enc_len=enc_len, epoch=ae_nb_epoch
-    )))
+    ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
+    ae.fit(tr_inp=x, epochs=epc)
+    ae.save(path=mdl_save_temp.format(name='{ct}_autoencoder_{el}_{epc}'.format(ct=ct, el=el, epc=epc)))
     return ae
 
 
-def load_encoder(max_len, ct):
+def load_encoder(max_len, epc, el, ct):
     logger.info('Loading Encoder')
     cell = LSTM if ct == 'lstm' else GRU
-    e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=enc_len)
-    e.load(path=mdl_save_temp.format(name='{cell_type}_auto_encoder_{enc_len}_{epoch}'.format(
-        cell_type=ct, enc_len=enc_len, epoch=ae_nb_epoch
-    )))
+    e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
+    e.load(path=mdl_save_temp.format(name='{ct}_autoencoder_{el}_{epc}'.format(ct=ct, el=el, epc=epc)))
     return e
 
 
@@ -77,11 +83,11 @@ def pad_sequence(x, max_len=None):
     return sequence.pad_sequences(x, maxlen=max_len)
 
 
-def get_encoded_data(data, ct):
+def get_encoded_data(data, epc, el, ct):
     x = pad_sequence(data.train)
 
-    train_auto_encoder(x, data.max_len, ct)  # Auto Encoder
-    e = load_encoder(data.max_len, ct)  # Encoder
+    train_autoencoder(x, data.max_len, epc, el, ct)  # Autoencoder
+    e = load_encoder(data.max_len, epc, el, ct)  # Encoder
 
     logger.info('Encoding Data')
     enc_gen = [e.predict(pad_sequence(gen, data.max_len)) for gen in d.gen]  # Encoded Genuine Data
@@ -105,8 +111,8 @@ def save_dtw_distances(data):
                 f.write(str(dtw.calculate()) + '\n')
 
 
-def save_encoded_distances(gen, frg, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{enc_len}-{epoch}'.format(ct=ct, enc_len=enc_len, epoch=ae_nb_epoch))
+def save_encoded_distances(gen, frg, epc, el, ct):
+    dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
@@ -141,11 +147,12 @@ def save_dtw_threshold():
 
 if __name__ == '__main__':
     d = get_data()
-    for cell_type, enc_len in itertools.product(['lstm', 'gru'], range(100, 1001, 100)):
-        logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
-            cell_type=cell_type, enc_len=enc_len)
-        )
-        e_gen, e_frg = get_encoded_data(d, cell_type)
-        save_encoded_distances(e_gen, e_frg, cell_type)
-        logger.info('Finished!')
+    for epochs in ae_epochs:
+        for cell_type, enc_len in itertools.product(cell_types, enc_lens):
+            logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
+                cell_type=cell_type, enc_len=enc_len)
+            )
+            e_gen, e_frg = get_encoded_data(d, epochs, enc_len, cell_type)
+            save_encoded_distances(e_gen, e_frg, epochs, enc_len, cell_type)
+            logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))
     save_dtw_distances(d)

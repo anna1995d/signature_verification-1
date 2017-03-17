@@ -1,1 +1,1 @@
-from rnn.seq2seq import AutoEncoder, Encoder
+from rnn.seq2seq import Autoencoder, Encoder
