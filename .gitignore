@@ -137,3 +137,5 @@ ENV/
 .idea/
 models/*
 !models/PLACEHOLDER
+screenlog.*
+old_models/

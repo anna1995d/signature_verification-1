@@ -156,4 +156,3 @@ if __name__ == '__main__':
             e_gen, e_frg = get_encoded_data(d, btch_sz, epochs, enc_len, cell_type)
             save_encoded_distances(e_gen, e_frg, epochs, enc_len, cell_type)
             logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))
-    save_dtw_distances(d)
