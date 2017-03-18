@@ -8,9 +8,9 @@ import numpy as np
 from keras.layers import LSTM, GRU
 from keras.preprocessing import sequence
 
-from data.data import Data
-from dtw.dtw import DTW
-from rnn.seq2seq import Autoencoder, Encoder
+from data import Data
+from dtw import DTW
+from rnn import Autoencoder, Encoder
 
 PATH = os.path.dirname(__file__)
 
