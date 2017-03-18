@@ -37,6 +37,7 @@ gen_path_temp = os.path.join(PATH, 'data_set/Genuine/{user}/{sample}_{user}.HWR'
 frg_path_temp = os.path.join(PATH, 'data_set/Forged/{user}/{sample}_{forger}_{user}.HWR')
 
 # Autoencoder Configuration
+btch_sz = 13
 inp_dim = 2
 enc_lens_str = 100
 enc_lens_fns = 1000
@@ -61,11 +62,11 @@ def get_data():
     )
 
 
-def train_autoencoder(x, max_len, epc, el, ct):
+def train_autoencoder(x, max_len, btch, epc, el, ct):
     logger.info('Training Autoencoder')
     cell = LSTM if ct == 'lstm' else GRU
     ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
-    ae.fit(tr_inp=x, epochs=epc)
+    ae.fit(tr_inp=x, epochs=epc, batch_size=btch)
     ae.save(path=mdl_save_temp.format(name='{ct}_autoencoder_{el}_{epc}'.format(ct=ct, el=el, epc=epc)))
     return ae
 
@@ -83,15 +84,15 @@ def pad_sequence(x, max_len=None):
     return sequence.pad_sequences(x, maxlen=max_len)
 
 
-def get_encoded_data(data, epc, el, ct):
+def get_encoded_data(data, btch, epc, el, ct):
     x = pad_sequence(data.train)
 
-    train_autoencoder(x, data.max_len, epc, el, ct)  # Autoencoder
+    train_autoencoder(x, data.max_len, btch, epc, el, ct)  # Autoencoder
     e = load_encoder(data.max_len, epc, el, ct)  # Encoder
 
     logger.info('Encoding Data')
-    enc_gen = [e.predict(pad_sequence(gen, data.max_len)) for gen in d.gen]  # Encoded Genuine Data
-    enc_frg = [e.predict(pad_sequence(frg, data.max_len)) for frg in d.frg]  # Encoded Forged Data
+    enc_gen = [e.predict(inp=pad_sequence(gen, data.max_len), batch_size=btch) for gen in d.gen]  # Encoded Genuine Data
+    enc_frg = [e.predict(inp=pad_sequence(frg, data.max_len), batch_size=btch) for frg in d.frg]  # Encoded Forged Data
 
     return enc_gen, enc_frg
 
@@ -152,7 +153,7 @@ if __name__ == '__main__':
             logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
                 cell_type=cell_type, enc_len=enc_len)
             )
-            e_gen, e_frg = get_encoded_data(d, epochs, enc_len, cell_type)
+            e_gen, e_frg = get_encoded_data(d, btch_sz, epochs, enc_len, cell_type)
             save_encoded_distances(e_gen, e_frg, epochs, enc_len, cell_type)
             logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))
     save_dtw_distances(d)
