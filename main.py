@@ -9,7 +9,6 @@ from keras.layers import LSTM, GRU
 from keras.preprocessing import sequence
 
 from data import Data
-from dtw import DTW
 from rnn import Autoencoder, Encoder
 
 PATH = os.path.dirname(__file__)
@@ -24,9 +23,6 @@ logger = logging.getLogger(__name__)
 # Export Configuration
 mdl_save_temp = os.path.join(PATH, '{name}_model.dat')
 eval_save_temp = os.path.join(PATH, '{timestamp}_evaluation.dat')
-
-# DTW Configuration
-win_len = 4
 
 # Data Configuration
 usr_cnt = 11
@@ -106,22 +102,6 @@ def get_encoded_data(data, btch, epc, el, ct):
     return enc_gen, enc_frg
 
 
-# FIXME: Data.get_combinations definition is changed, fix this before using.
-def save_dtw_distances(data):
-    logger.info('Saving DTW Distances')
-    with open(PATH + 'dtw_genuine.txt', 'a') as f:
-        for usr in range(usr_cnt):
-            for x, y in data.get_dtw_combinations(usr, forged=False):
-                dtw = DTW(x, y, win_len, DTW.euclidean)
-                f.write(str(dtw.calculate()) + '\n')
-
-    with open(PATH + 'dtw_genuine_forged.txt', 'a') as f:
-        for usr in range(usr_cnt):
-            for x, y in data.get_dtw_combinations(usr, forged=True):
-                dtw = DTW(x, y, win_len, DTW.euclidean)
-                f.write(str(dtw.calculate()) + '\n')
-
-
 def save_encoded_distances(gen, frg, epc, el, ct):
     dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
     if not os.path.exists(dir_path):
@@ -138,22 +118,6 @@ def save_encoded_distances(gen, frg, epc, el, ct):
         with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
             for x, y in itertools.product(gen[usr], frg[usr]):
                 f.write(str(np.linalg.norm(x - y)) + '\n')
-
-
-def save_dtw_threshold():
-    logger.info('Saving DTW Threshold')
-    with open(PATH + 'dtw_genuine.txt', 'r') as f:
-        px = np.sort(np.array(f.read().split('\n')[:-1]).astype(np.float))
-
-    with open(PATH + 'dtw_genuine_forged.txt', 'r') as f:
-        nx = np.sort(np.array(f.read().split('\n')[:-1]).astype(np.float))
-
-    ax = itertools.chain(px, nx)
-    mini = min(enumerate(ax), key=lambda x: np.linalg.norm(px[px < x[1]] - x[1]) + np.linalg.norm(nx[nx > x[1]] - x[1]))
-    mind = np.linalg.norm(px[px < mini[1]] - mini[1]) + np.linalg.norm(nx[nx > mini[1]] - mini[1])
-
-    with open(PATH + 'dtw_threshold.txt', 'w') as f:
-        f.write('Threshold: {t}\nMin Distance: {d}\n'.format(t=str(mini[1]), d=str(mind)))
 
 
 if __name__ == '__main__':
