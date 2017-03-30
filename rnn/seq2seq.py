@@ -24,8 +24,8 @@ class Autoencoder(object):
         self.seq_autoenc.add(cell(inp_dim, return_sequences=True, name='decoder', implementation=2))
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
 
-    def fit(self, tr_inp, epochs=10, batch_size=32, verbose=1):
-        self.seq_autoenc.fit(tr_inp, tr_inp, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[klogger])
+    def fit(self, x, y, epochs=10, batch_size=32, verbose=1):
+        self.seq_autoenc.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[klogger])
 
     def save(self, path):
         self.seq_autoenc.save(path)

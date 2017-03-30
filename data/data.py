@@ -45,6 +45,11 @@ class Data(object):
             ]
 
     def get_combinations(self, user, forged=False):
+        d = self.frg[user] if forged else self.gen[user]
+        return [_[0] for _ in itertools.product(d, d)], [_[1] for _ in itertools.product(d, d)]
+
+    # TODO: Refactor this
+    def get_dtw_combinations(self, user, forged=False):
         if not forged:
             return itertools.combinations(self.gen[user], 2)
         return itertools.product(self.gen[user], self.frg[user])

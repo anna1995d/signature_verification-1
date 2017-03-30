@@ -62,20 +62,24 @@ def get_data():
     )
 
 
-def train_autoencoder(x, max_len, btch, epc, el, ct):
+def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
     logger.info('Training Autoencoder')
     cell = LSTM if ct == 'lstm' else GRU
     ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
-    ae.fit(tr_inp=x, epochs=epc, batch_size=btch)
-    ae.save(path=mdl_save_temp.format(name='{ct}_autoencoder_{el}_{epc}'.format(ct=ct, el=el, epc=epc)))
+    ae.fit(x, y, epochs=epc, batch_size=btch)
+    ae.save(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
+        usr_num=usr_num, ct=ct, el=el, epc=epc))
+    )
     return ae
 
 
-def load_encoder(max_len, epc, el, ct):
+def load_encoder(max_len, epc, el, ct, usr_num):
     logger.info('Loading Encoder')
     cell = LSTM if ct == 'lstm' else GRU
     e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
-    e.load(path=mdl_save_temp.format(name='{ct}_autoencoder_{el}_{epc}'.format(ct=ct, el=el, epc=epc)))
+    e.load(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
+        usr_num=usr_num, ct=ct, el=el, epc=epc))
+    )
     return e
 
 
@@ -85,31 +89,35 @@ def pad_sequence(x, max_len=None):
 
 
 def get_encoded_data(data, btch, epc, el, ct):
-    tr = [*itertools.chain.from_iterable(data.gen + data.frg)]
-    max_len = max(map(lambda arg: arg.shape[0], tr))
-    x = pad_sequence(tr)
+    enc_gen, enc_frg = list(), list()
+    for usr_num in range(usr_cnt):
+        (gen_x, gen_y), (frg_x, frg_y) = data.get_combinations(usr_num, forged=False), \
+                                         data.get_combinations(usr_num, forged=True)
+        x, y = pad_sequence(gen_x + frg_x), pad_sequence(gen_y + frg_y)
 
-    train_autoencoder(x, max_len, btch, epc, el, ct)  # Autoencoder
-    e = load_encoder(max_len, epc, el, ct)  # Encoder
+        max_len = x.shape[1]
+        train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num)  # Autoencoder
+        e = load_encoder(max_len, epc, el, ct, usr_num)  # Encoder
 
-    logger.info('Encoding Data')
-    enc_gen = [e.predict(inp=pad_sequence(gen, max_len), batch_size=btch) for gen in d.gen]  # Encoded Genuine Data
-    enc_frg = [e.predict(inp=pad_sequence(frg, max_len), batch_size=btch) for frg in d.frg]  # Encoded Forged Data
+        logger.info('Encoding Data for user {usr_num}'.format(usr_num=usr_num))
+        enc_gen.append(e.predict(inp=pad_sequence(gen_x, max_len), batch_size=btch))  # Encoded Genuine Data
+        enc_frg.append(e.predict(inp=pad_sequence(frg_x, max_len), batch_size=btch))  # Encoded Forged Data
 
     return enc_gen, enc_frg
 
 
+# FIXME: Data.get_combinations definition is changed, fix this before using.
 def save_dtw_distances(data):
     logger.info('Saving DTW Distances')
     with open(PATH + 'dtw_genuine.txt', 'a') as f:
         for usr in range(usr_cnt):
-            for x, y in data.get_combinations(usr, forged=False):
+            for x, y in data.get_dtw_combinations(usr, forged=False):
                 dtw = DTW(x, y, win_len, DTW.euclidean)
                 f.write(str(dtw.calculate()) + '\n')
 
     with open(PATH + 'dtw_genuine_forged.txt', 'a') as f:
         for usr in range(usr_cnt):
-            for x, y in data.get_combinations(usr, forged=True):
+            for x, y in data.get_dtw_combinations(usr, forged=True):
                 dtw = DTW(x, y, win_len, DTW.euclidean)
                 f.write(str(dtw.calculate()) + '\n')
 
