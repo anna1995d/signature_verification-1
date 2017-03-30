@@ -59,7 +59,7 @@ def get_data():
 
 
 def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
-    logger.info('Training Autoencoder')
+    logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = LSTM if ct == 'lstm' else GRU
     ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
     ae.fit(x, y, epochs=epc, batch_size=btch)
@@ -70,7 +70,7 @@ def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
 
 
 def load_encoder(max_len, epc, el, ct, usr_num):
-    logger.info('Loading Encoder')
+    logger.info('Loading Encoder for user {usr_num}'.format(usr_num=usr_num))
     cell = LSTM if ct == 'lstm' else GRU
     e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
     e.load(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
@@ -80,7 +80,6 @@ def load_encoder(max_len, epc, el, ct, usr_num):
 
 
 def pad_sequence(x, max_len=None):
-    logger.info('Padding Sequences')
     return sequence.pad_sequences(x, maxlen=max_len)
 
 
