@@ -44,9 +44,6 @@ class Data(object):
             Data.extract_forged('{:03d}'.format(i), frg_smp_cnt, frg_cnt, frg_path_temp) for i in range(usr_cnt)
             ]
 
-        self.train = [*itertools.chain.from_iterable(self.gen + self.frg)]
-        self.max_len = max(map(lambda x: x.shape[0], self.train))
-
     def get_combinations(self, user, forged=False):
         if not forged:
             return itertools.combinations(self.gen[user], 2)

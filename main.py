@@ -44,7 +44,7 @@ enc_lens_fns = 1000
 enc_lens_stp = 100
 enc_lens = range(enc_lens_str, enc_lens_fns + 1, enc_lens_stp)
 ae_epochs_str = 10
-ae_epochs_fns = 100
+ae_epochs_fns = 10
 ae_epochs_stp = 10
 ae_epochs = range(ae_epochs_str, ae_epochs_fns + 1, ae_epochs_stp)
 cell_types = ['lstm', 'gru']
@@ -85,14 +85,16 @@ def pad_sequence(x, max_len=None):
 
 
 def get_encoded_data(data, btch, epc, el, ct):
-    x = pad_sequence(data.train)
+    tr = [*itertools.chain.from_iterable(data.gen + data.frg)]
+    max_len = max(map(lambda arg: arg.shape[0], tr))
+    x = pad_sequence(tr)
 
-    train_autoencoder(x, data.max_len, btch, epc, el, ct)  # Autoencoder
-    e = load_encoder(data.max_len, epc, el, ct)  # Encoder
+    train_autoencoder(x, max_len, btch, epc, el, ct)  # Autoencoder
+    e = load_encoder(max_len, epc, el, ct)  # Encoder
 
     logger.info('Encoding Data')
-    enc_gen = [e.predict(inp=pad_sequence(gen, data.max_len), batch_size=btch) for gen in d.gen]  # Encoded Genuine Data
-    enc_frg = [e.predict(inp=pad_sequence(frg, data.max_len), batch_size=btch) for frg in d.frg]  # Encoded Forged Data
+    enc_gen = [e.predict(inp=pad_sequence(gen, max_len), batch_size=btch) for gen in d.gen]  # Encoded Genuine Data
+    enc_frg = [e.predict(inp=pad_sequence(frg, max_len), batch_size=btch) for frg in d.frg]  # Encoded Forged Data
 
     return enc_gen, enc_frg
 
