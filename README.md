@@ -5,7 +5,7 @@ Signature Verification
 In order to prevent package conflicts for different projects, it is recommended to install a python environment manager 
 such as `virualenv`. Because of its rich features I personally use `anaconda` which provides similar functionallity to 
 `virtualenv` with more features such as creating environment with different python versions without actually installing 
-it globally on system, for more information on installing `anaconda` see the [documentations][anaconda-doc]. (Since 
+it globally on system. For more information on installing `anaconda` see the [documentations][anaconda-doc]. (Since 
 `anaconda` has many preinstalled packages which might not be needed, you could install the minimal version, `miniconda`)
 
 If you prefer to use `virtualenv` you could find the installation instruction in [documentations][virtualenv-doc].
@@ -23,8 +23,8 @@ pip install keras  # Insallt packages available on pypi repository
 ```
 
 ### Install tensorflow from source
-It is possible to install bothe CPU and GPU versions of `tensorflow` via `pip` but beacause of the optimizations and 
-customizations which are available it is recommended to install `tensorflow` from source, for more information on 
+It is possible to install both CPU and GPU versions of `tensorflow` via `pip` but because of the optimizations and 
+customizations which are available, it is recommended to install `tensorflow` from source. For more information on 
 configuring `tensorflow` installation see the [documentations][tf-doc].
 
 ```bash
