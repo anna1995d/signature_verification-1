@@ -139,3 +139,5 @@ models/*
 !models/PLACEHOLDER
 screenlog.*
 old_models/
+lstm_autoencoder_*_*_model.dat
+*_lstm_autoencoder_*_*_model.dat
