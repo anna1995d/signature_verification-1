@@ -7,7 +7,7 @@ import logging
 import os
 
 import numpy as np
-from keras.layers import LSTM, GRU
+from keras import layers
 from keras.preprocessing import sequence
 
 from data import Data
@@ -66,7 +66,7 @@ def get_data():
 
 def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
-    cell = LSTM if ct == 'lstm' else GRU
+    cell = getattr(layers, ct)
     ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
     ae.fit(x, y, epochs=epc, batch_size=btch)
     ae.save(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
@@ -77,7 +77,7 @@ def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
 
 def load_encoder(max_len, epc, el, ct, usr_num):
     logger.info('Loading Encoder for user {usr_num}'.format(usr_num=usr_num))
-    cell = LSTM if ct == 'lstm' else GRU
+    cell = getattr(layers, ct)
     e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
     e.load(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
         usr_num=usr_num, ct=ct, el=el, epc=epc))

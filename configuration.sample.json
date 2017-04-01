@@ -29,8 +29,8 @@
       "step": 5
     },
     "cell_types": [
-      "lstm",
-      "gru"
+      "LSTM",
+      "GRU"
     ]
   }
 }
