@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import errno
 import itertools
+import json
 import logging
 import os
 
@@ -11,39 +13,43 @@ from keras.preprocessing import sequence
 from data import Data
 from rnn import Autoencoder, Encoder
 
-PATH = os.path.dirname(__file__)
+PATH = os.path.dirname(os.path.abspath(__file__))
+try:
+    with open(os.path.join(PATH, 'configuration.json'), 'r') as cf:
+        CONFIG = json.load(cf)
+except json.JSONDecodeError:
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), 'configuration.json')
 
 # Logger Configuration
-log_frm = '(%(asctime)s) %(name)s [%(levelname)s]: %(message)s'
-log_fl = 'seq2seq.log'
-log_lvl = logging.INFO
+log_frm = CONFIG['logger']['log_format']
+log_fl = CONFIG['logger']['log_file']
+log_lvl = getattr(logging, CONFIG['logger']['log_level'].upper())
 logging.basicConfig(filename=log_fl, level=log_lvl, format=log_frm)
 logger = logging.getLogger(__name__)
 
 # Export Configuration
-mdl_save_temp = os.path.join(PATH, '{name}_model.dat')
-eval_save_temp = os.path.join(PATH, '{timestamp}_evaluation.dat')
+mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
 
 # Data Configuration
-usr_cnt = 11
-gen_smp_cnt = 42
-frg_smp_cnt = 36
-frg_cnt = 4
-gen_path_temp = os.path.join(PATH, 'data_set/Genuine/{user}/{sample}_{user}.HWR')
-frg_path_temp = os.path.join(PATH, 'data_set/Forged/{user}/{sample}_{forger}_{user}.HWR')
+usr_cnt = CONFIG['data']['user_count']
+inp_dim = CONFIG['data']['input_dimension']
+gen_smp_cnt = CONFIG['data']['genuine_sample_count']
+frg_smp_cnt = CONFIG['data']['forged_sample_count']
+frg_cnt = CONFIG['data']['forger_count']
+gen_path_temp = os.path.join(PATH, CONFIG['data']['genuine_path_template'])
+frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
 
 # Autoencoder Configuration
-btch_sz = 13
-inp_dim = 2
-enc_lens_str = 100
-enc_lens_fns = 1000
-enc_lens_stp = 100
+btch_sz = CONFIG['autoencoder']['batch_size']
+enc_lens_str = CONFIG['autoencoder']['encoded_length']['start']
+enc_lens_fns = CONFIG['autoencoder']['encoded_length']['finish']
+enc_lens_stp = CONFIG['autoencoder']['encoded_length']['step']
 enc_lens = range(enc_lens_str, enc_lens_fns + 1, enc_lens_stp)
-ae_epochs_str = 10
-ae_epochs_fns = 10
-ae_epochs_stp = 10
-ae_epochs = range(ae_epochs_str, ae_epochs_fns + 1, ae_epochs_stp)
-cell_types = ['lstm', 'gru']
+tr_epochs_str = CONFIG['autoencoder']['train_epochs']['start']
+tr_epochs_fns = CONFIG['autoencoder']['train_epochs']['finish']
+tr_epochs_stp = CONFIG['autoencoder']['train_epochs']['step']
+tr_epochs = range(tr_epochs_str, tr_epochs_fns + 1, tr_epochs_stp)
+cell_types = CONFIG['autoencoder']['cell_types']
 
 
 def get_data():
@@ -121,7 +127,7 @@ def save_encoded_distances(gen, frg, epc, el, ct):
 
 if __name__ == '__main__':
     d = get_data()
-    for epochs in ae_epochs:
+    for epochs in tr_epochs:
         for cell_type, enc_len in itertools.product(cell_types, enc_lens):
             logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
                 cell_type=cell_type, enc_len=enc_len)

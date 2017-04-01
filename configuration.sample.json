@@ -1,0 +1,36 @@
+{
+  "logger": {
+    "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
+    "log_file": "seq2seq.log",
+    "log_level": "info"
+  },
+  "export": {
+    "model_save_template": "{name}_model.dat"
+  },
+  "data": {
+    "user_count": 11,
+    "input_dimension": 2,
+    "genuine_sample_count": 42,
+    "forged_sample_count": 36,
+    "forger_count": 4,
+    "genuine_path_template": "data_set/Genuine/{user}/{sample}_{user}.HWR",
+    "forged_path_template": "data_set/Forged/{user}/{sample}_{forger}_{user}.HWR"
+  },
+  "autoencoder": {
+    "batch_size": 13,
+    "encoded_length": {
+      "start": 100,
+      "finish": 1000,
+      "step": 100
+    },
+    "train_epochs": {
+      "start": 5,
+      "finish": 15,
+      "step": 5
+    },
+    "cell_types": [
+      "lstm",
+      "gru"
+    ]
+  }
+}
