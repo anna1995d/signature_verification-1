@@ -37,60 +37,50 @@ pip install /tmp/tensorflow_pkg/<tensorflow_package>
 ```
 
 ### Configuration
-The configuraion must be in _*`configuration.json`*_. For a sample configuration see the provided sample [here][sample-config]. 
+The configuraion must be in _`configuration.json`_. For a sample configuration see the provided sample [here][sample-config]. 
 
 #### Logger
 _Configuration for logs during training phase._
-##### Log format
-Logger output format.
-##### Log file
-Logger output file.
-##### Log level
-Availble choices are _**`critical`**_, _**`fatal`**_, _**`error`**_, _**`warning`**_, _**`info`**_, _**`debug`**_ and _**`notset`**_.
+
+Key | Value | Description
+:---: | :---: | :---:
+`log_format` | `str`, available attributes are `%(asctime)s`, `%(name)s`, `%(levelname)s` and `%(message)s`  | logger output format
+`log_file` | `str` | logger output file path
+`log_level` | `str`, available choices are `critical`, `fatal`, `error`, `warning`, `info`, `debug` and `notset` | logger logging level
 
 #### Export
 _Configuration for exporting models during training phase._
-##### Model save template
-Template for saving models after training phase, it must have _**`name`**_ attribute.
+
+Key | Value | Description
+:---: | :---: | :---:
+`model_save_template` | `str`, it must contain `{name}` | path template for saving models
 
 #### Data
 _Configuration for reading data during training phase._
-##### User count
-Count of different users.
-##### Input dimension
-Count of input data features. 
-##### Genuine sample count
-Count of genuine samples for each user.
-##### Forged sample count
-Count of forged samples for each user.
-##### Genuine path template
-Template for genuine data, it must have _**`user`**_ and _**`sample`**_ attributes.
-##### Forged path template
-Template for forged data, it must have _**`user`**_, _**`sample`**_ and _**`forger`**_ attributes.
+
+Key | Value | Description
+:---: | :---: | :---:
+`user_count` | `int` | count of different users
+`input_dimension` | `int` | count of input data features
+`genuine_sample_count` | `int` | count of genuine samples for each user
+`forged_sample_count` | `int` | count of forged samples for each user
+`forger_count` | `int` | count of forgers per user
+`genuine_path_template` | `str`, it must contain `{user}` and `{sample}` | path template for genuine data
+`forged_path_template` | `str`, it must contain `{user}`, `{sample}` and `{forger}` | path template for forged data
 
 #### Autoencoder
 _Configuration for training phase of Autoencoder._
-##### Batch size
-Count of samples to be processed at each step of training.
-##### Encoded length
-###### Start
-Least length for encoded representation.
-###### Finish
-Most length for encoded representation.
-###### Step
-Increasing length for encoded representation by this value.
-##### Train epochs
-###### Start
-Least count of epochs for training phase.
-###### Finish
-Most count of epochs for training phase.
-###### Step
-Increase count of epochs for training phase by this value.
-##### Cell types
-Availble choices are _**`LSTM`**_, _**`GRU`**_ and _**`SimpleRNN`**_.
 
-##### Sample configuration
-If you want to use a pre-written configuration, you could use the provided sample _**`configuration.sample.json`**_.  
+Key | Value | Description
+:---: | :---: | :---:
+`batch_size` | `int` | count of samples to be processed at each step of training
+`encoded_length` | `json`, it must contain `start`, `finish` and `step` | length of encoded representaion
+`train_epochs` | `json`, it must contain `start`, `finish` and `step` | count of epochs during training phase
+`cell_types` | `list`, availble choices are `LSTM`, `GRU` and `SimpleRNN` | list of cells to use for training phase
+
+#### Sample configuration
+If you want to use a pre-written configuration, you could use the provided sample _`configuration.sample.json`_.  
+
 ```bash
 rsync -a --ignore-existing configuration.sample.json configuration.json
 ```
