@@ -37,58 +37,59 @@ pip install /tmp/tensorflow_pkg/<tensorflow_package>
 ```
 
 ### Configuration
+The configuraion must be in _*`configuration.json`*_. For a sample configuration see the provided sample [here][sample-config]. 
 
-#### Logger:
+#### Logger
 _Configuration for logs during training phase._
-##### Log format:
+##### Log format
 Logger output format.
-##### Log file:
+##### Log file
 Logger output file.
-##### Log level:
+##### Log level
 Availble choices are _**`critical`**_, _**`fatal`**_, _**`error`**_, _**`warning`**_, _**`info`**_, _**`debug`**_ and _**`notset`**_.
 
-#### Export:
+#### Export
 _Configuration for exporting models during training phase._
-##### Model save template:
+##### Model save template
 Template for saving models after training phase, it must have _**`name`**_ attribute.
 
-#### Data:
+#### Data
 _Configuration for reading data during training phase._
-##### User count:
+##### User count
 Count of different users.
-##### Input dimension:
+##### Input dimension
 Count of input data features. 
-##### Genuine sample count:
+##### Genuine sample count
 Count of genuine samples for each user.
-##### Forged sample count:
+##### Forged sample count
 Count of forged samples for each user.
-##### Genuine path template:
+##### Genuine path template
 Template for genuine data, it must have _**`user`**_ and _**`sample`**_ attributes.
-##### Forged path template:
+##### Forged path template
 Template for forged data, it must have _**`user`**_, _**`sample`**_ and _**`forger`**_ attributes.
 
-#### Autoencoder:
+#### Autoencoder
 _Configuration for training phase of Autoencoder._
-##### Batch size:
+##### Batch size
 Count of samples to be processed at each step of training.
-##### Encoded length:
-###### Start:
+##### Encoded length
+###### Start
 Least length for encoded representation.
-###### Finish:
+###### Finish
 Most length for encoded representation.
-###### Step:
+###### Step
 Increasing length for encoded representation by this value.
-##### Train epochs:
-###### Start:
+##### Train epochs
+###### Start
 Least count of epochs for training phase.
-###### Finish:
+###### Finish
 Most count of epochs for training phase.
-###### Step:
+###### Step
 Increase count of epochs for training phase by this value.
-##### Cell types:
+##### Cell types
 Availble choices are _**`LSTM`**_, _**`GRU`**_ and _**`SimpleRNN`**_.
 
-##### Use sample configuration:
+##### Sample configuration
 If you want to use a pre-written configuration, you could use the provided sample _**`configuration.sample.json`**_.  
 ```bash
 rsync -a --ignore-existing configuration.sample.json configuration.json
@@ -97,3 +98,4 @@ rsync -a --ignore-existing configuration.sample.json configuration.json
 [tf-doc]: https://www.tensorflow.org/install/install_sources/
 [anaconda-doc]: https://docs.continuum.io/anaconda/install/
 [virtualenv-doc]: https://virtualenv.pypa.io/en/stable/installation/
+[sample-config]: https://github.com/kahrabian/signature_verification/blob/master/configuration.sample.json
