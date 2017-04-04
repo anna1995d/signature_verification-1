@@ -1,7 +1,7 @@
 from keras.layers import RepeatVector
 from keras.models import Sequential
 
-from rnn.logging import klogger
+from nn.logging import klogger
 
 
 class Autoencoder(object):
@@ -14,7 +14,7 @@ class Autoencoder(object):
         self.seq_autoenc.add(cell(inp_dim, return_sequences=True, implementation=implementation, name='decoder'))
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    def fit(self, x, y, epochs=10, batch_size=32, verbose=1):
+    def fit(self, x, y, epochs, batch_size, verbose):
         self.seq_autoenc.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[klogger])
 
     def save(self, path):
@@ -29,7 +29,7 @@ class Encoder(object):
         )
         self.encoder.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    def predict(self, inp, batch_size=32):
+    def predict(self, inp, batch_size):
         return self.encoder.predict(inp, batch_size=batch_size)
 
     def load(self, path):

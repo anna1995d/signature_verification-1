@@ -11,7 +11,7 @@ from keras import layers, optimizers, losses, metrics
 from keras.preprocessing import sequence
 
 from data import Data
-from rnn import Autoencoder, Encoder
+from nn import Autoencoder, Encoder
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 CONIFG_PATH = os.path.join(PATH, 'configuration.json')
