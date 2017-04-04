@@ -14,11 +14,11 @@ from data import Data
 from rnn import Autoencoder, Encoder
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-try:
-    with open(os.path.join(PATH, 'configuration.json'), 'r') as cf:
-        CONFIG = json.load(cf)
-except json.JSONDecodeError:
+CONIFG_PATH = os.path.join(PATH, 'configuration.json')
+if not os.path.exists(CONIFG_PATH):
     raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), 'configuration.json')
+with open(CONIFG_PATH, 'r') as cf:
+    CONFIG = json.load(cf)
 
 # Logger Configuration
 log_frm = CONFIG['logger']['log_format']
@@ -88,10 +88,11 @@ def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
     ae.save(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
         usr_num=usr_num, ct=ct, el=el, epc=epc
     )))
-    return ae
 
 
-def load_encoder(max_len, epc, el, ct, usr_num):
+def load_encoder(x, y, btch, max_len, epc, el, ct, usr_num):
+    train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num)
+
     logger.info('Loading Encoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     e = Encoder(
@@ -114,40 +115,43 @@ def pad_sequence(x, max_len=None):
     return sequence.pad_sequences(x, maxlen=max_len)
 
 
-def get_encoded_data(data, btch, epc, el, ct):
-    enc_gen, enc_frg = list(), list()
-    for usr_num in range(usr_cnt):
-        (gen_x, gen_y), (frg_x, frg_y) = data.get_combinations(usr_num, forged=False), \
-                                         data.get_combinations(usr_num, forged=True)
-        x, y = pad_sequence(gen_x + frg_x), pad_sequence(gen_y + frg_y)
-
-        max_len = x.shape[1]
-        train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num)  # Autoencoder
-        e = load_encoder(max_len, epc, el, ct, usr_num)  # Encoder
-
-        logger.info('Encoding Data for user {usr_num}'.format(usr_num=usr_num))
-        enc_gen.append(e.predict(inp=pad_sequence(gen_x, max_len), batch_size=btch))  # Encoded Genuine Data
-        enc_frg.append(e.predict(inp=pad_sequence(frg_x, max_len), batch_size=btch))  # Encoded Forged Data
-
-    return enc_gen, enc_frg
-
-
-def save_encoded_distances(gen, frg, epc, el, ct):
+def save_encoded_distances(usr, gen, frg, epc, el, ct):
     dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
-    for usr in range(usr_cnt):
-        logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_{usr}.txt'.format(usr=usr)))
-        with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr)), 'a') as f:
-            for x, y in itertools.combinations(gen[usr], 2):
-                f.write(str(np.linalg.norm(x - y)) + '\n')
+    logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_{usr}.txt'.format(usr=usr)))
+    with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr)), 'a') as f:
+        for x, y in itertools.combinations(gen[usr], 2):
+            f.write(str(np.linalg.norm(x - y)) + '\n')
 
-    for usr in range(usr_cnt):
-        logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_forged_{usr}.txt'.format(usr=usr)))
-        with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
-            for x, y in itertools.product(gen[usr], frg[usr]):
-                f.write(str(np.linalg.norm(x - y)) + '\n')
+    logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_forged_{usr}.txt'.format(usr=usr)))
+    with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
+        for x, y in itertools.product(gen[usr], frg[usr]):
+            f.write(str(np.linalg.norm(x - y)) + '\n')
+
+
+def get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len):
+    logger.info('Encoding Data for user {usr_num}'.format(usr_num=usr_num))
+    enc_gen = e.predict(inp=pad_sequence(gen_x, max_len), batch_size=btch)  # Encoded Genuine Data
+    enc_frg = e.predict(inp=pad_sequence(frg_x, max_len), batch_size=btch)  # Encoded Forged Data
+    return enc_gen, enc_frg
+
+
+def get_train_data(data, usr_num):
+    (gen_x, gen_y), (frg_x, frg_y) = data.get_combinations(usr_num, forged=False), \
+                                     data.get_combinations(usr_num, forged=True)
+    x, y = pad_sequence(gen_x + frg_x), pad_sequence(gen_y + frg_y)
+    max_len = x.shape[1]
+    return x, y, gen_x, frg_x, max_len
+
+
+def process_model(data, btch, epc, el, ct):
+    for usr_num in range(usr_cnt):
+        x, y, gen_x, frg_x, max_len = get_train_data(data, usr_num)
+        e = load_encoder(x, y, btch, max_len, epc, el, ct, usr_num)
+        enc_gen, enc_frg = get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len)
+        save_encoded_distances(usr_num, enc_gen, enc_frg, epc, el, ct)
 
 
 if __name__ == '__main__':
@@ -157,6 +161,5 @@ if __name__ == '__main__':
             logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
                 cell_type=cell_type, enc_len=enc_len
             ))
-            e_gen, e_frg = get_encoded_data(d, btch_sz, epochs, enc_len, cell_type)
-            save_encoded_distances(e_gen, e_frg, epochs, enc_len, cell_type)
+            process_model(d, btch_sz, epochs, enc_len, cell_type)
             logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))
