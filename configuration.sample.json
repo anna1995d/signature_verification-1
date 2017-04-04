@@ -18,19 +18,29 @@
   },
   "autoencoder": {
     "batch_size": 13,
+    "loss": "mean_squared_error",
+    "optimizer": {
+      "name": "Adam",
+      "args": {
+      }
+    },
+    "metrics": [
+      "accuracy"
+    ],
+    "verbose": 1,
+    "implementation": 2,
     "encoded_length": {
-      "start": 100,
+      "start": 500,
       "finish": 1000,
       "step": 100
     },
     "train_epochs": {
       "start": 5,
-      "finish": 15,
+      "finish": 10,
       "step": 5
     },
     "cell_types": [
       "LSTM",
-      "GRU"
     ]
   }
 }

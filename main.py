@@ -7,7 +7,7 @@ import logging
 import os
 
 import numpy as np
-from keras import layers
+from keras import layers, optimizers, losses, metrics
 from keras.preprocessing import sequence
 
 from data import Data
@@ -50,6 +50,13 @@ tr_epochs_fns = CONFIG['autoencoder']['train_epochs']['finish']
 tr_epochs_stp = CONFIG['autoencoder']['train_epochs']['step']
 tr_epochs = range(tr_epochs_str, tr_epochs_fns + 1, tr_epochs_stp)
 cell_types = CONFIG['autoencoder']['cell_types']
+loss = getattr(losses, CONFIG['autoencoder']['loss'])
+optimizer = getattr(optimizers, CONFIG['autoencoder']['optimizer']['name'])(
+    **CONFIG['autoencoder']['optimizer']['args']
+)
+metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['autoencoder']['metrics']]
+implementation = CONFIG['autoencoder']['implementation']
+verbose = CONFIG['autoencoder']['verbose']
 
 
 def get_data():
@@ -67,21 +74,39 @@ def get_data():
 def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
-    ae = Autoencoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
-    ae.fit(x, y, epochs=epc, batch_size=btch)
-    ae.save(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
-        usr_num=usr_num, ct=ct, el=el, epc=epc))
+    ae = Autoencoder(
+        cell=cell,
+        inp_max_len=max_len,
+        inp_dim=inp_dim,
+        enc_len=el,
+        loss=loss,
+        optimizer=optimizer,
+        metrics=metrics,
+        implementation=implementation
     )
+    ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose)
+    ae.save(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
+        usr_num=usr_num, ct=ct, el=el, epc=epc
+    )))
     return ae
 
 
 def load_encoder(max_len, epc, el, ct, usr_num):
     logger.info('Loading Encoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
-    e = Encoder(cell=cell, inp_max_len=max_len, inp_dim=inp_dim, enc_len=el)
-    e.load(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
-        usr_num=usr_num, ct=ct, el=el, epc=epc))
+    e = Encoder(
+        cell=cell,
+        inp_max_len=max_len,
+        inp_dim=inp_dim,
+        enc_len=el,
+        loss=loss,
+        optimizer=optimizer,
+        metrics=metrics,
+        implementation=implementation
     )
+    e.load(path=mdl_save_temp.format(name='{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
+        usr_num=usr_num, ct=ct, el=el, epc=epc
+    )))
     return e
 
 
@@ -130,8 +155,8 @@ if __name__ == '__main__':
     for epochs in tr_epochs:
         for cell_type, enc_len in itertools.product(cell_types, enc_lens):
             logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
-                cell_type=cell_type, enc_len=enc_len)
-            )
+                cell_type=cell_type, enc_len=enc_len
+            ))
             e_gen, e_frg = get_encoded_data(d, btch_sz, epochs, enc_len, cell_type)
             save_encoded_distances(e_gen, e_frg, epochs, enc_len, cell_type)
             logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))
