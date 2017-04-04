@@ -142,3 +142,4 @@ old_models_*/
 lstm_autoencoder_*_*_model.dat
 *_lstm_autoencoder_*_*_model.dat
 configuration.json
+sigv.*
