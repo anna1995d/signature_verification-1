@@ -143,7 +143,7 @@ def get_train_data(data, usr_num):
                                      data.get_combinations(usr_num, forged=True)
     x, y = pad_sequence(gen_x + frg_x), pad_sequence(gen_y + frg_y)
     max_len = x.shape[1]
-    return x, y, gen_x, frg_x, max_len
+    return x, y, pad_sequence(data.gen[usr_num], max_len), pad_sequence(data.frg[usr_num], max_len), max_len
 
 
 def process_model(data, btch, epc, el, ct):
