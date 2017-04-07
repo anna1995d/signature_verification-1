@@ -18,6 +18,7 @@
   },
   "autoencoder": {
     "with_forged": false,
+    "mask_value": 0.0001,
     "batch_size": 13,
     "loss": "mean_squared_error",
     "optimizer": {
