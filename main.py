@@ -40,6 +40,7 @@ gen_path_temp = os.path.join(PATH, CONFIG['data']['genuine_path_template'])
 frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
 
 # Autoencoder Configuration
+with_forged = CONFIG['autoencoder']['with_forged']
 btch_sz = CONFIG['autoencoder']['batch_size']
 enc_lens_str = CONFIG['autoencoder']['encoded_length']['start']
 enc_lens_fns = CONFIG['autoencoder']['encoded_length']['finish']
@@ -112,7 +113,7 @@ def load_encoder(x, y, btch, max_len, epc, el, ct, usr_num):
 
 
 def pad_sequence(x, max_len=None):
-    return sequence.pad_sequences(x, maxlen=max_len)
+    return sequence.pad_sequences(x, maxlen=max_len, value=np.Inf)
 
 
 def save_encoded_distances(usr, gen, frg, epc, el, ct):
@@ -138,17 +139,18 @@ def get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len):
     return enc_gen, enc_frg
 
 
-def get_train_data(data, usr_num):
+def get_train_data(data, usr_num, with_frg):
     (gen_x, gen_y), (frg_x, frg_y) = data.get_combinations(usr_num, forged=False), \
                                      data.get_combinations(usr_num, forged=True)
-    x, y = pad_sequence(gen_x + frg_x), pad_sequence(gen_y + frg_y)
+    x, y = pad_sequence((gen_x + frg_x) if with_frg else gen_x), \
+        pad_sequence((gen_y + frg_y) if with_frg else gen_y)
     max_len = x.shape[1]
     return x, y, pad_sequence(data.gen[usr_num], max_len), pad_sequence(data.frg[usr_num], max_len), max_len
 
 
-def process_model(data, btch, epc, el, ct):
+def process_model(data, btch, epc, el, ct, with_frg):
     for usr_num in range(usr_cnt):
-        x, y, gen_x, frg_x, max_len = get_train_data(data, usr_num)
+        x, y, gen_x, frg_x, max_len = get_train_data(data, usr_num, with_frg)
         e = load_encoder(x, y, btch, max_len, epc, el, ct, usr_num)
         enc_gen, enc_frg = get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len)
         save_encoded_distances(usr_num, enc_gen, enc_frg, epc, el, ct)
@@ -161,5 +163,5 @@ if __name__ == '__main__':
             logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
                 cell_type=cell_type, enc_len=enc_len
             ))
-            process_model(d, btch_sz, epochs, enc_len, cell_type)
+            process_model(d, btch_sz, epochs, enc_len, cell_type, with_forged)
             logger.info('Finished with {epochs} epochs!'.format(epochs=epochs))

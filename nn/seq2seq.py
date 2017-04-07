@@ -1,4 +1,6 @@
-from keras.layers import RepeatVector
+import numpy as np
+
+from keras.layers import RepeatVector, Masking
 from keras.models import Sequential
 
 from nn.logging import klogger
@@ -7,9 +9,8 @@ from nn.logging import klogger
 class Autoencoder(object):
     def __init__(self, cell, inp_max_len, inp_dim, enc_len, loss, optimizer, metrics, implementation):
         self.seq_autoenc = Sequential()
-        self.seq_autoenc.add(
-            cell(enc_len, input_shape=(inp_max_len, inp_dim), implementation=implementation, name='encoder')
-        )
+        self.seq_autoenc.add(Masking(mask_value=np.Inf, input_shape=(inp_max_len, inp_dim)))
+        self.seq_autoenc.add(cell(enc_len, implementation=implementation, name='encoder'))
         self.seq_autoenc.add(RepeatVector(inp_max_len, name='repeater'))
         self.seq_autoenc.add(cell(inp_dim, return_sequences=True, implementation=implementation, name='decoder'))
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
@@ -24,9 +25,8 @@ class Autoencoder(object):
 class Encoder(object):
     def __init__(self, cell, inp_max_len, inp_dim, enc_len, loss, optimizer, metrics, implementation):
         self.encoder = Sequential()
-        self.encoder.add(
-            cell(enc_len, input_shape=(inp_max_len, inp_dim), implementation=implementation, name='encoder')
-        )
+        self.encoder.add(Masking(mask_value=np.Inf, input_shape=(inp_max_len, inp_dim)))
+        self.encoder.add(cell(enc_len, implementation=implementation, name='encoder'))
         self.encoder.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     def predict(self, inp, batch_size):

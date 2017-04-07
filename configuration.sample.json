@@ -17,6 +17,7 @@
     "forged_path_template": "data_set/Forged/{user}/{sample}_{forger}_{user}.HWR"
   },
   "autoencoder": {
+    "with_forged": false,
     "batch_size": 13,
     "loss": "mean_squared_error",
     "optimizer": {
