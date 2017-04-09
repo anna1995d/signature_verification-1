@@ -10,7 +10,7 @@
 #$ -M "kahrabian@gmail.com"
 #$ -l gpu=1
 #$ -l 'arch=*64*'
-#$ -l mem_free=4G,ram_free=4G
+#$ -l mem_free=8G,ram_free=8G
 #$ -l "hostname=b1[123456789]*"
 #$ -pe smp 8
 
