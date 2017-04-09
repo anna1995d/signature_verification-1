@@ -1,5 +1,3 @@
-import numpy as np
-
 from keras.layers import RepeatVector, Masking
 from keras.models import Sequential
 

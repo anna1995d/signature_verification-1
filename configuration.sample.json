@@ -1,4 +1,8 @@
 {
+  "general": {
+    "implementation": 2,
+    "verbose": 1
+  },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
     "log_file": "seq2seq.log",
@@ -29,20 +33,28 @@
     "metrics": [
       "accuracy"
     ],
-    "verbose": 1,
-    "implementation": 2,
     "encoded_length": {
       "start": 500,
-      "finish": 1000,
+      "finish": 500,
       "step": 100
     },
-    "train_epochs": {
-      "start": 5,
-      "finish": 10,
-      "step": 5
-    },
+    "train_epochs": 5,
     "cell_types": [
       "LSTM"
+    ]
+  },
+  "classifier": {
+    "batch_size": 32,
+    "train_epochs": 1000,
+    "activation": "sigmoid",
+    "loss": "mean_squared_error",
+    "optimizer": {
+      "name": "sgd",
+      "args": {
+      }
+    },
+    "metrics": [
+      "accuracy"
     ]
   }
 }

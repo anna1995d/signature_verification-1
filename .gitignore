@@ -4,7 +4,6 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-.idea/workspace.xml
 .idea/tasks.xml
 
 # Sensitive or high-churn files:
@@ -45,7 +44,6 @@ fabric.properties
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
 *$py.class
 
 # C extensions
@@ -139,7 +137,5 @@ models/*
 !models/PLACEHOLDER
 screenlog.*
 old_models_*/
-LSTM_autoencoder_*_*_model.dat
-*_LSTM_autoencoder_*_*_model.dat
 configuration.json
 sigv.*
