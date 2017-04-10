@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
 
 # Data Configuration
+smp_stp = CONFIG['data']['sampling_step']
 usr_cnt = CONFIG['data']['user_count']
 inp_dim = CONFIG['data']['input_dimension']
 gen_smp_cnt = CONFIG['data']['genuine_sample_count']
@@ -73,6 +74,7 @@ cf_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG[
 def get_data():
     logger.info('Getting Data')
     return Data(
+        smp_stp=smp_stp,
         usr_cnt=usr_cnt,
         gen_smp_cnt=gen_smp_cnt,
         frg_smp_cnt=frg_smp_cnt,

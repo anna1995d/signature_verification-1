@@ -12,6 +12,7 @@
     "model_save_template": "{name}_model.dat"
   },
   "data": {
+    "sampling_step": 2,
     "user_count": 11,
     "input_dimension": 2,
     "genuine_sample_count": 42,
