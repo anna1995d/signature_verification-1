@@ -138,4 +138,4 @@ models/*
 screenlog.*
 old_models_*/
 configuration.json
-sigv.*
+sigv-*
