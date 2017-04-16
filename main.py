@@ -36,6 +36,7 @@ mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
 
 # Data Configuration
 smp_stp = CONFIG['data']['sampling_step']
+nrm = CONFIG['data']['normalization']
 usr_cnt = CONFIG['data']['user_count']
 inp_dim = CONFIG['data']['input_dimension']
 gen_smp_cnt = CONFIG['data']['genuine_sample_count']
@@ -75,6 +76,7 @@ def get_data():
     logger.info('Getting Data')
     return Data(
         smp_stp=smp_stp,
+        nrm=nrm,
         usr_cnt=usr_cnt,
         gen_smp_cnt=gen_smp_cnt,
         frg_smp_cnt=frg_smp_cnt,

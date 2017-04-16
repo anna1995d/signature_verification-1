@@ -13,8 +13,9 @@
   },
   "data": {
     "sampling_step": 2,
+    "normalization": "mvn",
     "user_count": 11,
-    "input_dimension": 2,
+    "input_dimension": 14,
     "genuine_sample_count": 42,
     "forged_sample_count": 36,
     "forger_count": 4,
