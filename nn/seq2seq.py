@@ -1,7 +1,7 @@
 from keras.layers import RepeatVector, Masking
 from keras.models import Sequential
 
-from nn.logging import klogger
+from nn.logging import elogger, blogger
 
 
 class Autoencoder(object):
@@ -14,7 +14,7 @@ class Autoencoder(object):
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     def fit(self, x, y, epochs, batch_size, verbose):
-        self.seq_autoenc.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[klogger])
+        self.seq_autoenc.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, blogger])
 
     def save(self, path):
         self.seq_autoenc.save(path)
