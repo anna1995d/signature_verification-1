@@ -73,7 +73,6 @@ cf_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG[
 
 
 def get_data():
-    logger.info('Getting Data')
     return Data(
         smp_stp=smp_stp,
         nrm=nrm,
@@ -109,7 +108,6 @@ def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num, msk_val):
 def load_encoder(x, y, btch, max_len, epc, el, ct, usr_num, msk_val):
     train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num, msk_val)
 
-    logger.info('Loading Encoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     e = Encoder(
         cell=cell,
@@ -178,19 +176,16 @@ def save_encoded_distances(usr, gen, frg, epc, el, ct):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
-    logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_{usr}.txt'.format(usr=usr)))
     with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr)), 'a') as f:
         for x, y in itertools.combinations(gen, 2):
             f.write(str(np.linalg.norm(x - y)) + '\n')
 
-    logger.info('Saving Encoded Distance: {file}'.format(file='encoded_genuine_forged_{usr}.txt'.format(usr=usr)))
     with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
         for x, y in itertools.product(gen, frg):
             f.write(str(np.linalg.norm(x - y)) + '\n')
 
 
-def get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len, msk_val):
-    logger.info('Encoding Data for user {usr_num}'.format(usr_num=usr_num))
+def get_encoded_data(e, btch, gen_x, frg_x, max_len, msk_val):
     enc_gen = e.predict(inp=pad_sequence(gen_x, msk_val, max_len), batch_size=btch)  # Encoded Genuine Data
     enc_frg = e.predict(inp=pad_sequence(frg_x, msk_val, max_len), batch_size=btch)  # Encoded Forged Data
     return enc_gen, enc_frg
@@ -210,7 +205,7 @@ def process_models(data, btch, epc, el, ct, with_frg, msk_val):
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x, max_len = get_autoencoder_train_data(data, usr_num, with_frg, msk_val)
         e = load_encoder(x, y, btch, max_len, epc, el, ct, usr_num, msk_val)
-        enc_gen, enc_frg = get_encoded_data(usr_num, e, btch, gen_x, frg_x, max_len, msk_val)
+        enc_gen, enc_frg = get_encoded_data(e, btch, gen_x, frg_x, max_len, msk_val)
         save_encoded_distances(usr_num, enc_gen, enc_frg, epc, el, ct)
         evaluate_model(usr_num, enc_len, cell_type)
 
@@ -218,8 +213,4 @@ def process_models(data, btch, epc, el, ct, with_frg, msk_val):
 if __name__ == '__main__':
     d = get_data()
     for cell_type, enc_len in itertools.product(cell_types, enc_lens):
-        logger.info('Started, cell type is \'{cell_type}\', encoded length is \'{enc_len}\''.format(
-            cell_type=cell_type, enc_len=enc_len
-        ))
         process_models(d, ae_btch_sz, ae_tr_epochs, enc_len, cell_type, with_forged, mask_value)
-        logger.info('Finished with {epochs} epochs!'.format(epochs=ae_tr_epochs))
