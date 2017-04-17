@@ -23,9 +23,8 @@
     "forged_path_template": "data_set/Forged/{user}/{sample}_{forger}_{user}.HWR"
   },
   "autoencoder": {
-    "with_forged": false,
-    "mask_value": 0.0001,
-    "batch_size": 13,
+    "mask_value": 0.0,
+    "batch_size": 32,
     "loss": "mean_squared_error",
     "optimizer": {
       "name": "Adam",
@@ -40,7 +39,7 @@
       "finish": 500,
       "step": 100
     },
-    "train_epochs": 5,
+    "train_epochs": 20,
     "cell_types": [
       "LSTM"
     ]

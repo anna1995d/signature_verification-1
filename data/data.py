@@ -107,6 +107,5 @@ class Data(object):
             path_temp=frg_path_temp
         ) for i in range(usr_cnt)]
 
-    def get_combinations(self, user, forged=False):
-        d = self.frg[user] if forged else self.gen[user]
-        return [_[0] for _ in itertools.product(d, d)], [_[1] for _ in itertools.product(d, d)]
+    def get_genuine_combinations(self, user):
+        return np.array(list(itertools.product(self.gen[user], self.gen[user]))).T
