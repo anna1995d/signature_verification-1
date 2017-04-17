@@ -46,7 +46,6 @@ gen_path_temp = os.path.join(PATH, CONFIG['data']['genuine_path_template'])
 frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
 
 # Autoencoder Configuration
-with_forged = CONFIG['autoencoder']['with_forged']
 mask_value = CONFIG['autoencoder']['mask_value']
 ae_btch_sz = CONFIG['autoencoder']['batch_size']
 enc_lens_str = CONFIG['autoencoder']['encoded_length']['start']
@@ -85,12 +84,11 @@ def get_data():
     )
 
 
-def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num, msk_val):
+def train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     ae = Autoencoder(
         cell=cell,
-        inp_max_len=max_len,
         inp_dim=inp_dim,
         enc_len=el,
         loss=ae_loss,
@@ -105,13 +103,12 @@ def train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num, msk_val):
     )))
 
 
-def load_encoder(x, y, btch, max_len, epc, el, ct, usr_num, msk_val):
-    train_autoencoder(x, y, max_len, btch, epc, el, ct, usr_num, msk_val)
+def load_encoder(x, y, btch, epc, el, ct, usr_num, msk_val):
+    train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val)
 
     cell = getattr(layers, ct)
     e = Encoder(
         cell=cell,
-        inp_max_len=max_len,
         inp_dim=inp_dim,
         enc_len=el,
         loss=ae_loss,
@@ -124,10 +121,6 @@ def load_encoder(x, y, btch, max_len, epc, el, ct, usr_num, msk_val):
         usr_num=usr_num, ct=ct, el=el, epc=epc
     )))
     return e
-
-
-def pad_sequence(x, msk_val, max_len=None):
-    return sequence.pad_sequences(x, value=msk_val, maxlen=max_len)
 
 
 def save_evaluation(h, usr_num, epc, el, ct):
@@ -185,27 +178,24 @@ def save_encoded_distances(usr, gen, frg, epc, el, ct):
             f.write(str(np.linalg.norm(x - y)) + '\n')
 
 
-def get_encoded_data(e, btch, gen_x, frg_x, max_len, msk_val):
-    enc_gen = e.predict(inp=pad_sequence(gen_x, msk_val, max_len), batch_size=btch)  # Encoded Genuine Data
-    enc_frg = e.predict(inp=pad_sequence(frg_x, msk_val, max_len), batch_size=btch)  # Encoded Forged Data
+def get_encoded_data(e, gen_x, frg_x, msk_val):
+    enc_gen = e.predict(inp=sequence.pad_sequences(gen_x, value=msk_val))  # Encoded Genuine Data
+    enc_frg = e.predict(inp=sequence.pad_sequences(frg_x, value=msk_val))  # Encoded Forged Data
     return enc_gen, enc_frg
 
 
-def get_autoencoder_train_data(data, usr_num, with_frg, msk_val):
-    (gen_x, gen_y), (frg_x, frg_y) = data.get_combinations(usr_num, forged=False), \
-                                     data.get_combinations(usr_num, forged=True)
-    x, y = pad_sequence((gen_x + frg_x) if with_frg else gen_x, msk_val), \
-        pad_sequence((gen_y + frg_y) if with_frg else gen_y, msk_val)
-    max_len = x.shape[1]
-    return x, y, pad_sequence(data.gen[usr_num], msk_val, max_len), pad_sequence(data.frg[usr_num], msk_val, max_len), \
-        max_len
+def get_autoencoder_train_data(data, usr_num, msk_val):
+    (gen_x, gen_y) = data.get_genuine_combinations(usr_num)
+    x, y = sequence.pad_sequences(gen_x, value=msk_val), sequence.pad_sequences(gen_y, value=msk_val)
+    return x, y, sequence.pad_sequences(data.gen[usr_num], value=msk_val), \
+        sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
-def process_models(data, btch, epc, el, ct, with_frg, msk_val):
+def process_models(data, btch, epc, el, ct, msk_val):
     for usr_num in range(usr_cnt):
-        x, y, gen_x, frg_x, max_len = get_autoencoder_train_data(data, usr_num, with_frg, msk_val)
-        e = load_encoder(x, y, btch, max_len, epc, el, ct, usr_num, msk_val)
-        enc_gen, enc_frg = get_encoded_data(e, btch, gen_x, frg_x, max_len, msk_val)
+        x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
+        e = load_encoder(x, y, btch, epc, el, ct, usr_num, msk_val)
+        enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
         save_encoded_distances(usr_num, enc_gen, enc_frg, epc, el, ct)
         evaluate_model(usr_num, enc_len, cell_type)
 
@@ -213,4 +203,4 @@ def process_models(data, btch, epc, el, ct, with_frg, msk_val):
 if __name__ == '__main__':
     d = get_data()
     for cell_type, enc_len in itertools.product(cell_types, enc_lens):
-        process_models(d, ae_btch_sz, ae_tr_epochs, enc_len, cell_type, with_forged, mask_value)
+        process_models(d, ae_btch_sz, ae_tr_epochs, enc_len, cell_type, mask_value)
