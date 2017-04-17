@@ -188,7 +188,7 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
     (gen_x, gen_y) = data.get_genuine_combinations(usr_num)
     x, y = sequence.pad_sequences(gen_x, value=msk_val), sequence.pad_sequences(gen_y, value=msk_val)
     return x, y, sequence.pad_sequences(data.gen[usr_num], value=msk_val), \
-           sequence.pad_sequences(data.frg[usr_num], value=msk_val)
+        sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
 def process_models(data, btch, epc, el, ct, msk_val):
