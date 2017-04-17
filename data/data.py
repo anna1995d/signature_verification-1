@@ -25,7 +25,7 @@ class Data(object):
         t_n[np.argwhere(np.isnan(t_n))] = 0
         v_n = np.sqrt(drv[:, 0] ** 2 + drv[:, 1] ** 2).reshape((-1, 1))
         dt_n = Data.calculate_derivatives(t_n, smpl=True)
-        r_n = np.nan_to_num(np.log2(np.abs(v_n / (dt_n + np.spacing(1))) + np.spacing(1)))
+        r_n = np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps)
         dv_n = Data.calculate_derivatives(v_n, smpl=True)
         a_n = np.sqrt(dv_n ** 2 + (v_n * dt_n) ** 2)
 
