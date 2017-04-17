@@ -12,7 +12,7 @@
     "model_save_template": "{name}_model.dat"
   },
   "data": {
-    "sampling_step": 2,
+    "sampling_step": 1,
     "normalization": "mvn",
     "user_count": 40,
     "input_dimension": 14,
