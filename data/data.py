@@ -58,54 +58,51 @@ class Data(object):
         return Data.extract(nd)
 
     @staticmethod
-    def extract_sample(smp_stp, nrm, path):
+    def extract_sample(smp_stp, ftr_cnt, nrm, path):
         with open(path, 'r') as f:
-            d = np.reshape(f.read().split(), newshape=(-1, 3))[::smp_stp, :2].astype(np.float64)
+            d = np.reshape(f.read().split()[1:], newshape=(-1, ftr_cnt))[::smp_stp, :2].astype(np.float64)
 
         return Data.extract_features(d, nrm)
 
     @staticmethod
-    def extract_genuine(smp_stp, nrm, usr, smp_cnt, path_temp):
+    def extract_genuine(smp_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
         res = list()
 
-        for i in range(smp_cnt):
-            path = path_temp.format(user=usr, sample='{:02d}'.format(i + 1))
-            res.append(Data.extract_sample(smp_stp=smp_stp, nrm=nrm, path=path))
+        for smp in range(smp_cnt):
+            path = path_temp.format(user=usr, sample=smp + 1)
+            res.append(Data.extract_sample(smp_stp=smp_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path))
 
         return res
 
     @staticmethod
-    def extract_forged(smp_stp, nrm, usr, smp_cnt, frg_cnt, path_temp):
+    def extract_forged(smp_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
         res = list()
 
-        for i in range(1, smp_cnt + 1):
-            path = path_temp.format(
-                user=usr,
-                sample='{:02d}'.format((i + frg_cnt - 1) // frg_cnt),
-                forger='{:03d}'.format(i % frg_cnt)
-            )
-            res.append(Data.extract_sample(smp_stp=smp_stp, nrm=nrm, path=path))
+        for smp in range(smp_cnt):
+            path = path_temp.format(user=usr, sample=smp + 21)
+            res.append(Data.extract_sample(smp_stp=smp_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path))
 
         return res
 
-    def __init__(self, smp_stp, nrm, usr_cnt, gen_smp_cnt, frg_smp_cnt, frg_cnt, gen_path_temp, frg_path_temp):
+    def __init__(self, smp_stp, ftr_cnt, nrm, usr_cnt, gen_smp_cnt, frg_smp_cnt, gen_path_temp, frg_path_temp):
 
         self.gen = [Data.extract_genuine(
             smp_stp=smp_stp,
             nrm=nrm,
-            usr='{:03d}'.format(i),
+            usr=usr,
             smp_cnt=gen_smp_cnt,
+            ftr_cnt=ftr_cnt,
             path_temp=gen_path_temp
-        ) for i in range(usr_cnt)]
+        ) for usr in range(1, usr_cnt + 1)]
 
         self.frg = [Data.extract_forged(
             smp_stp=smp_stp,
             nrm=nrm,
-            usr='{:03d}'.format(i),
+            usr=usr,
             smp_cnt=frg_smp_cnt,
-            frg_cnt=frg_cnt,
+            ftr_cnt=ftr_cnt,
             path_temp=frg_path_temp
-        ) for i in range(usr_cnt)]
+        ) for usr in range(1, usr_cnt + 1)]
 
     def get_genuine_combinations(self, user):
         return np.array(list(itertools.product(self.gen[user], self.gen[user]))).T
