@@ -41,9 +41,9 @@ usr_cnt = CONFIG['data']['user_count']
 inp_dim = CONFIG['data']['input_dimension']
 gen_smp_cnt = CONFIG['data']['genuine_sample_count']
 frg_smp_cnt = CONFIG['data']['forged_sample_count']
-frg_cnt = CONFIG['data']['forger_count']
 gen_path_temp = os.path.join(PATH, CONFIG['data']['genuine_path_template'])
 frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
+ftr_cnt = CONFIG['data']['feature_count']
 
 # Autoencoder Configuration
 mask_value = CONFIG['autoencoder']['mask_value']
@@ -74,13 +74,13 @@ cf_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG[
 def get_data():
     return Data(
         smp_stp=smp_stp,
+        ftr_cnt=ftr_cnt,
         nrm=nrm,
         usr_cnt=usr_cnt,
         gen_smp_cnt=gen_smp_cnt,
         frg_smp_cnt=frg_smp_cnt,
-        frg_cnt=frg_cnt,
         gen_path_temp=gen_path_temp,
-        frg_path_temp=frg_path_temp,
+        frg_path_temp=frg_path_temp
     )
 
 

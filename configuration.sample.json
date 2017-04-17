@@ -14,13 +14,13 @@
   "data": {
     "sampling_step": 2,
     "normalization": "mvn",
-    "user_count": 11,
+    "user_count": 40,
     "input_dimension": 14,
-    "genuine_sample_count": 42,
-    "forged_sample_count": 36,
-    "forger_count": 4,
-    "genuine_path_template": "data_set/Genuine/{user}/{sample}_{user}.HWR",
-    "forged_path_template": "data_set/Forged/{user}/{sample}_{forger}_{user}.HWR"
+    "genuine_sample_count": 20,
+    "forged_sample_count": 20,
+    "genuine_path_template": "data_set/U{user}S{sample}.TXT",
+    "forged_path_template": "data_set/U{user}S{sample}.TXT",
+    "feature_count": 4
   },
   "autoencoder": {
     "mask_value": 0.0,
