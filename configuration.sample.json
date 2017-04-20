@@ -35,13 +35,14 @@
       "accuracy"
     ],
     "encoded_length": {
-      "start": 500,
-      "finish": 500,
-      "step": 100
+      "start": 10,
+      "finish": 15,
+      "step": 5
     },
+    "context_layer_length": 10,
     "train_epochs": 20,
     "cell_types": [
-      "LSTM"
+      "GRU"
     ]
   },
   "classifier": {

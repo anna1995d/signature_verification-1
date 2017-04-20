@@ -52,6 +52,7 @@ enc_lens_str = CONFIG['autoencoder']['encoded_length']['start']
 enc_lens_fns = CONFIG['autoencoder']['encoded_length']['finish']
 enc_lens_stp = CONFIG['autoencoder']['encoded_length']['step']
 enc_lens = range(enc_lens_str, enc_lens_fns + 1, enc_lens_stp)
+ctxl_len = CONFIG['autoencoder']['context_layer_length']
 ae_tr_epochs = CONFIG['autoencoder']['train_epochs']
 cell_types = CONFIG['autoencoder']['cell_types']
 ae_loss = getattr(losses, CONFIG['autoencoder']['loss'])
@@ -91,6 +92,7 @@ def train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val):
         cell=cell,
         inp_dim=inp_dim,
         enc_len=el,
+        ctxl_len=ctxl_len,
         loss=ae_loss,
         optimizer=ae_optimizer,
         metrics=ae_metrics,
@@ -111,6 +113,7 @@ def load_encoder(x, y, btch, epc, el, ct, usr_num, msk_val):
         cell=cell,
         inp_dim=inp_dim,
         enc_len=el,
+        ctxl_len=ctxl_len,
         loss=ae_loss,
         optimizer=ae_optimizer,
         metrics=ae_metrics,
