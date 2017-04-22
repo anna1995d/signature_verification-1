@@ -44,10 +44,10 @@ class Data(object):
 
     @staticmethod
     def normalize(d, nrm):
-        if nrm == 'mvn' or nrm == 'mn':
+        if 'm' in nrm:
             d = d - np.mean(d, axis=0)
 
-        if nrm == 'mvn' or nrm == 'vn':
+        if 's' in nrm:
             d = d - np.std(d, axis=0, ddof=1)
 
         return d

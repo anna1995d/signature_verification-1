@@ -48,13 +48,10 @@ ftr_cnt = CONFIG['data']['feature_count']
 # Autoencoder Configuration
 mask_value = CONFIG['autoencoder']['mask_value']
 ae_btch_sz = CONFIG['autoencoder']['batch_size']
-enc_lens_str = CONFIG['autoencoder']['encoded_length']['start']
-enc_lens_fns = CONFIG['autoencoder']['encoded_length']['finish']
-enc_lens_stp = CONFIG['autoencoder']['encoded_length']['step']
-enc_lens = range(enc_lens_str, enc_lens_fns + 1, enc_lens_stp)
-ctxl_len = CONFIG['autoencoder']['context_layer_length']
+enc_arc = CONFIG['autoencoder']['encoder_architecture']
+dec_arc = CONFIG['autoencoder']['decoder_architecture']
 ae_tr_epochs = CONFIG['autoencoder']['train_epochs']
-cell_types = CONFIG['autoencoder']['cell_types']
+cell_type = CONFIG['autoencoder']['cell_type']
 ae_loss = getattr(losses, CONFIG['autoencoder']['loss'])
 ae_optimizer = getattr(optimizers, CONFIG['autoencoder']['optimizer']['name'])(
     **CONFIG['autoencoder']['optimizer']['args']
@@ -85,14 +82,14 @@ def get_data():
     )
 
 
-def train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val):
+def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     ae = Autoencoder(
         cell=cell,
         inp_dim=inp_dim,
-        enc_len=el,
-        ctxl_len=ctxl_len,
+        earc=earc,
+        darc=darc,
         loss=ae_loss,
         optimizer=ae_optimizer,
         metrics=ae_metrics,
@@ -100,34 +97,35 @@ def train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val):
         mask_value=msk_val
     )
     ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose)
-    ae.save(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
-        usr_num=usr_num, ct=ct, el=el, epc=epc
+    ae.save(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{earc}_{darc}_{epc}'.format(
+        usr_num=usr_num, ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     )))
 
 
-def load_encoder(x, y, btch, epc, el, ct, usr_num, msk_val):
-    train_autoencoder(x, y, btch, epc, el, ct, usr_num, msk_val)
+def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
+    train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
 
     cell = getattr(layers, ct)
     e = Encoder(
         cell=cell,
         inp_dim=inp_dim,
-        enc_len=el,
-        ctxl_len=ctxl_len,
+        earc=earc,
         loss=ae_loss,
         optimizer=ae_optimizer,
         metrics=ae_metrics,
         implementation=implementation,
         mask_value=msk_val
     )
-    e.load(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{el}_{epc}'.format(
-        usr_num=usr_num, ct=ct, el=el, epc=epc
+    e.load(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{earc}_{darc}_{epc}'.format(
+        usr_num=usr_num, ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     )))
     return e
 
 
-def save_evaluation(h, usr_num, epc, el, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
+def save_evaluation(h, usr_num, epc, earc, darc, ct):
+    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
+        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
+    ))
 
     with open(os.path.join(dir_path, 'evaluation.txt'), 'a') as f:
         f.write('User {usr_num}: acc is {acc}, loss is {loss}\n'.format(
@@ -135,7 +133,7 @@ def save_evaluation(h, usr_num, epc, el, ct):
         ))
 
 
-def train_classifier(x, y, usr_num, epc, el):
+def train_classifier(x, y, usr_num, epc, earc, darc):
     c = Classifier(
         activation=cf_activation,
         loss=cf_loss,
@@ -143,14 +141,16 @@ def train_classifier(x, y, usr_num, epc, el):
         metrics=cf_metrics,
     )
     h = c.fit(x, y, epochs=epc, batch_size=cf_btch_sz, verbose=verbose)
-    c.save(path=mdl_save_temp.format(name='models/{usr_num}_classifier_{el}_{epc}'.format(
-        usr_num=usr_num, el=el, epc=epc
+    c.save(path=mdl_save_temp.format(name='models/{usr_num}_classifier_{earc}_{darc}_{epc}'.format(
+        usr_num=usr_num, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     )))
     return h
 
 
-def get_classifier_train_data(usr_num, epc, el, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
+def get_classifier_train_data(usr_num, epc, earc, darc, ct):
+    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
+        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
+    ))
 
     with open(os.path.join(dir_path, 'encoded_genuine_{usr_num}.txt'.format(usr_num=usr_num)), 'r') as f:
         x_gen = list(map(lambda x: float(x), f.read().split()))
@@ -161,14 +161,16 @@ def get_classifier_train_data(usr_num, epc, el, ct):
     return np.concatenate((x_gen, x_frg)), np.concatenate((np.ones_like(x_gen), np.zeros_like(x_frg)))
 
 
-def evaluate_model(usr_num, el, ct):
-    x, y = get_classifier_train_data(usr_num, ae_tr_epochs, el, ct)
-    h = train_classifier(x, y, usr_num, cf_tr_epochs, el)
-    save_evaluation(h, usr_num, ae_tr_epochs, el, ct)
+def evaluate_model(usr_num, earc, darc, ct):
+    x, y = get_classifier_train_data(usr_num, ae_tr_epochs, earc, darc, ct)
+    h = train_classifier(x, y, usr_num, cf_tr_epochs, earc, darc)
+    save_evaluation(h, usr_num, ae_tr_epochs, earc, darc, ct)
 
 
-def save_encoded_distances(usr, gen, frg, epc, el, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{el}-{epc}'.format(ct=ct, el=el, epc=epc))
+def save_encoded_distances(usr, gen, frg, epc, earc, darc, ct):
+    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
+        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
+    ))
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
@@ -194,16 +196,15 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
-def process_models(data, btch, epc, el, ct, msk_val):
+def process_models(data, btch, epc, earc, darc, ct, msk_val):
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
-        e = load_encoder(x, y, btch, epc, el, ct, usr_num, msk_val)
+        e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
-        save_encoded_distances(usr_num, enc_gen, enc_frg, epc, el, ct)
-        evaluate_model(usr_num, enc_len, cell_type)
+        save_encoded_distances(usr_num, enc_gen, enc_frg, epc, earc, darc, ct)
+        evaluate_model(usr_num, earc, darc, cell_type)
 
 
 if __name__ == '__main__':
     d = get_data()
-    for cell_type, enc_len in itertools.product(cell_types, enc_lens):
-        process_models(d, ae_btch_sz, ae_tr_epochs, enc_len, cell_type, mask_value)
+    process_models(d, ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value)

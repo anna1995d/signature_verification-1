@@ -1,17 +1,35 @@
-from keras.layers import Masking
+from keras.layers import Masking, InputLayer
 from keras.models import Sequential
 
 from nn.logging import elogger, blogger
 
 
 class Autoencoder(object):
-    def __init__(self, cell, inp_dim, enc_len, ctxl_len, loss, optimizer, metrics, implementation, mask_value):
+    def __init__(self, cell, inp_dim, earc, darc, loss, optimizer, metrics, implementation, mask_value):
         self.seq_autoenc = Sequential()
-        self.seq_autoenc.add(Masking(mask_value=mask_value, input_shape=(None, inp_dim)))
-        self.seq_autoenc.add(cell(enc_len, return_sequences=True, implementation=implementation, name='encoder_1'))
-        self.seq_autoenc.add(cell(ctxl_len, return_sequences=True, implementation=implementation, name='encoder_2'))
-        self.seq_autoenc.add(cell(ctxl_len, return_sequences=True, implementation=implementation, name='decoder_1'))
-        self.seq_autoenc.add(cell(inp_dim, return_sequences=True, implementation=implementation, name='decoder_2'))
+
+        # Input
+        self.seq_autoenc.add(InputLayer(input_shape=(None, inp_dim), name='input'))
+        self.seq_autoenc.add(Masking(mask_value=mask_value, name='mask'))
+
+        # Encoder
+        for i, ln in enumerate(earc):
+            self.seq_autoenc.add(cell(
+                ln,
+                return_sequences=True,
+                implementation=implementation,
+                name='encoder_{index}'.format(index=i)
+            ))
+
+        # Decoder
+        for i, ln in enumerate(darc):
+            self.seq_autoenc.add(cell(
+                ln,
+                return_sequences=True,
+                implementation=implementation,
+                name='decoder_{index}'.format(index=i)
+            ))
+
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     def fit(self, x, y, epochs, batch_size, verbose):
@@ -22,11 +40,22 @@ class Autoencoder(object):
 
 
 class Encoder(object):
-    def __init__(self, cell, inp_dim, enc_len, ctxl_len, loss, optimizer, metrics, implementation, mask_value):
+    def __init__(self, cell, inp_dim, earc, loss, optimizer, metrics, implementation, mask_value):
         self.encoder = Sequential()
-        self.encoder.add(Masking(mask_value=mask_value, input_shape=(None, inp_dim)))
-        self.encoder.add(cell(enc_len, return_sequences=True, implementation=implementation, name='encoder_1'))
-        self.encoder.add(cell(ctxl_len, implementation=implementation, name='encoder_2'))
+
+        # Input
+        self.encoder.add(InputLayer(input_shape=(None, inp_dim), name='input'))
+        self.encoder.add(Masking(mask_value=mask_value, name='mask'))
+
+        # Encoder
+        for i, ln in enumerate(earc):
+            self.encoder.add(cell(
+                ln,
+                return_sequences=True if i != len(earc) - 1 else False,
+                implementation=implementation,
+                name='encoder_{index}'.format(index=i)
+            ))
+
         self.encoder.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     def predict(self, inp):

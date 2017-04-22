@@ -13,7 +13,7 @@
   },
   "data": {
     "sampling_step": 1,
-    "normalization": "mvn",
+    "normalization": "ms",
     "user_count": 40,
     "input_dimension": 14,
     "genuine_sample_count": 20,
@@ -27,23 +27,23 @@
     "batch_size": 32,
     "loss": "mean_squared_error",
     "optimizer": {
-      "name": "Adam",
+      "name": "adam",
       "args": {
       }
     },
     "metrics": [
       "accuracy"
     ],
-    "encoded_length": {
-      "start": 10,
-      "finish": 15,
-      "step": 5
-    },
-    "context_layer_length": 10,
+    "encoder_architecture": [
+      10,
+      10
+    ],
+    "decoder_architecture": [
+      10,
+      14
+    ],
     "train_epochs": 20,
-    "cell_types": [
-      "GRU"
-    ]
+    "cell_type": "GRU"
   },
   "classifier": {
     "batch_size": 32,
