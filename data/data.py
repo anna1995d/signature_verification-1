@@ -58,36 +58,45 @@ class Data(object):
         return Data.extract(nd)
 
     @staticmethod
-    def extract_sample(smp_stp, ftr_cnt, nrm, path):
+    def extract_sample(smp_stp, rl_win_sz, rl_win_stp, ftr_cnt, nrm, path):
         with open(path, 'r') as f:
-            d = np.reshape(f.read().split()[1:], newshape=(-1, ftr_cnt))[::smp_stp, :2].astype(np.float64)
+            rd = np.reshape(f.read().split()[1:], newshape=(-1, ftr_cnt))[::smp_stp, :2].astype(np.float64)
+
+        d = np.concatenate([np.roll(rd, -ln, axis=0) for ln in range(rl_win_sz)], axis=1)[:-rl_win_sz + 1:rl_win_stp]
 
         return Data.extract_features(d, nrm)
 
     @staticmethod
-    def extract_genuine(smp_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
+    def extract_genuine(smp_stp, rl_win_sz, rl_win_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
         res = list()
 
         for smp in range(smp_cnt):
             path = path_temp.format(user=usr, sample=smp + 1)
-            res.append(Data.extract_sample(smp_stp=smp_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path))
+            res.append(Data.extract_sample(
+                smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
+            ))
 
         return res
 
     @staticmethod
-    def extract_forged(smp_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
+    def extract_forged(smp_stp, rl_win_sz, rl_win_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
         res = list()
 
         for smp in range(smp_cnt):
             path = path_temp.format(user=usr, sample=smp + 21)
-            res.append(Data.extract_sample(smp_stp=smp_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path))
+            res.append(Data.extract_sample(
+                smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
+            ))
 
         return res
 
-    def __init__(self, smp_stp, ftr_cnt, nrm, usr_cnt, gen_smp_cnt, frg_smp_cnt, gen_path_temp, frg_path_temp):
+    def __init__(self, smp_stp, rl_win_sz, rl_win_stp, ftr_cnt, nrm, usr_cnt, gen_smp_cnt, frg_smp_cnt, gen_path_temp,
+                 frg_path_temp):
 
         self.gen = [Data.extract_genuine(
             smp_stp=smp_stp,
+            rl_win_sz=rl_win_sz,
+            rl_win_stp=rl_win_stp,
             nrm=nrm,
             usr=usr,
             smp_cnt=gen_smp_cnt,
@@ -97,6 +106,8 @@ class Data(object):
 
         self.frg = [Data.extract_forged(
             smp_stp=smp_stp,
+            rl_win_sz=rl_win_sz,
+            rl_win_stp=rl_win_stp,
             nrm=nrm,
             usr=usr,
             smp_cnt=frg_smp_cnt,

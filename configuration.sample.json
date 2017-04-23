@@ -14,6 +14,8 @@
   "data": {
     "sampling_step": 1,
     "normalization": "ms",
+    "rolling_window_size": 10,
+    "rolling_window_step": 5,
     "user_count": 40,
     "input_dimension": 14,
     "genuine_sample_count": 20,

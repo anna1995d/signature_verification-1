@@ -36,6 +36,8 @@ mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
 
 # Data Configuration
 smp_stp = CONFIG['data']['sampling_step']
+rl_win_sz = CONFIG['data']['rolling_window_size']
+rl_win_stp = CONFIG['data']['rolling_window_step']
 nrm = CONFIG['data']['normalization']
 usr_cnt = CONFIG['data']['user_count']
 inp_dim = CONFIG['data']['input_dimension']
@@ -72,6 +74,8 @@ cf_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG[
 def get_data():
     return Data(
         smp_stp=smp_stp,
+        rl_win_sz=rl_win_sz,
+        rl_win_stp=rl_win_stp,
         ftr_cnt=ftr_cnt,
         nrm=nrm,
         usr_cnt=usr_cnt,
@@ -206,5 +210,4 @@ def process_models(data, btch, epc, earc, darc, ct, msk_val):
 
 
 if __name__ == '__main__':
-    d = get_data()
-    process_models(d, ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value)
+    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value)
