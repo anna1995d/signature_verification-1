@@ -46,19 +46,5 @@
     ],
     "train_epochs": 20,
     "cell_type": "GRU"
-  },
-  "classifier": {
-    "batch_size": 32,
-    "train_epochs": 1000,
-    "activation": "sigmoid",
-    "loss": "mean_squared_error",
-    "optimizer": {
-      "name": "sgd",
-      "args": {
-      }
-    },
-    "metrics": [
-      "accuracy"
-    ]
   }
 }

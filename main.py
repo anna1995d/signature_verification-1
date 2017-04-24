@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import errno
-import itertools
 import json
 import logging
 import os
@@ -9,9 +8,10 @@ import os
 import numpy as np
 from keras import layers, optimizers, losses, metrics
 from keras.preprocessing import sequence
+from sklearn.metrics import classification_report
 
 from data import Data
-from nn import Autoencoder, Encoder, Classifier
+from nn import Autoencoder, Encoder, LinearSVC
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 CONIFG_PATH = os.path.join(PATH, 'configuration.json')
@@ -59,16 +59,6 @@ ae_optimizer = getattr(optimizers, CONFIG['autoencoder']['optimizer']['name'])(
     **CONFIG['autoencoder']['optimizer']['args']
 )
 ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['autoencoder']['metrics']]
-
-# Classifier Configuration
-cf_btch_sz = CONFIG['classifier']['batch_size']
-cf_tr_epochs = CONFIG['classifier']['train_epochs']
-cf_activation = CONFIG['classifier']['activation']
-cf_loss = getattr(losses, CONFIG['classifier']['loss'])
-cf_optimizer = getattr(optimizers, CONFIG['classifier']['optimizer']['name'])(
-    **CONFIG['classifier']['optimizer']['args']
-)
-cf_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['classifier']['metrics']]
 
 
 def get_data():
@@ -126,65 +116,35 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
     return e
 
 
-def save_evaluation(h, usr_num, epc, earc, darc, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
-        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    ))
-
-    with open(os.path.join(dir_path, 'evaluation.txt'), 'a') as f:
-        f.write('User {usr_num}: acc is {acc}, loss is {loss}\n'.format(
-            usr_num=usr_num, acc=h.history['acc'][-1], loss=h.history['loss'][-1]
-        ))
-
-
-def train_classifier(x, y, usr_num, epc, earc, darc):
-    c = Classifier(
-        activation=cf_activation,
-        loss=cf_loss,
-        optimizer=cf_optimizer,
-        metrics=cf_metrics,
-    )
-    h = c.fit(x, y, epochs=epc, batch_size=cf_btch_sz, verbose=verbose)
-    c.save(path=mdl_save_temp.format(name='models/{usr_num}_classifier_{earc}_{darc}_{epc}'.format(
-        usr_num=usr_num, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    )))
-    return h
-
-
-def get_classifier_train_data(usr_num, epc, earc, darc, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
-        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    ))
-
-    with open(os.path.join(dir_path, 'encoded_genuine_{usr_num}.txt'.format(usr_num=usr_num)), 'r') as f:
-        x_gen = list(map(lambda x: float(x), f.read().split()))
-
-    with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr_num}.txt'.format(usr_num=usr_num)), 'r') as f:
-        x_frg = list(map(lambda x: float(x), f.read().split()))
-
-    return np.concatenate((x_gen, x_frg)), np.concatenate((np.ones_like(x_gen), np.zeros_like(x_frg)))
-
-
-def evaluate_model(usr_num, earc, darc, ct):
-    x, y = get_classifier_train_data(usr_num, ae_tr_epochs, earc, darc, ct)
-    h = train_classifier(x, y, usr_num, cf_tr_epochs, earc, darc)
-    save_evaluation(h, usr_num, ae_tr_epochs, earc, darc, ct)
-
-
-def save_encoded_distances(usr, gen, frg, epc, earc, darc, ct):
+def save_evaluation(acc, usr_num, epc, earc, darc, ct):
     dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
         ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     ))
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
-    with open(os.path.join(dir_path, 'encoded_genuine_{usr}.txt'.format(usr=usr)), 'a') as f:
-        for x, y in itertools.combinations(gen, 2):
-            f.write(str(np.linalg.norm(x - y)) + '\n')
+    with open(os.path.join(dir_path, 'evaluation.txt'), 'a') as f:
+        f.write('User {usr_num}:\n{acc}\n'.format(usr_num=usr_num, acc=acc))
 
-    with open(os.path.join(dir_path, 'encoded_genuine_forged_{usr}.txt'.format(usr=usr)), 'a') as f:
-        for x, y in itertools.product(gen, frg):
-            f.write(str(np.linalg.norm(x - y)) + '\n')
+
+def train_lsvc(x, y, usr_num, earc, darc):
+    c = LinearSVC()
+    c.fit(x, y)
+    c.save(path=mdl_save_temp.format(name='models/{usr_num}_lsvc_{earc}_{darc}'.format(
+        usr_num=usr_num, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc))
+    )))
+    return classification_report(y_true=y, y_pred=c.predict(x))
+
+
+def get_lsvc_train_data(enc_gen, enc_frg):
+    return np.concatenate((enc_gen, enc_frg)), \
+           np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
+
+
+def evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, ct):
+    x, y = get_lsvc_train_data(enc_gen, enc_frg)
+    acc = train_lsvc(x, y, usr_num, earc, darc)
+    save_evaluation(acc, usr_num, ae_tr_epochs, earc, darc, ct)
 
 
 def get_encoded_data(e, gen_x, frg_x, msk_val):
@@ -205,8 +165,7 @@ def process_models(data, btch, epc, earc, darc, ct, msk_val):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
-        save_encoded_distances(usr_num, enc_gen, enc_frg, epc, earc, darc, ct)
-        evaluate_model(usr_num, earc, darc, cell_type)
+        evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, cell_type)
 
 
 if __name__ == '__main__':

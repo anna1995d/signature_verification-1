@@ -19,7 +19,6 @@ class Data(object):
 
     @staticmethod
     def extract(d):
-        d = d - d[0]
         drv = Data.calculate_derivatives(d, smpl=True)
         t_n = np.arctan(drv[:, 1], drv[:, 0]).reshape((-1, 1))
         t_n[np.argwhere(np.isnan(t_n))] = 0
@@ -44,18 +43,14 @@ class Data(object):
 
     @staticmethod
     def normalize(d, nrm):
-        if 'm' in nrm:
-            d = d - np.mean(d, axis=0)
-
-        if 's' in nrm:
-            d = d - np.std(d, axis=0, ddof=1)
-
+        d -= np.mean(d, axis=0) if 'm' in nrm else 0
+        d -= np.std(d, axis=0, ddof=1) if 's' in nrm else 0
+        d -= d[0]
         return d
 
     @staticmethod
     def extract_features(d, nrm):
-        nd = Data.normalize(d, nrm)
-        return Data.extract(nd)
+        return Data.extract(Data.normalize(d, nrm))
 
     @staticmethod
     def extract_sample(smp_stp, rl_win_sz, rl_win_stp, ftr_cnt, nrm, path):
