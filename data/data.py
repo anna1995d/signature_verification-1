@@ -57,7 +57,9 @@ class Data(object):
         with open(path, 'r') as f:
             rd = np.reshape(f.read().split()[1:], newshape=(-1, ftr_cnt))[::smp_stp, :2].astype(np.float64)
 
-        d = np.concatenate([np.roll(rd, -ln, axis=0) for ln in range(rl_win_sz)], axis=1)[:-rl_win_sz + 1:rl_win_stp]
+        d = np.concatenate(
+            [np.roll(rd, -ln, axis=0) for ln in range(rl_win_sz)], axis=1
+        )[:(1 - rl_win_sz) or None:rl_win_stp]
 
         return Data.extract_features(d, nrm)
 
