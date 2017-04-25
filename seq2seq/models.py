@@ -1,7 +1,9 @@
 from keras.layers import Masking, InputLayer
 from keras.models import Sequential
+from sklearn import svm
+from sklearn.externals import joblib
 
-from nn.logging import elogger, blogger
+from seq2seq.logging import elogger, blogger
 
 
 class Autoencoder(object):
@@ -63,3 +65,17 @@ class Encoder(object):
 
     def load(self, path):
         self.encoder.load_weights(path, by_name=True)
+
+
+class LinearSVC(object):
+    def __init__(self):
+        self.clsfr = svm.LinearSVC()
+
+    def fit(self, x, y):
+        return self.clsfr.fit(x, y)
+
+    def predict(self, x):
+        return self.clsfr.predict(x)
+
+    def save(self, path):
+        joblib.dump(self.clsfr, path)
