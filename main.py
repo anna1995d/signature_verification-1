@@ -117,7 +117,7 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
     return e
 
 
-def save_evaluation(acc, usr_num, epc, earc, darc, ct):
+def save_evaluation(data, acc, usr_num, epc, earc, darc, ct):
     dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
         ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     ))
@@ -125,7 +125,17 @@ def save_evaluation(acc, usr_num, epc, earc, darc, ct):
         os.mkdir(dir_path)
 
     with open(os.path.join(dir_path, 'evaluation.txt'), 'a') as f:
-        f.write('User {usr_num}:\n{acc}\n'.format(usr_num=usr_num, acc=acc))
+        f.write(
+            'User {usr_num}:\n'
+            'Mean genuine signature legnth: {gen_mln}\n'
+            'Mean forged signature legnth: {frg_mln}\n'
+            '\n{acc}\n'.format(
+                usr_num=usr_num,
+                gen_mln=np.mean(list(map(len, data.gen[usr_num]))),
+                frg_mln=np.mean(list(map(len, data.frg[usr_num]))),
+                acc=acc
+            )
+        )
 
 
 def train_lsvc(x, y, usr_num, earc, darc):
@@ -142,10 +152,10 @@ def get_lsvc_train_data(enc_gen, enc_frg):
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
-def evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, ct):
+def evaluate_model(data, usr_num, enc_gen, enc_frg, earc, darc, ct):
     x, y = get_lsvc_train_data(enc_gen, enc_frg)
     acc = train_lsvc(x, y, usr_num, earc, darc)
-    save_evaluation(acc, usr_num, ae_tr_epochs, earc, darc, ct)
+    save_evaluation(data, acc, usr_num, ae_tr_epochs, earc, darc, ct)
 
 
 def get_encoded_data(e, gen_x, frg_x, msk_val):
@@ -166,7 +176,7 @@ def process_models(data, btch, epc, earc, darc, ct, msk_val):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
-        evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, cell_type)
+        evaluate_model(data, usr_num, enc_gen, enc_frg, earc, darc, cell_type)
 
 
 if __name__ == '__main__':
