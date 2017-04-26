@@ -82,6 +82,7 @@ def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
     ae = Autoencoder(
         cell=cell,
         inp_dim=inp_dim,
+        max_len=x.shape[1],
         earc=earc,
         darc=darc,
         loss=ae_loss,

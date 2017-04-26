@@ -1,4 +1,4 @@
-from keras.layers import Masking, InputLayer
+from keras.layers import Masking, InputLayer, RepeatVector
 from keras.models import Sequential
 from sklearn import svm
 from sklearn.externals import joblib
@@ -7,7 +7,7 @@ from seq2seq.logging import elogger, blogger
 
 
 class Autoencoder(object):
-    def __init__(self, cell, inp_dim, earc, darc, loss, optimizer, metrics, implementation, mask_value):
+    def __init__(self, cell, inp_dim, max_len, earc, darc, loss, optimizer, metrics, implementation, mask_value):
         self.seq_autoenc = Sequential()
 
         # Input
@@ -18,12 +18,13 @@ class Autoencoder(object):
         for i, ln in enumerate(earc):
             self.seq_autoenc.add(cell(
                 ln,
-                return_sequences=True,
+                return_sequences=i != len(earc) - 1,
                 implementation=implementation,
                 name='encoder_{index}'.format(index=i)
             ))
 
         # Decoder
+        self.seq_autoenc.add(RepeatVector(max_len))
         for i, ln in enumerate(darc):
             self.seq_autoenc.add(cell(
                 ln,
@@ -53,7 +54,7 @@ class Encoder(object):
         for i, ln in enumerate(earc):
             self.encoder.add(cell(
                 ln,
-                return_sequences=True if i != len(earc) - 1 else False,
+                return_sequences=i != len(earc) - 1,
                 implementation=implementation,
                 name='encoder_{index}'.format(index=i)
             ))
