@@ -5,7 +5,7 @@
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_file": "seq2seq.log",
+    "log_file": "models/seq2seq.log",
     "log_level": "info"
   },
   "export": {
@@ -14,8 +14,8 @@
   "data": {
     "sampling_step": 1,
     "normalization": "ms",
-    "rolling_window_size": 10,
-    "rolling_window_step": 5,
+    "rolling_window_size": 1,
+    "rolling_window_step": 1,
     "user_count": 40,
     "input_dimension": 14,
     "genuine_sample_count": 20,
@@ -44,7 +44,7 @@
       10,
       14
     ],
-    "train_epochs": 20,
+    "train_epochs": 50,
     "cell_type": "GRU"
   }
 }

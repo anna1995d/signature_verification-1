@@ -6,6 +6,9 @@ from sklearn.externals import joblib
 from seq2seq.logging import elogger, blogger
 
 
+# TODO: Add Tensorboard Callback
+# TODO: Add EarlyStopping Callback
+# TODO: Add LearningRateScheduler if it is useful
 class Autoencoder(object):
     def __init__(self, cell, inp_dim, max_len, earc, darc, loss, optimizer, metrics, implementation, mask_value):
         self.seq_autoenc = Sequential()
