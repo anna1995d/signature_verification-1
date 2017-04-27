@@ -5,7 +5,8 @@
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_file": "models/seq2seq.log",
+    "log_dir": "./models/logs",
+    "log_file": "./models/logs/seq2seq.log",
     "log_level": "info"
   },
   "export": {
@@ -20,8 +21,8 @@
     "input_dimension": 14,
     "genuine_sample_count": 20,
     "forged_sample_count": 20,
-    "genuine_path_template": "data_set/U{user}S{sample}.TXT",
-    "forged_path_template": "data_set/U{user}S{sample}.TXT",
+    "genuine_path_template": "./data_set/U{user}S{sample}.TXT",
+    "forged_path_template": "./data_set/U{user}S{sample}.TXT",
     "feature_count": 4
   },
   "autoencoder": {

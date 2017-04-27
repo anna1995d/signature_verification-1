@@ -4,10 +4,9 @@ from sklearn import svm
 from sklearn.externals import joblib
 
 from seq2seq.layers import AttentionWithContext
-from seq2seq.logging import elogger, blogger
+from seq2seq.logging import elogger, blogger, tblogger
 
 
-# TODO: Add Tensorboard Callback
 # TODO: Add EarlyStopping Callback
 # TODO: Add LearningRateScheduler if it is useful
 class Autoencoder(object):
@@ -43,7 +42,9 @@ class Autoencoder(object):
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     def fit(self, x, y, epochs, batch_size, verbose):
-        self.seq_autoenc.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, blogger])
+        self.seq_autoenc.fit(
+            x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, blogger, tblogger]
+        )
 
     def save(self, path):
         self.seq_autoenc.save(path)

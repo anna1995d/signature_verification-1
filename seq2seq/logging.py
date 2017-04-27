@@ -1,6 +1,13 @@
+import json
 import logging
+import os
 
-from keras.callbacks import LambdaCallback
+from keras.callbacks import LambdaCallback, TensorBoard
+
+PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONIFG_PATH = os.path.join(PATH, 'configuration.json')
+with open(CONIFG_PATH, 'r') as cf:
+    CONFIG = json.load(cf)
 
 logger = logging.getLogger(__name__)
 
@@ -15,3 +22,5 @@ blogger = LambdaCallback(
         batch=batch, loss=logs['loss'], accuracy=logs['acc']
     ))
 )
+
+tblogger = TensorBoard(log_dir=CONFIG['logger']['log_dir'], histogram_freq=1, write_images=True)
