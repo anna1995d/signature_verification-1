@@ -24,13 +24,6 @@ with open(CONIFG_PATH, 'r') as cf:
 verbose = CONFIG['general']['verbose']
 implementation = CONFIG['general']['implementation']
 
-# Logger Configuration
-log_frm = CONFIG['logger']['log_format']
-log_fl = CONFIG['logger']['log_file']
-log_lvl = getattr(logging, CONFIG['logger']['log_level'].upper())
-logging.basicConfig(filename=log_fl, level=log_lvl, format=log_frm)
-logger = logging.getLogger(__name__)
-
 # Export Configuration
 mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
 
@@ -59,6 +52,20 @@ ae_optimizer = getattr(optimizers, CONFIG['autoencoder']['optimizer']['name'])(
     **CONFIG['autoencoder']['optimizer']['args']
 )
 ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['autoencoder']['metrics']]
+
+# Logger Configuration
+log_frm = CONFIG['logger']['log_format']
+log_fl = CONFIG['logger']['log_file'].format(
+    ct=cell_type,
+    earc='x'.join(map(str, enc_arc)),
+    darc='x'.join(map(str, dec_arc)),
+    epc=ae_tr_epochs
+)
+if not os.path.exists(os.path.dirname(log_fl)):
+    os.mkdir(os.path.dirname(log_fl))
+log_lvl = getattr(logging, CONFIG['logger']['log_level'].upper())
+logging.basicConfig(filename=log_fl, level=log_lvl, format=log_frm)
+logger = logging.getLogger(__name__)
 
 
 def get_data():

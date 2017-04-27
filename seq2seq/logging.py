@@ -23,4 +23,13 @@ blogger = LambdaCallback(
     ))
 )
 
-tblogger = TensorBoard(log_dir=CONFIG['logger']['log_dir'], histogram_freq=1, write_images=True)
+tblogger = TensorBoard(
+    log_dir=CONFIG['logger']['log_dir'].format(
+        ct=CONFIG['autoencoder']['cell_type'],
+        earc='x'.join(map(str, CONFIG['autoencoder']['encoder_architecture'])),
+        darc='x'.join(map(str, CONFIG['autoencoder']['decoder_architecture'])),
+        epc=CONFIG['autoencoder']['train_epochs']
+    ),
+    histogram_freq=1,
+    write_images=True
+)

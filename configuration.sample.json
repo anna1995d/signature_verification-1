@@ -5,8 +5,8 @@
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_dir": "./models/logs",
-    "log_file": "./models/logs/seq2seq.log",
+    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}",
+    "log_file": "./logs/{ct}-{earc}-{darc}-{epc}/seq2seq.log",
     "log_level": "info"
   },
   "export": {

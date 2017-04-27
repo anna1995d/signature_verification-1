@@ -134,8 +134,8 @@ ENV/
 
 .idea/
 models/*
-!models/logs
-models/logs/*
+!logs
+logs/*
 !PLACEHOLDER
 screenlog.*
 old_models_*/
