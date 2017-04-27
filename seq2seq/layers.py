@@ -57,7 +57,7 @@ class AttentionWithContext(Layer):
         if self.use_bias:
             self.bias = self.add_weight((input_shape[-1],),
                                         initializer='zero',
-                                        name='bias'.format(self.name),
+                                        name='bias',
                                         regularizer=self.bias_regularizer,
                                         constraint=self.bias_constraint)
         else:
@@ -76,10 +76,8 @@ class AttentionWithContext(Layer):
 
     def call(self, inputs, mask=None):
         uit = K.dot(inputs, self.kernel)
-
         if self.use_bias:
             uit += self.bias
-
         uit = K.tanh(uit)
 
         if K.backend() == 'tensorflow':
@@ -88,15 +86,12 @@ class AttentionWithContext(Layer):
             ait = K.dot(uit, self.align)
 
         a = K.exp(ait)
-
         if mask is not None:
             a *= K.cast(mask, K.floatx())
-
         a /= K.cast(K.sum(a, axis=1, keepdims=True) + K.epsilon(), K.floatx())
-
         a = K.expand_dims(a)
-        weighted_input = inputs * a
-        return K.sum(weighted_input, axis=1)
+
+        return K.sum(inputs * a, axis=1)
 
     def compute_output_shape(self, input_shape):
         return input_shape[0], input_shape[-1]
