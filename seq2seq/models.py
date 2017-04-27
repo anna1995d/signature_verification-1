@@ -3,6 +3,7 @@ from keras.models import Sequential
 from sklearn import svm
 from sklearn.externals import joblib
 
+from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import elogger, blogger
 
 
@@ -21,10 +22,13 @@ class Autoencoder(object):
         for i, ln in enumerate(earc):
             self.seq_autoenc.add(cell(
                 ln,
-                return_sequences=i != len(earc) - 1,
+                return_sequences=True,
                 implementation=implementation,
                 name='encoder_{index}'.format(index=i)
             ))
+
+        # Attention
+        self.seq_autoenc.add(AttentionWithContext())
 
         # Decoder
         self.seq_autoenc.add(RepeatVector(max_len))

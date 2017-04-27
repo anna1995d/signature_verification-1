@@ -11,7 +11,7 @@ from keras.preprocessing import sequence
 from sklearn.metrics import classification_report
 
 from data import Data
-from seq2seq import Autoencoder, Encoder, LinearSVC
+from seq2seq.models import Autoencoder, Encoder, LinearSVC
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 CONIFG_PATH = os.path.join(PATH, 'configuration.json')
