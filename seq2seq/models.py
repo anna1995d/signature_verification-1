@@ -76,15 +76,6 @@ class Encoder(object):
         self.encoder.load_weights(path, by_name=True)
 
 
-class LinearSVC(object):
-    def __init__(self):
-        self.clsfr = svm.LinearSVC()
-
-    def fit(self, x, y):
-        return self.clsfr.fit(x, y)
-
-    def predict(self, x):
-        return self.clsfr.predict(x)
-
+class LinearSVC(svm.LinearSVC):
     def save(self, path):
-        joblib.dump(self.clsfr, path)
+        joblib.dump(self, path)
