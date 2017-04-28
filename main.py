@@ -122,17 +122,24 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir):
     return e
 
 
-def save_evaluations(evls, fns, outs_dir):
-    with open(os.path.join(outs_dir, 'evaluations.csv'), 'w') as f:
+def save_evaluation(evl, fns, outs_dir):
+    with open(os.path.join(outs_dir, 'evaluations.csv'), 'a') as f:
         w = csv.DictWriter(f, fieldnames=fns)
-        w.writeheader()
-        w.writerows(evls)
+        w.writerow(evl)
+
+
+def save_avg_evaluation(fns, outs_dir):
+    with open(os.path.join(outs_dir, 'evaluations.csv'), 'r') as f:
         avg = {
             fns[0]: 'AVG'
         }
+        rows = [r for r in csv.DictReader(f, fieldnames=fns)][1:]
         avg.update({
-            fns[i]: np.mean([evl[fns[i]] for evl in evls]) for i in range(1, len(fns))
+            fns[i]: np.mean([float(r[fns[i]]) for r in rows]) for i in range(1, len(fns))
         })
+
+    with open(os.path.join(outs_dir, 'evaluations.csv'), 'a') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
         w.writerow(avg)
 
 
@@ -172,6 +179,12 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
+def prepare_evaluations_csv(outs_dir, fns):
+    with open(os.path.join(outs_dir, 'evaluations.csv'), 'w') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
+        w.writeheader()
+
+
 def prepare_output_directories(epc, earc, darc, ct):
     outs_dir = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
         ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
@@ -191,8 +204,8 @@ def prepare_output_directories(epc, earc, darc, ct):
 
 
 def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
-    evls = list()
     outs_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct)
+    prepare_evaluations_csv(outs_dir, fns)
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num + 1, msk_val, aes_dir)
@@ -202,8 +215,8 @@ def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
             fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
             fns[2]: np.mean(list(map(len, data.frg[usr_num])))
         })
-        evls.append(evl)
-    save_evaluations(evls, fns, outs_dir)
+        save_evaluation(evl, fns, outs_dir)
+    save_avg_evaluation(fns, outs_dir)
 
 if __name__ == '__main__':
     process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value, csv_fns)
