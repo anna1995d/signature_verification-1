@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-#$ -N sigv
 #$ -cwd
-#$ -j yes
+#$ -o ./logs
+#$ -e ./logs
+#$ -j y
 #$ -m b
 #$ -m e
 #$ -m a
