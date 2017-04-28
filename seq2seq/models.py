@@ -41,9 +41,9 @@ class Autoencoder(object):
 
         self.seq_autoenc.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    def fit(self, x, y, epochs, batch_size, verbose):
+    def fit(self, x, y, epochs, batch_size, verbose, usr_num):
         self.seq_autoenc.fit(
-            x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, blogger, tblogger]
+            x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, blogger, tblogger(usr_num)]
         )
 
     def save(self, path):

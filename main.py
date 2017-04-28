@@ -26,7 +26,7 @@ verbose = CONFIG['general']['verbose']
 implementation = CONFIG['general']['implementation']
 
 # Export Configuration
-mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
+mdl_save_temp = CONFIG['export']['model_save_template']
 csv_fns = CONFIG['export']['csv_fieldnames']
 
 # Data Configuration
@@ -85,7 +85,7 @@ def get_data():
     )
 
 
-def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
+def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     ae = Autoencoder(
@@ -100,14 +100,12 @@ def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
         implementation=implementation,
         mask_value=msk_val
     )
-    ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose)
-    ae.save(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{earc}_{darc}_{epc}'.format(
-        usr_num=usr_num, ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    )))
+    ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose, usr_num=usr_num)
+    ae.save(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
 
 
-def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
-    train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
+def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir):
+    train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir)
 
     cell = getattr(layers, ct)
     e = Encoder(
@@ -120,20 +118,12 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
         implementation=implementation,
         mask_value=msk_val
     )
-    e.load(path=mdl_save_temp.format(name='models/{usr_num}_{ct}_autoencoder_{earc}_{darc}_{epc}'.format(
-        usr_num=usr_num, ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    )))
+    e.load(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
     return e
 
 
-def save_evaluations(evls, fns, epc, earc, darc, ct):
-    dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
-        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    ))
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-
-    with open(os.path.join(dir_path, 'evaluation.csv'), 'w') as f:
+def save_evaluations(evls, fns, outs_dir):
+    with open(os.path.join(outs_dir, 'evaluations.csv'), 'w') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writeheader()
         w.writerows(evls)
@@ -146,12 +136,10 @@ def save_evaluations(evls, fns, epc, earc, darc, ct):
         w.writerow(avg)
 
 
-def train_lsvc(x, y, usr_num, earc, darc, fns):
+def train_lsvc(x, y, usr_num, fns, lsvcs_dir):
     c = LinearSVC()
     c.fit(x, y)
-    c.save(path=mdl_save_temp.format(name='models/{usr_num}_lsvc_{earc}_{darc}'.format(
-        usr_num=usr_num, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc))
-    )))
+    c.save(path=os.path.join(lsvcs_dir, mdl_save_temp.format(usr_num=usr_num)))
     cr = list(map(float, classification_report(y_true=y, y_pred=c.predict(x)).split('\n')[-2].split()[3:6]))
     return {
         fns[0]: usr_num,
@@ -166,9 +154,9 @@ def get_lsvc_train_data(enc_gen, enc_frg):
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
-def evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, fns):
+def evaluate_model(usr_num, enc_gen, enc_frg, fns, lsvcs_dir):
     x, y = get_lsvc_train_data(enc_gen, enc_frg)
-    return train_lsvc(x, y, usr_num, earc, darc, fns)
+    return train_lsvc(x, y, usr_num, fns, lsvcs_dir)
 
 
 def get_encoded_data(e, gen_x, frg_x, msk_val):
@@ -184,19 +172,38 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
+def prepare_output_directories(epc, earc, darc, ct):
+    outs_dir = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
+        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
+    ))
+    if not os.path.exists(outs_dir):
+        os.mkdir(outs_dir)
+
+    aes_dir = os.path.join(outs_dir, 'autoencoders')
+    if not os.path.exists(aes_dir):
+        os.mkdir(aes_dir)
+
+    lsvcs_dir = os.path.join(outs_dir, 'linear_svcs')
+    if not os.path.exists(lsvcs_dir):
+        os.mkdir(lsvcs_dir)
+
+    return outs_dir, aes_dir, lsvcs_dir
+
+
 def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
     evls = list()
+    outs_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct)
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
-        e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
+        e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num + 1, msk_val, aes_dir)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
-        evl = evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, fns)
+        evl = evaluate_model(usr_num + 1, enc_gen, enc_frg, fns, lsvcs_dir)
         evl.update({
             fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
             fns[2]: np.mean(list(map(len, data.frg[usr_num])))
         })
         evls.append(evl)
-    save_evaluations(evls, fns, epc, earc, darc, ct)
+    save_evaluations(evls, fns, outs_dir)
 
 if __name__ == '__main__':
     process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value, csv_fns)

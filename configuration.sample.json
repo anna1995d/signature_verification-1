@@ -5,12 +5,14 @@
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}",
     "log_file": "./logs/{ct}-{earc}-{darc}-{epc}/seq2seq.log",
     "log_level": "info"
   },
+  "tensorboard": {
+    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}"
+  },
   "export": {
-    "model_save_template": "{name}_model.dat",
+    "model_save_template": "U{usr_num}.dat",
     "csv_fieldnames": [
       "Writer No",
       "Gen-AVG-len",
