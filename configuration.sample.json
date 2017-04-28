@@ -38,7 +38,7 @@
   "autoencoder": {
     "mask_value": 0.0,
     "batch_size": 32,
-    "loss": "mean_squared_error",
+    "loss": "binary_crossentropy",
     "optimizer": {
       "name": "adam",
       "args": {
