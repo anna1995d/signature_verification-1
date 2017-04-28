@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import csv
 import errno
 import json
 import logging
@@ -26,6 +27,7 @@ implementation = CONFIG['general']['implementation']
 
 # Export Configuration
 mdl_save_temp = os.path.join(PATH, CONFIG['export']['model_save_template'])
+csv_fns = CONFIG['export']['csv_fieldnames']
 
 # Data Configuration
 smp_stp = CONFIG['data']['sampling_step']
@@ -124,34 +126,39 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val):
     return e
 
 
-def save_evaluation(data, acc, usr_num, epc, earc, darc, ct):
+def save_evaluations(evls, fns, epc, earc, darc, ct):
     dir_path = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
         ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     ))
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
-    with open(os.path.join(dir_path, 'evaluation.txt'), 'a') as f:
-        f.write(
-            'User {usr_num}:\n'
-            'Mean genuine signature legnth: {gen_mln}\n'
-            'Mean forged signature legnth: {frg_mln}\n'
-            '\n{acc}\n'.format(
-                usr_num=usr_num,
-                gen_mln=np.mean(list(map(len, data.gen[usr_num]))),
-                frg_mln=np.mean(list(map(len, data.frg[usr_num]))),
-                acc=acc
-            )
-        )
+    with open(os.path.join(dir_path, 'evaluation.csv'), 'w') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
+        w.writeheader()
+        w.writerows(evls)
+        avg = {
+            fns[0]: 'AVG'
+        }
+        avg.update({
+            fns[i]: np.mean([evl[fns[i]] for evl in evls]) for i in range(1, len(fns))
+        })
+        w.writerow(avg)
 
 
-def train_lsvc(x, y, usr_num, earc, darc):
+def train_lsvc(x, y, usr_num, earc, darc, fns):
     c = LinearSVC()
     c.fit(x, y)
     c.save(path=mdl_save_temp.format(name='models/{usr_num}_lsvc_{earc}_{darc}'.format(
         usr_num=usr_num, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc))
     )))
-    return classification_report(y_true=y, y_pred=c.predict(x))
+    cr = list(map(float, classification_report(y_true=y, y_pred=c.predict(x)).split('\n')[-2].split()[3:6]))
+    return {
+        fns[0]: usr_num,
+        fns[3]: cr[0],
+        fns[4]: cr[1],
+        fns[5]: cr[2]
+    }
 
 
 def get_lsvc_train_data(enc_gen, enc_frg):
@@ -159,10 +166,9 @@ def get_lsvc_train_data(enc_gen, enc_frg):
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
-def evaluate_model(data, usr_num, enc_gen, enc_frg, earc, darc, ct):
+def evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, fns):
     x, y = get_lsvc_train_data(enc_gen, enc_frg)
-    acc = train_lsvc(x, y, usr_num, earc, darc)
-    save_evaluation(data, acc, usr_num, ae_tr_epochs, earc, darc, ct)
+    return train_lsvc(x, y, usr_num, earc, darc, fns)
 
 
 def get_encoded_data(e, gen_x, frg_x, msk_val):
@@ -178,13 +184,19 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
-def process_models(data, btch, epc, earc, darc, ct, msk_val):
+def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
+    evls = list()
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
-        evaluate_model(data, usr_num, enc_gen, enc_frg, earc, darc, cell_type)
-
+        evl = evaluate_model(usr_num, enc_gen, enc_frg, earc, darc, fns)
+        evl.update({
+            fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
+            fns[2]: np.mean(list(map(len, data.frg[usr_num])))
+        })
+        evls.append(evl)
+    save_evaluations(evls, fns, epc, earc, darc, ct)
 
 if __name__ == '__main__':
-    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value)
+    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value, csv_fns)

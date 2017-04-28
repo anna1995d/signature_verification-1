@@ -10,7 +10,15 @@
     "log_level": "info"
   },
   "export": {
-    "model_save_template": "{name}_model.dat"
+    "model_save_template": "{name}_model.dat",
+    "csv_fieldnames": [
+      "Writer No",
+      "Gen-AVG-len",
+      "Frg-AVG-len",
+      "Precision",
+      "Recall",
+      "F1-Score"
+    ]
   },
   "data": {
     "sampling_step": 1,
