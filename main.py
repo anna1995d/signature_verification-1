@@ -12,7 +12,7 @@ from keras.preprocessing import sequence
 from sklearn.metrics import classification_report
 
 from data import Data
-from seq2seq.models import Autoencoder, Encoder, LinearSVC
+from seq2seq.rnn.models import Autoencoder, Encoder, LinearSVC
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 CONIFG_PATH = os.path.join(PATH, 'configuration.json')
@@ -43,17 +43,17 @@ frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
 ftr_cnt = CONFIG['data']['feature_count']
 
 # Autoencoder Configuration
-mask_value = CONFIG['autoencoder']['mask_value']
-ae_btch_sz = CONFIG['autoencoder']['batch_size']
-enc_arc = CONFIG['autoencoder']['encoder_architecture']
-dec_arc = CONFIG['autoencoder']['decoder_architecture']
-ae_tr_epochs = CONFIG['autoencoder']['train_epochs']
-cell_type = CONFIG['autoencoder']['cell_type']
-ae_loss = getattr(losses, CONFIG['autoencoder']['loss'])
-ae_optimizer = getattr(optimizers, CONFIG['autoencoder']['optimizer']['name'])(
-    **CONFIG['autoencoder']['optimizer']['args']
+mask_value = CONFIG['rnn']['autoencoder']['mask_value']
+ae_btch_sz = CONFIG['rnn']['autoencoder']['batch_size']
+enc_arc = CONFIG['rnn']['autoencoder']['encoder_architecture']
+dec_arc = CONFIG['rnn']['autoencoder']['decoder_architecture']
+ae_tr_epochs = CONFIG['rnn']['autoencoder']['train_epochs']
+cell_type = CONFIG['rnn']['autoencoder']['cell_type']
+ae_loss = getattr(losses, CONFIG['rnn']['autoencoder']['loss'])
+ae_optimizer = getattr(optimizers, CONFIG['rnn']['autoencoder']['optimizer']['name'])(
+    **CONFIG['rnn']['autoencoder']['optimizer']['args']
 )
-ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['autoencoder']['metrics']]
+ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['rnn']['autoencoder']['metrics']]
 
 # Logger Configuration
 log_frm = CONFIG['logger']['log_format']

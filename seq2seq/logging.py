@@ -28,10 +28,10 @@ def tblogger(usr_num):
     return TensorBoard(
         log_dir=CONFIG['tensorboard']['log_dir'].format(
             usr_num=usr_num,
-            ct=CONFIG['autoencoder']['cell_type'],
-            earc='x'.join(map(str, CONFIG['autoencoder']['encoder_architecture'])),
-            darc='x'.join(map(str, CONFIG['autoencoder']['decoder_architecture'])),
-            epc=CONFIG['autoencoder']['train_epochs']
+            ct=CONFIG['rnn']['autoencoder']['cell_type'],
+            earc='x'.join(map(str, CONFIG['rnn']['autoencoder']['encoder_architecture'])),
+            darc='x'.join(map(str, CONFIG['rnn']['autoencoder']['decoder_architecture'])),
+            epc=CONFIG['rnn']['autoencoder']['train_epochs']
         ),
         histogram_freq=CONFIG['tensorboard']['histogram_freq'],
         write_images=CONFIG['tensorboard']['write_images']

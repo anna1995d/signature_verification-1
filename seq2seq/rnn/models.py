@@ -3,8 +3,8 @@ from keras.models import Sequential
 from sklearn import svm
 from sklearn.externals import joblib
 
-from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import elogger, blogger, tblogger
+from seq2seq.rnn.layers import AttentionWithContext
 
 
 # TODO: Add EarlyStopping Callback

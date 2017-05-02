@@ -37,27 +37,29 @@
     "forged_path_template": "./data_set/U{user}S{sample}.TXT",
     "feature_count": 4
   },
-  "autoencoder": {
-    "mask_value": 0.0,
-    "batch_size": 16,
-    "loss": "mean_squared_error",
-    "optimizer": {
-      "name": "adam",
-      "args": {
-      }
-    },
-    "metrics": [
-      "accuracy"
-    ],
-    "encoder_architecture": [
-      14,
-      125
-    ],
-    "decoder_architecture": [
-      14,
-      14
-    ],
-    "train_epochs": 50,
-    "cell_type": "GRU"
+  "rnn": {
+    "autoencoder": {
+      "mask_value": 0.0,
+      "batch_size": 16,
+      "loss": "mean_squared_error",
+      "optimizer": {
+        "name": "adam",
+        "args": {
+        }
+      },
+      "metrics": [
+        "accuracy"
+      ],
+      "encoder_architecture": [
+        14,
+        125
+      ],
+      "decoder_architecture": [
+        14,
+        14
+      ],
+      "train_epochs": 50,
+      "cell_type": "GRU"
+    }
   }
 }
