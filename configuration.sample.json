@@ -9,7 +9,9 @@
     "log_level": "info"
   },
   "tensorboard": {
-    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}"
+    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+    "histogram_freq": 1,
+    "write_images": true
   },
   "export": {
     "model_save_template": "U{usr_num}.dat",
@@ -37,7 +39,7 @@
   },
   "autoencoder": {
     "mask_value": 0.0,
-    "batch_size": 32,
+    "batch_size": 16,
     "loss": "mean_squared_error",
     "optimizer": {
       "name": "adam",
@@ -48,11 +50,11 @@
       "accuracy"
     ],
     "encoder_architecture": [
-      10,
-      10
+      14,
+      125
     ],
     "decoder_architecture": [
-      10,
+      14,
       14
     ],
     "train_epochs": 50,

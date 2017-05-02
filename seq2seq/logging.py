@@ -33,6 +33,6 @@ def tblogger(usr_num):
             darc='x'.join(map(str, CONFIG['autoencoder']['decoder_architecture'])),
             epc=CONFIG['autoencoder']['train_epochs']
         ),
-        histogram_freq=1,
-        write_images=True
+        histogram_freq=CONFIG['tensorboard']['histogram_freq'],
+        write_images=CONFIG['tensorboard']['write_images']
     )
