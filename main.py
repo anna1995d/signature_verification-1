@@ -49,6 +49,8 @@ enc_arc = CONFIG['rnn']['autoencoder']['encoder_architecture']
 dec_arc = CONFIG['rnn']['autoencoder']['decoder_architecture']
 ae_tr_epochs = CONFIG['rnn']['autoencoder']['train_epochs']
 cell_type = CONFIG['rnn']['autoencoder']['cell_type']
+bd_cell_type = CONFIG['rnn']['autoencoder']['bidirectional']
+bd_merge_mode = CONFIG['rnn']['autoencoder']['bidirectional_merge_mode']
 ae_loss = getattr(losses, CONFIG['rnn']['autoencoder']['loss'])
 ae_optimizer = getattr(optimizers, CONFIG['rnn']['autoencoder']['optimizer']['name'])(
     **CONFIG['rnn']['autoencoder']['optimizer']['args']
@@ -58,6 +60,7 @@ ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG[
 # Logger Configuration
 log_frm = CONFIG['logger']['log_format']
 log_fl = CONFIG['logger']['log_file'].format(
+    bd='b' if bd_cell_type else '',
     ct=cell_type,
     earc='x'.join(map(str, enc_arc)),
     darc='x'.join(map(str, dec_arc)),
@@ -85,11 +88,13 @@ def get_data():
     )
 
 
-def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir):
+def train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     ae = Autoencoder(
         cell=cell,
+        bidir=bd,
+        bidir_mrgm=bd_mrgm,
         inp_dim=inp_dim,
         max_len=x.shape[1],
         earc=earc,
@@ -104,12 +109,14 @@ def train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir
     ae.save(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
 
 
-def load_encoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir):
-    train_autoencoder(x, y, btch, epc, earc, darc, ct, usr_num, msk_val, aes_dir)
+def load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir):
+    train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir)
 
     cell = getattr(layers, ct)
     e = Encoder(
         cell=cell,
+        bidir=bd,
+        bidir_mrgm=bd_mrgm,
         inp_dim=inp_dim,
         earc=earc,
         loss=ae_loss,
@@ -185,9 +192,9 @@ def prepare_evaluations_csv(outs_dir, fns):
         w.writeheader()
 
 
-def prepare_output_directories(epc, earc, darc, ct):
-    outs_dir = os.path.join(PATH, 'models/{ct}-{earc}-{darc}-{epc}'.format(
-        ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
+def prepare_output_directories(epc, earc, darc, ct, bd):
+    outs_dir = os.path.join(PATH, 'models/{bd}{ct}-{earc}-{darc}-{epc}'.format(
+        bd='b' if bd else '', ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     ))
     if not os.path.exists(outs_dir):
         os.mkdir(outs_dir)
@@ -203,12 +210,12 @@ def prepare_output_directories(epc, earc, darc, ct):
     return outs_dir, aes_dir, lsvcs_dir
 
 
-def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
-    outs_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct)
+def process_models(data, btch, epc, earc, darc, ct, bd, bd_mrgm, msk_val, fns):
+    outs_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct, bd)
     prepare_evaluations_csv(outs_dir, fns)
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
-        e = load_encoder(x, y, btch, epc, earc, darc, ct, usr_num + 1, msk_val, aes_dir)
+        e = load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num + 1, msk_val, aes_dir)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
         evl = evaluate_model(usr_num + 1, enc_gen, enc_frg, fns, lsvcs_dir)
         evl.update({
@@ -219,4 +226,5 @@ def process_models(data, btch, epc, earc, darc, ct, msk_val, fns):
     save_avg_evaluation(fns, outs_dir)
 
 if __name__ == '__main__':
-    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, mask_value, csv_fns)
+    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, bd_cell_type, bd_merge_mode,
+                   mask_value, csv_fns)

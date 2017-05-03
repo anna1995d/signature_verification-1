@@ -5,11 +5,11 @@
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_file": "./logs/{ct}-{earc}-{darc}-{epc}/seq2seq.log",
+    "log_file": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/seq2seq.log",
     "log_level": "info"
   },
   "tensorboard": {
-    "log_dir": "./logs/{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+    "log_dir": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
     "histogram_freq": 1,
     "write_images": true
   },
@@ -58,6 +58,8 @@
         14,
         14
       ],
+      "bidirectional": true,
+      "bidirectional_merge_mode": "ave",
       "train_epochs": 50,
       "cell_type": "GRU"
     }
