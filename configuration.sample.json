@@ -52,10 +52,9 @@
       ],
       "encoder_architecture": [
         14,
-        125
+        150
       ],
       "decoder_architecture": [
-        14,
         14
       ],
       "bidirectional": true,
