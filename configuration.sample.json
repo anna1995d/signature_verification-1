@@ -1,6 +1,5 @@
 {
   "general": {
-    "implementation": 2,
     "verbose": 1
   },
   "logger": {
@@ -41,15 +40,27 @@
     "autoencoder": {
       "mask_value": 0.0,
       "batch_size": 16,
-      "loss": "mean_squared_error",
-      "optimizer": {
-        "name": "adam",
-        "args": {
-        }
+      "layers_config": {
+        "implementation": 2,
+        "return_sequences": true,
+        "activation": "tanh",
+        "recurrent_activation": "hard_sigmoid",
+        "use_bias": true,
+        "kernel_initializer": "glorot_uniform",
+        "recurrent_initializer": "orthogonal",
+        "bias_initializer": "zeros"
       },
-      "metrics": [
-        "accuracy"
-      ],
+      "compile_config": {
+        "loss": "mean_squared_error",
+        "optimizer": {
+          "name": "adam",
+          "args": {
+          }
+        },
+        "metrics": [
+          "accuracy"
+        ]
+      },
       "encoder_architecture": [
         14,
         150

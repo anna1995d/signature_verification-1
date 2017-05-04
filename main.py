@@ -7,7 +7,7 @@ import logging
 import os
 
 import numpy as np
-from keras import layers, optimizers, losses, metrics
+from keras import layers, optimizers, metrics
 from keras.preprocessing import sequence
 from sklearn.metrics import classification_report
 
@@ -23,7 +23,6 @@ with open(CONIFG_PATH, 'r') as cf:
 
 # General Configuration
 verbose = CONFIG['general']['verbose']
-implementation = CONFIG['general']['implementation']
 
 # Export Configuration
 mdl_save_temp = CONFIG['export']['model_save_template']
@@ -51,11 +50,10 @@ ae_tr_epochs = CONFIG['rnn']['autoencoder']['train_epochs']
 cell_type = CONFIG['rnn']['autoencoder']['cell_type']
 bd_cell_type = CONFIG['rnn']['autoencoder']['bidirectional']
 bd_merge_mode = CONFIG['rnn']['autoencoder']['bidirectional_merge_mode']
-ae_loss = getattr(losses, CONFIG['rnn']['autoencoder']['loss'])
-ae_optimizer = getattr(optimizers, CONFIG['rnn']['autoencoder']['optimizer']['name'])(
-    **CONFIG['rnn']['autoencoder']['optimizer']['args']
-)
-ae_metrics = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in CONFIG['rnn']['autoencoder']['metrics']]
+ae_ccfg = CONFIG['rnn']['autoencoder']['compile_config']
+ae_ccfg['optimizer'] = getattr(optimizers, ae_ccfg['optimizer']['name'])(**ae_ccfg['optimizer']['args'])
+ae_ccfg['metrics'] = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in ae_ccfg['metrics']]
+ae_lcfg = CONFIG['rnn']['autoencoder']['layers_config']
 
 # Logger Configuration
 log_frm = CONFIG['logger']['log_format']
@@ -99,11 +97,9 @@ def train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk
         max_len=x.shape[1],
         earc=earc,
         darc=darc,
-        loss=ae_loss,
-        optimizer=ae_optimizer,
-        metrics=ae_metrics,
-        implementation=implementation,
-        mask_value=msk_val
+        msk_val=msk_val,
+        ccfg=ae_ccfg,
+        lcfg=ae_lcfg
     )
     ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose, usr_num=usr_num)
     ae.save(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
@@ -119,11 +115,9 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val,
         bidir_mrgm=bd_mrgm,
         inp_dim=inp_dim,
         earc=earc,
-        loss=ae_loss,
-        optimizer=ae_optimizer,
-        metrics=ae_metrics,
-        implementation=implementation,
-        mask_value=msk_val
+        msk_val=msk_val,
+        ccfg=ae_ccfg,
+        lcfg=ae_lcfg
     )
     e.load(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
     return e
