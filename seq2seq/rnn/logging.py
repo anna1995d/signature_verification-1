@@ -11,7 +11,7 @@ with open(CONIFG_PATH, 'r') as cf:
 
 def rnn_tblogger(usr_num):
     return TensorBoard(
-        log_dir=CONFIG['tensorboard']['log_dir'].format(
+        log_dir=CONFIG['tensorboard']['log_dir_template'].format(
             usr_num=usr_num,
             bd='b' if CONFIG['rnn']['autoencoder']['bidirectional'] else '',
             ct=CONFIG['rnn']['autoencoder']['cell_type'],

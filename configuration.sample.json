@@ -1,6 +1,7 @@
 {
   "general": {
-    "verbose": 1
+    "verbose": 1,
+    "output_directory_template": "./models/{bd}{ct}-{earc}-{darc}-{epc}"
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
@@ -8,7 +9,7 @@
     "log_level": "info"
   },
   "tensorboard": {
-    "log_dir": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+    "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
     "histogram_freq": 1,
     "write_images": true
   },

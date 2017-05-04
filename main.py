@@ -23,6 +23,7 @@ with open(CONIFG_PATH, 'r') as cf:
 
 # General Configuration
 verbose = CONFIG['general']['verbose']
+output_directory_temp = CONFIG['general']['output_directory_template']
 
 # Export Configuration
 mdl_save_temp = CONFIG['export']['model_save_template']
@@ -123,14 +124,14 @@ def load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val,
     return e
 
 
-def save_evaluation(evl, fns, outs_dir):
-    with open(os.path.join(outs_dir, 'evaluations.csv'), 'a') as f:
+def save_evaluation(evl, fns, out_dir):
+    with open(os.path.join(out_dir, 'evaluations.csv'), 'a') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writerow(evl)
 
 
-def save_avg_evaluation(fns, outs_dir):
-    with open(os.path.join(outs_dir, 'evaluations.csv'), 'r') as f:
+def save_avg_evaluation(fns, out_dir):
+    with open(os.path.join(out_dir, 'evaluations.csv'), 'r') as f:
         avg = {
             fns[0]: 'AVG'
         }
@@ -139,7 +140,7 @@ def save_avg_evaluation(fns, outs_dir):
             fns[i]: np.mean([float(r[fns[i]]) for r in rows]) for i in range(1, len(fns))
         })
 
-    with open(os.path.join(outs_dir, 'evaluations.csv'), 'a') as f:
+    with open(os.path.join(out_dir, 'evaluations.csv'), 'a') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writerow(avg)
 
@@ -180,33 +181,33 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num], value=msk_val)
 
 
-def prepare_evaluations_csv(outs_dir, fns):
-    with open(os.path.join(outs_dir, 'evaluations.csv'), 'w') as f:
+def prepare_evaluations_csv(out_dir, fns):
+    with open(os.path.join(out_dir, 'evaluations.csv'), 'w') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writeheader()
 
 
-def prepare_output_directories(epc, earc, darc, ct, bd):
-    outs_dir = os.path.join(PATH, 'models/{bd}{ct}-{earc}-{darc}-{epc}'.format(
+def prepare_output_directories(out_dir_temp, epc, earc, darc, ct, bd):
+    out_dir = os.path.join(PATH, out_dir_temp.format(
         bd='b' if bd else '', ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
     ))
-    if not os.path.exists(outs_dir):
-        os.mkdir(outs_dir)
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
 
-    aes_dir = os.path.join(outs_dir, 'autoencoders')
+    aes_dir = os.path.join(out_dir, 'autoencoders')
     if not os.path.exists(aes_dir):
         os.mkdir(aes_dir)
 
-    lsvcs_dir = os.path.join(outs_dir, 'linear_svcs')
+    lsvcs_dir = os.path.join(out_dir, 'linear_svcs')
     if not os.path.exists(lsvcs_dir):
         os.mkdir(lsvcs_dir)
 
-    return outs_dir, aes_dir, lsvcs_dir
+    return out_dir, aes_dir, lsvcs_dir
 
 
-def process_models(data, btch, epc, earc, darc, ct, bd, bd_mrgm, msk_val, fns):
-    outs_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct, bd)
-    prepare_evaluations_csv(outs_dir, fns)
+def process_models(data, out_dir_temp, btch, epc, earc, darc, ct, bd, bd_mrgm, msk_val, fns):
+    out_dir, aes_dir, lsvcs_dir = prepare_output_directories(out_dir_temp, epc, earc, darc, ct, bd)
+    prepare_evaluations_csv(out_dir, fns)
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num + 1, msk_val, aes_dir)
@@ -216,9 +217,20 @@ def process_models(data, btch, epc, earc, darc, ct, bd, bd_mrgm, msk_val, fns):
             fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
             fns[2]: np.mean(list(map(len, data.frg[usr_num])))
         })
-        save_evaluation(evl, fns, outs_dir)
-    save_avg_evaluation(fns, outs_dir)
+        save_evaluation(evl, fns, out_dir)
+    save_avg_evaluation(fns, out_dir)
 
 if __name__ == '__main__':
-    process_models(get_data(), ae_btch_sz, ae_tr_epochs, enc_arc, dec_arc, cell_type, bd_cell_type, bd_merge_mode,
-                   mask_value, csv_fns)
+    process_models(
+        data=get_data(),
+        out_dir_temp=output_directory_temp,
+        btch=ae_btch_sz,
+        epc=ae_tr_epochs,
+        earc=enc_arc,
+        darc=dec_arc,
+        ct=cell_type,
+        bd=bd_cell_type,
+        bd_mrgm=bd_merge_mode,
+        msk_val=mask_value,
+        fns=csv_fns
+    )
