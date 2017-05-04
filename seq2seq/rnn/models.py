@@ -54,8 +54,8 @@ class Encoder(object):
 
         # Encoder
         for i, ln in enumerate(earc):
-            lcfg['return_sequences'] = (i != len(earc) - 1)
             c = cell(ln, **lcfg, name='encoder_{index}'.format(index=i))
+            c.return_sequences = (i != len(earc) - 1)
             self.encoder.add(Bidirectional(c, merge_mode=bidir_mrgm) if bidir else c)
 
         self.encoder.compile(**ccfg)
