@@ -42,22 +42,34 @@
       "mask_value": 0.0,
       "batch_size": 16,
       "layers_config": {
-        "implementation": 2,
         "return_sequences": true,
+        "go_backwards": false,
+        "stateful": false,
+        "unroll": false,
+        "implementation": 2,
         "activation": "tanh",
         "recurrent_activation": "hard_sigmoid",
         "use_bias": true,
         "kernel_initializer": "glorot_uniform",
         "recurrent_initializer": "orthogonal",
-        "bias_initializer": "zeros"
+        "bias_initializer": "zeros",
+        "kernel_regularizer": null,
+        "recurrent_regularizer": null,
+        "bias_regularizer": null,
+        "activity_regularizer": null,
+        "kernel_constraint": null,
+        "recurrent_constraint": null,
+        "bias_constraint": null,
+        "dropout": 0.0,
+        "recurrent_dropout": 0.0
       },
       "compile_config": {
-        "loss": "mean_squared_error",
         "optimizer": {
           "name": "adam",
           "args": {
           }
         },
+        "loss": "mean_squared_error",
         "metrics": [
           "accuracy"
         ]

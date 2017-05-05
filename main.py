@@ -7,7 +7,7 @@ import logging
 import os
 
 import numpy as np
-from keras import layers, optimizers, metrics
+from keras import layers, optimizers
 from keras.preprocessing import sequence
 from sklearn.metrics import classification_report
 
@@ -23,7 +23,7 @@ with open(CONIFG_PATH, 'r') as cf:
 
 # General Configuration
 verbose = CONFIG['general']['verbose']
-output_directory_temp = CONFIG['general']['output_directory_template']
+output_directory_temp = os.path.join(PATH, CONFIG['general']['output_directory_template'])
 
 # Export Configuration
 mdl_save_temp = CONFIG['export']['model_save_template']
@@ -53,7 +53,6 @@ bd_cell_type = CONFIG['rnn']['autoencoder']['bidirectional']
 bd_merge_mode = CONFIG['rnn']['autoencoder']['bidirectional_merge_mode']
 ae_ccfg = CONFIG['rnn']['autoencoder']['compile_config']
 ae_ccfg['optimizer'] = getattr(optimizers, ae_ccfg['optimizer']['name'])(**ae_ccfg['optimizer']['args'])
-ae_ccfg['metrics'] = [getattr(metrics, _) if hasattr(metrics, _) else _ for _ in ae_ccfg['metrics']]
 ae_lcfg = CONFIG['rnn']['autoencoder']['layers_config']
 
 # Logger Configuration
@@ -87,13 +86,13 @@ def get_data():
     )
 
 
-def train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir):
+def train_autoencoder(x, y, epc, earc, darc, ct, bd, usr_num, msk_val, aes_dir):
     logger.info('Training Autoencoder for user {usr_num}'.format(usr_num=usr_num))
     cell = getattr(layers, ct)
     ae = Autoencoder(
         cell=cell,
         bidir=bd,
-        bidir_mrgm=bd_mrgm,
+        bidir_mrgm=bd_merge_mode,
         inp_dim=inp_dim,
         max_len=x.shape[1],
         earc=earc,
@@ -102,18 +101,18 @@ def train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk
         ccfg=ae_ccfg,
         lcfg=ae_lcfg
     )
-    ae.fit(x, y, epochs=epc, batch_size=btch, verbose=verbose, usr_num=usr_num)
+    ae.fit(x, y, epochs=epc, batch_size=ae_btch_sz, verbose=verbose, usr_num=usr_num)
     ae.save(path=os.path.join(aes_dir, mdl_save_temp.format(usr_num=usr_num)))
 
 
-def load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir):
-    train_autoencoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num, msk_val, aes_dir)
+def load_encoder(x, y, epc, earc, darc, ct, bd, usr_num, msk_val, aes_dir):
+    train_autoencoder(x, y, epc, earc, darc, ct, bd, usr_num, msk_val, aes_dir)
 
     cell = getattr(layers, ct)
     e = Encoder(
         cell=cell,
         bidir=bd,
-        bidir_mrgm=bd_mrgm,
+        bidir_mrgm=bd_merge_mode,
         inp_dim=inp_dim,
         earc=earc,
         msk_val=msk_val,
@@ -187,10 +186,10 @@ def prepare_evaluations_csv(out_dir, fns):
         w.writeheader()
 
 
-def prepare_output_directories(out_dir_temp, epc, earc, darc, ct, bd):
-    out_dir = os.path.join(PATH, out_dir_temp.format(
+def prepare_output_directories(epc, earc, darc, ct, bd):
+    out_dir = output_directory_temp.format(
         bd='b' if bd else '', ct=ct, earc='x'.join(map(str, earc)), darc='x'.join(map(str, darc)), epc=epc
-    ))
+    )
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
@@ -205,12 +204,12 @@ def prepare_output_directories(out_dir_temp, epc, earc, darc, ct, bd):
     return out_dir, aes_dir, lsvcs_dir
 
 
-def process_models(data, out_dir_temp, btch, epc, earc, darc, ct, bd, bd_mrgm, msk_val, fns):
-    out_dir, aes_dir, lsvcs_dir = prepare_output_directories(out_dir_temp, epc, earc, darc, ct, bd)
+def process_models(data, epc, earc, darc, ct, bd, msk_val, fns):
+    out_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct, bd)
     prepare_evaluations_csv(out_dir, fns)
     for usr_num in range(usr_cnt):
         x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
-        e = load_encoder(x, y, btch, epc, earc, darc, ct, bd, bd_mrgm, usr_num + 1, msk_val, aes_dir)
+        e = load_encoder(x, y, epc, earc, darc, ct, bd, usr_num + 1, msk_val, aes_dir)
         enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
         evl = evaluate_model(usr_num + 1, enc_gen, enc_frg, fns, lsvcs_dir)
         evl.update({
@@ -221,16 +220,4 @@ def process_models(data, out_dir_temp, btch, epc, earc, darc, ct, bd, bd_mrgm, m
     save_avg_evaluation(fns, out_dir)
 
 if __name__ == '__main__':
-    process_models(
-        data=get_data(),
-        out_dir_temp=output_directory_temp,
-        btch=ae_btch_sz,
-        epc=ae_tr_epochs,
-        earc=enc_arc,
-        darc=dec_arc,
-        ct=cell_type,
-        bd=bd_cell_type,
-        bd_mrgm=bd_merge_mode,
-        msk_val=mask_value,
-        fns=csv_fns
-    )
+    process_models(get_data(), ae_tr_epochs, enc_arc, dec_arc, cell_type, bd_cell_type, mask_value, csv_fns)
