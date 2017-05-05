@@ -47,7 +47,7 @@
         "stateful": false,
         "unroll": false,
         "implementation": 2,
-        "activation": "tanh",
+        "activation": "relu",
         "recurrent_activation": "hard_sigmoid",
         "use_bias": true,
         "kernel_initializer": "glorot_uniform",
