@@ -30,27 +30,31 @@ mdl_save_temp = CONFIG['export']['model_save_template']
 csv_fns = CONFIG['export']['csv_fieldnames']
 
 # Data Configuration
-smp_stp = CONFIG['data']['sampling_step']
-rl_win_sz = CONFIG['data']['rolling_window_size']
-rl_win_stp = CONFIG['data']['rolling_window_step']
-nrm = CONFIG['data']['normalization']
-usr_cnt = CONFIG['data']['user_count']
-inp_dim = CONFIG['data']['input_dimension']
-gen_smp_cnt = CONFIG['data']['genuine_sample_count']
-frg_smp_cnt = CONFIG['data']['forged_sample_count']
-gen_path_temp = os.path.join(PATH, CONFIG['data']['genuine_path_template'])
-frg_path_temp = os.path.join(PATH, CONFIG['data']['forged_path_template'])
-ftr_cnt = CONFIG['data']['feature_count']
+inp_dim = CONFIG['data']['reshaping']['input_dimension']
+smp_stp = CONFIG['data']['reshaping']['sampling_step']
+rl_win_sz = CONFIG['data']['reshaping']['rolling_window_size']
+rl_win_stp = CONFIG['data']['reshaping']['rolling_window_step']
+nrm = CONFIG['data']['reshaping']['normalization']
+
+usr_cnt = CONFIG['data']['reading']['user_count']
+gen_smp_cnt = CONFIG['data']['reading']['genuine_sample_count']
+frg_smp_cnt = CONFIG['data']['reading']['forged_sample_count']
+gen_path_temp = os.path.join(PATH, CONFIG['data']['reading']['genuine_path_template'])
+frg_path_temp = os.path.join(PATH, CONFIG['data']['reading']['forged_path_template'])
+ftr_cnt = CONFIG['data']['reading']['feature_count']
 
 # Autoencoder Configuration
-mask_value = CONFIG['rnn']['autoencoder']['mask_value']
-ae_btch_sz = CONFIG['rnn']['autoencoder']['batch_size']
-enc_arc = CONFIG['rnn']['autoencoder']['encoder_architecture']
-dec_arc = CONFIG['rnn']['autoencoder']['decoder_architecture']
-ae_tr_epochs = CONFIG['rnn']['autoencoder']['train_epochs']
-cell_type = CONFIG['rnn']['autoencoder']['cell_type']
-bd_cell_type = CONFIG['rnn']['autoencoder']['bidirectional']
-bd_merge_mode = CONFIG['rnn']['autoencoder']['bidirectional_merge_mode']
+ae_btch_sz = CONFIG['rnn']['autoencoder']['train']['batch_size']
+ae_tr_epochs = CONFIG['rnn']['autoencoder']['train']['epochs']
+ae_smp_cnt = CONFIG['rnn']['autoencoder']['train']['sampling_count']
+
+mask_value = CONFIG['rnn']['autoencoder']['architecture']['mask_value']
+enc_arc = CONFIG['rnn']['autoencoder']['architecture']['encoder']
+dec_arc = CONFIG['rnn']['autoencoder']['architecture']['decoder']
+bd_cell_type = CONFIG['rnn']['autoencoder']['architecture']['bidirectional']
+bd_merge_mode = CONFIG['rnn']['autoencoder']['architecture']['bidirectional_merge_mode']
+cell_type = CONFIG['rnn']['autoencoder']['architecture']['cell_type']
+
 ae_ccfg = CONFIG['rnn']['autoencoder']['compile_config']
 ae_ccfg['optimizer'] = getattr(optimizers, ae_ccfg['optimizer']['name'])(**ae_ccfg['optimizer']['args'])
 ae_lcfg = CONFIG['rnn']['autoencoder']['layers_config']
@@ -174,10 +178,10 @@ def get_encoded_data(e, gen_x, frg_x, msk_val):
 
 
 def get_autoencoder_train_data(data, usr_num, msk_val):
-    (gen_x, gen_y) = data.get_genuine_combinations(usr_num)
+    (gen_x, gen_y) = data.get_genuine_combinations(usr_num, ae_smp_cnt)
     x, y = sequence.pad_sequences(gen_x, value=msk_val), sequence.pad_sequences(gen_y, value=msk_val)
-    return x, y, sequence.pad_sequences(data.gen[usr_num], value=msk_val), \
-        sequence.pad_sequences(data.frg[usr_num], value=msk_val)
+    return x, y, sequence.pad_sequences(data.gen[usr_num][ae_smp_cnt:], value=msk_val), \
+           sequence.pad_sequences(data.frg[usr_num][ae_smp_cnt:], value=msk_val)
 
 
 def prepare_evaluations_csv(out_dir, fns):

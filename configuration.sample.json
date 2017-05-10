@@ -25,22 +25,35 @@
     ]
   },
   "data": {
-    "sampling_step": 1,
-    "normalization": "ms",
-    "rolling_window_size": 1,
-    "rolling_window_step": 1,
-    "user_count": 40,
-    "input_dimension": 9,
-    "genuine_sample_count": 20,
-    "forged_sample_count": 20,
-    "genuine_path_template": "./data_set/U{user}S{sample}.TXT",
-    "forged_path_template": "./data_set/U{user}S{sample}.TXT",
-    "feature_count": 4
+    "reading": {
+      "user_count": 40,
+      "genuine_sample_count": 20,
+      "forged_sample_count": 20,
+      "genuine_path_template": "./data_set/U{user}S{sample}.TXT",
+      "forged_path_template": "./data_set/U{user}S{sample}.TXT",
+      "feature_count": 4
+    },
+    "reshaping": {
+      "input_dimension": 9,
+      "sampling_step": 1,
+      "normalization": "ms",
+      "rolling_window_size": 1,
+      "rolling_window_step": 1
+    }
   },
   "rnn": {
+    "visualize": {
+      "tsne_args": {
+        "init": "pca",
+        "method": "exact"
+      }
+    },
     "autoencoder": {
-      "mask_value": 0.0,
-      "batch_size": 16,
+      "train": {
+        "batch_size": 16,
+        "epochs": 50,
+        "sampling_count": 15
+      },
       "layers_config": {
         "return_sequences": true,
         "go_backwards": false,
@@ -74,17 +87,19 @@
           "accuracy"
         ]
       },
-      "encoder_architecture": [
-        9,
-        60
-      ],
-      "decoder_architecture": [
-        9
-      ],
-      "bidirectional": true,
-      "bidirectional_merge_mode": "ave",
-      "train_epochs": 50,
-      "cell_type": "GRU"
+      "architecture": {
+        "mask_value": 0.0,
+        "encoder": [
+          9,
+          60
+        ],
+        "decoder": [
+          9
+        ],
+        "bidirectional": true,
+        "bidirectional_merge_mode": "ave",
+        "cell_type": "GRU"
+      }
     }
   }
 }

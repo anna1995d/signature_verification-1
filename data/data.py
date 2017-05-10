@@ -66,6 +66,7 @@ class Data(object):
             res.append(Data.extract_sample(
                 smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
             ))
+        np.random.shuffle(res)
 
         return res
 
@@ -78,6 +79,7 @@ class Data(object):
             res.append(Data.extract_sample(
                 smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
             ))
+        np.random.shuffle(res)
 
         return res
 
@@ -106,5 +108,5 @@ class Data(object):
             path_temp=frg_path_temp
         ) for usr in range(1, usr_cnt + 1)]
 
-    def get_genuine_combinations(self, user):
-        return np.array(list(itertools.product(self.gen[user], self.gen[user]))).T
+    def get_genuine_combinations(self, usr_num, smp_cnt):
+        return np.array(list(itertools.product(self.gen[usr_num][:smp_cnt], self.gen[usr_num][:smp_cnt]))).T

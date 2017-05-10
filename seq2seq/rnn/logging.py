@@ -13,11 +13,11 @@ def rnn_tblogger(usr_num):
     return TensorBoard(
         log_dir=CONFIG['tensorboard']['log_dir_template'].format(
             usr_num=usr_num,
-            bd='b' if CONFIG['rnn']['autoencoder']['bidirectional'] else '',
-            ct=CONFIG['rnn']['autoencoder']['cell_type'],
-            earc='x'.join(map(str, CONFIG['rnn']['autoencoder']['encoder_architecture'])),
-            darc='x'.join(map(str, CONFIG['rnn']['autoencoder']['decoder_architecture'])),
-            epc=CONFIG['rnn']['autoencoder']['train_epochs']
+            bd='b' if CONFIG['rnn']['autoencoder']['architecture']['bidirectional'] else '',
+            ct=CONFIG['rnn']['autoencoder']['architecture']['cell_type'],
+            earc='x'.join(map(str, CONFIG['rnn']['autoencoder']['architecture']['encoder'])),
+            darc='x'.join(map(str, CONFIG['rnn']['autoencoder']['architecture']['decoder'])),
+            epc=CONFIG['rnn']['autoencoder']['train']['epochs']
         ),
         histogram_freq=CONFIG['tensorboard']['histogram_freq'],
         write_images=CONFIG['tensorboard']['write_images']
