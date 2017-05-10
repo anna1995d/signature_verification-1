@@ -30,7 +30,7 @@
     "rolling_window_size": 1,
     "rolling_window_step": 1,
     "user_count": 40,
-    "input_dimension": 14,
+    "input_dimension": 9,
     "genuine_sample_count": 20,
     "forged_sample_count": 20,
     "genuine_path_template": "./data_set/U{user}S{sample}.TXT",
@@ -75,11 +75,11 @@
         ]
       },
       "encoder_architecture": [
-        14,
+        9,
         150
       ],
       "decoder_architecture": [
-        14
+        9
       ],
       "bidirectional": true,
       "bidirectional_merge_mode": "ave",

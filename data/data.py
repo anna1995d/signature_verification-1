@@ -8,14 +8,14 @@ class Data(object):
     def calculate_derivatives(d, smpl):
         if smpl:
             return np.concatenate(((d[1] - d[0]).reshape((1, -1)), d[1:] - d[:-1]))
-
-        return np.concatenate((
-            (d[1] - d[0]).reshape((1, -1)) + 2 * (d[2] - d[0]).reshape((1, -1)),
-            (d[2] - d[0]).reshape((1, -1)) + 2 * (d[3] - d[0]).reshape((1, -1)),
-            (d[3:-1] - d[1:-3]) + 2 * (d[3:-1] - d[1:-3]),
-            (d[-1] - d[-3]).reshape((1, -1)) + 2 * (d[-1] - d[-4]).reshape((1, -1)),
-            (d[-1] - d[-2]).reshape((1, -1)) + 2 * (d[-1] - d[-3]).reshape((1, -1)),
-        )) / 10
+        else:
+            return np.concatenate((
+                (d[1] - d[0]).reshape((1, -1)) + 2 * (d[2] - d[0]).reshape((1, -1)),
+                (d[2] - d[0]).reshape((1, -1)) + 2 * (d[3] - d[0]).reshape((1, -1)),
+                (d[3:-1] - d[1:-3]) + 2 * (d[3:-1] - d[1:-3]),
+                (d[-1] - d[-3]).reshape((1, -1)) + 2 * (d[-1] - d[-4]).reshape((1, -1)),
+                (d[-1] - d[-2]).reshape((1, -1)) + 2 * (d[-1] - d[-3]).reshape((1, -1)),
+            )) / 10
 
     @staticmethod
     def extract(d):
@@ -25,8 +25,6 @@ class Data(object):
         v_n = np.sqrt(drv[:, 0] ** 2 + drv[:, 1] ** 2).reshape((-1, 1))
         dt_n = Data.calculate_derivatives(t_n, smpl=True)
         r_n = np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps)
-        dv_n = Data.calculate_derivatives(v_n, smpl=True)
-        a_n = np.sqrt(dv_n ** 2 + (v_n * dt_n) ** 2)
 
         return np.concatenate((
             d,
@@ -34,11 +32,7 @@ class Data(object):
             t_n,
             v_n,
             r_n,
-            a_n,
             drv,
-            dt_n,
-            dv_n,
-            Data.calculate_derivatives(np.concatenate((r_n, a_n), axis=1), smpl=True)
         ), axis=1)
 
     @staticmethod
