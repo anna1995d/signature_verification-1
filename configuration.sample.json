@@ -76,7 +76,7 @@
       },
       "encoder_architecture": [
         9,
-        150
+        60
       ],
       "decoder_architecture": [
         9
