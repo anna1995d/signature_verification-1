@@ -9,6 +9,7 @@ import os
 import numpy as np
 from keras import layers, optimizers
 from keras.preprocessing import sequence
+from scipy import spatial
 from sklearn.metrics import classification_report
 
 from data import Data
@@ -166,21 +167,43 @@ def get_lsvc_train_data(enc_gen, enc_frg):
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
+def save_mahalanobis_distances(usr_num, mdst_dir, enc_gen_mdst, enc_frg_mdst):
+    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_genuine.dat'.format(usr_num=usr_num)), 'w') as f:
+        for dst in enc_gen_mdst:
+            f.write('{dst}\n'.format(dst=dst))
+
+    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_forged.dat'.format(usr_num=usr_num)), 'w') as f:
+        for dst in enc_frg_mdst:
+            f.write('{dst}\n'.format(dst=dst))
+
+
+def get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg):
+    cov_diag = np.diag(np.cov(tr_enc_gen, rowvar=False)).copy()
+    cov_diag[np.where(cov_diag == 0.0)] += np.finfo(np.float64).eps
+    cov_inv = np.linalg.inv(np.diag(cov_diag))
+    mean = np.mean(tr_enc_gen, axis=0)
+    return sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_gen]), \
+           sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_frg])
+
+
 def evaluate_model(usr_num, enc_gen, enc_frg, fns, lsvcs_dir):
     x, y = get_lsvc_train_data(enc_gen, enc_frg)
     return train_lsvc(x, y, usr_num, fns, lsvcs_dir)
 
 
-def get_encoded_data(e, gen_x, frg_x, msk_val):
+def get_encoded_data(e, tr_gen_x, gen_x, frg_x, msk_val):
+    tr_gen_enc = e.predict(inp=sequence.pad_sequences(tr_gen_x, value=msk_val))  # Training Encoded Genuine Data
     enc_gen = e.predict(inp=sequence.pad_sequences(gen_x, value=msk_val))  # Encoded Genuine Data
     enc_frg = e.predict(inp=sequence.pad_sequences(frg_x, value=msk_val))  # Encoded Forged Data
-    return enc_gen, enc_frg
+    return tr_gen_enc, enc_gen, enc_frg
 
 
 def get_autoencoder_train_data(data, usr_num, msk_val):
     (gen_x, gen_y) = data.get_genuine_combinations(usr_num, ae_smp_cnt)
     x, y = sequence.pad_sequences(gen_x, value=msk_val), sequence.pad_sequences(gen_y, value=msk_val)
-    return x, y, sequence.pad_sequences(data.gen[usr_num][ae_smp_cnt:], value=msk_val), \
+    return x, y, \
+           sequence.pad_sequences(data.gen[usr_num][:ae_smp_cnt], value=msk_val), \
+           sequence.pad_sequences(data.gen[usr_num][ae_smp_cnt:], value=msk_val), \
            sequence.pad_sequences(data.frg[usr_num][ae_smp_cnt:], value=msk_val)
 
 
@@ -205,16 +228,29 @@ def prepare_output_directories(epc, earc, darc, ct, bd):
     if not os.path.exists(lsvcs_dir):
         os.mkdir(lsvcs_dir)
 
-    return out_dir, aes_dir, lsvcs_dir
+    mdst_dir = os.path.join(out_dir, 'mahalanobis_distances')
+    if not os.path.exists(mdst_dir):
+        os.mkdir(mdst_dir)
+
+    for usr_num in range(1, usr_cnt + 1):
+        mdst_usr_dir = os.path.join(mdst_dir, 'U{usr_num}'.format(usr_num=usr_num))
+        if not os.path.exists(mdst_usr_dir):
+            os.mkdir(mdst_usr_dir)
+
+    return out_dir, aes_dir, lsvcs_dir, mdst_dir
 
 
 def process_models(data, epc, earc, darc, ct, bd, msk_val, fns):
-    out_dir, aes_dir, lsvcs_dir = prepare_output_directories(epc, earc, darc, ct, bd)
+    out_dir, aes_dir, lsvcs_dir, mdst_dir = prepare_output_directories(epc, earc, darc, ct, bd)
     prepare_evaluations_csv(out_dir, fns)
     for usr_num in range(usr_cnt):
-        x, y, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
+        x, y, tr_gen_x, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, epc, earc, darc, ct, bd, usr_num + 1, msk_val, aes_dir)
-        enc_gen, enc_frg = get_encoded_data(e, gen_x, frg_x, msk_val)
+        tr_enc_gen, enc_gen, enc_frg = get_encoded_data(e, tr_gen_x, gen_x, frg_x, msk_val)
+
+        enc_gen_mdst, enc_frg_mdst = get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg)
+        save_mahalanobis_distances(usr_num + 1, mdst_dir, enc_gen_mdst, enc_frg_mdst)
+
         evl = evaluate_model(usr_num + 1, enc_gen, enc_frg, fns, lsvcs_dir)
         evl.update({
             fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
