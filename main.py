@@ -183,7 +183,7 @@ def get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg):
     cov_inv = np.linalg.inv(np.diag(cov_diag))
     mean = np.mean(tr_enc_gen, axis=0)
     return sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_gen]), \
-           sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_frg])
+        sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_frg])
 
 
 def evaluate_model(usr_num, enc_gen, enc_frg, fns, lsvcs_dir):
@@ -202,9 +202,9 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
     (gen_x, gen_y) = data.get_genuine_combinations(usr_num, ae_smp_cnt)
     x, y = sequence.pad_sequences(gen_x, value=msk_val), sequence.pad_sequences(gen_y, value=msk_val)
     return x, y, \
-           sequence.pad_sequences(data.gen[usr_num][:ae_smp_cnt], value=msk_val), \
-           sequence.pad_sequences(data.gen[usr_num][ae_smp_cnt:], value=msk_val), \
-           sequence.pad_sequences(data.frg[usr_num][ae_smp_cnt:], value=msk_val)
+        sequence.pad_sequences(data.gen[usr_num][:ae_smp_cnt], value=msk_val), \
+        sequence.pad_sequences(data.gen[usr_num][ae_smp_cnt:], value=msk_val), \
+        sequence.pad_sequences(data.frg[usr_num][ae_smp_cnt:], value=msk_val)
 
 
 def prepare_evaluations_csv(out_dir, fns):
