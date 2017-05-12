@@ -176,6 +176,13 @@ def save_mahalanobis_distances(usr_num, mdst_dir, enc_gen_mdst, enc_frg_mdst):
         for dst in enc_frg_mdst:
             f.write('{dst}\n'.format(dst=dst))
 
+    with open(os.path.join(mdst_dir, 'U{usr_num}/evaluation.dat'.format(usr_num=usr_num)), 'w') as f:
+        enc_mdst = [[mdst, 0] for mdst in enc_gen_mdst] + [[mdst, 0] for mdst in enc_frg_mdst]
+        for dst in enc_mdst:
+            dst[1] += np.where(enc_gen_mdst <= dst[0])[0].shape[0] + np.where(enc_frg_mdst > dst[0])[0].shape[0]
+        trs, prc = max(enc_mdst, key=lambda x: x[1])
+        f.write('Threshold: {trs}\nPrecision: {prc}\n'.format(trs=trs, prc=prc / len(enc_mdst)))
+
 
 def get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg):
     cov_diag = np.diag(np.cov(tr_enc_gen, rowvar=False)).copy()
