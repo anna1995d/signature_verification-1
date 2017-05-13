@@ -15,13 +15,18 @@
   },
   "export": {
     "model_save_template": "U{usr_num}.dat",
-    "csv_fieldnames": [
+    "lsvc_csv_fieldnames": [
       "Writer No",
       "Gen-AVG-len",
       "Frg-AVG-len",
       "Precision",
       "Recall",
       "F1-Score"
+    ],
+    "mahalanobis_csv_fieldnames": [
+      "Writer No",
+      "Precision",
+      "Threshold"
     ]
   },
   "data": {

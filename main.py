@@ -28,7 +28,8 @@ output_directory_temp = os.path.join(PATH, CONFIG['general']['output_directory_t
 
 # Export Configuration
 mdl_save_temp = CONFIG['export']['model_save_template']
-csv_fns = CONFIG['export']['csv_fieldnames']
+lsvc_csv_fns = CONFIG['export']['lsvc_csv_fieldnames']
+mhln_csv_fns = CONFIG['export']['mahalanobis_csv_fieldnames']
 
 # Data Configuration
 inp_dim = CONFIG['data']['reshaping']['input_dimension']
@@ -128,13 +129,42 @@ def load_encoder(x, y, epc, earc, darc, ct, bd, usr_num, msk_val, aes_dir):
     return e
 
 
-def save_evaluation(evl, fns, out_dir):
+def save_mahalanobis_evaluation(usr_num, mdst_dir, enc_gen_mdst, enc_frg_mdst, evl, fns):
+    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_genuine.dat'.format(usr_num=usr_num)), 'w') as f:
+        for dst in enc_gen_mdst:
+            f.write('{dst}\n'.format(dst=dst))
+
+    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_forged.dat'.format(usr_num=usr_num)), 'w') as f:
+        for dst in enc_frg_mdst:
+            f.write('{dst}\n'.format(dst=dst))
+
+    with open(os.path.join(mdst_dir, 'evaluations.csv'), 'a') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
+        w.writerow(evl)
+
+
+def save_lsvc_evaluation(evl, fns, out_dir):
     with open(os.path.join(out_dir, 'evaluations.csv'), 'a') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writerow(evl)
 
 
-def save_avg_evaluation(fns, out_dir):
+def save_mahalanobis_avg_evaluation(fns, mdst_dir):
+    with open(os.path.join(mdst_dir, 'evaluations.csv'), 'r') as f:
+        avg = {
+            fns[0]: 'AVG'
+        }
+        rows = [r for r in csv.DictReader(f, fieldnames=fns)][1:]
+        avg.update({
+            fns[i]: np.mean([float(r[fns[i]]) for r in rows]) for i in range(1, len(fns))
+        })
+
+    with open(os.path.join(mdst_dir, 'evaluations.csv'), 'a') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
+        w.writerow(avg)
+
+
+def save_lsvc_avg_evaluation(fns, out_dir):
     with open(os.path.join(out_dir, 'evaluations.csv'), 'r') as f:
         avg = {
             fns[0]: 'AVG'
@@ -167,23 +197,6 @@ def get_lsvc_train_data(enc_gen, enc_frg):
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
-def save_mahalanobis_distances(usr_num, mdst_dir, enc_gen_mdst, enc_frg_mdst):
-    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_genuine.dat'.format(usr_num=usr_num)), 'w') as f:
-        for dst in enc_gen_mdst:
-            f.write('{dst}\n'.format(dst=dst))
-
-    with open(os.path.join(mdst_dir, 'U{usr_num}/mahalanobis_distances_forged.dat'.format(usr_num=usr_num)), 'w') as f:
-        for dst in enc_frg_mdst:
-            f.write('{dst}\n'.format(dst=dst))
-
-    with open(os.path.join(mdst_dir, 'U{usr_num}/evaluation.dat'.format(usr_num=usr_num)), 'w') as f:
-        enc_mdst = [[mdst, 0] for mdst in enc_gen_mdst] + [[mdst, 0] for mdst in enc_frg_mdst]
-        for dst in enc_mdst:
-            dst[1] += np.where(enc_gen_mdst <= dst[0])[0].shape[0] + np.where(enc_frg_mdst > dst[0])[0].shape[0]
-        trs, prc = max(enc_mdst, key=lambda x: x[1])
-        f.write('Threshold: {trs}\nPrecision: {prc}\n'.format(trs=trs, prc=prc / len(enc_mdst)))
-
-
 def get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg):
     cov_diag = np.diag(np.cov(tr_enc_gen, rowvar=False)).copy()
     cov_diag[np.where(cov_diag == 0.0)] += np.finfo(np.float64).eps
@@ -193,7 +206,19 @@ def get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg):
         sorted([spatial.distance.mahalanobis(enc, mean, cov_inv) for enc in enc_frg])
 
 
-def evaluate_model(usr_num, enc_gen, enc_frg, fns, lsvcs_dir):
+def evaluate_mahalanobis(usr_num, enc_gen_mdst, enc_frg_mdst):
+    enc_mdst = [[mdst, 0] for mdst in enc_gen_mdst] + [[mdst, 0] for mdst in enc_frg_mdst]
+    for dst in enc_mdst:
+        dst[1] += np.where(enc_gen_mdst <= dst[0])[0].shape[0] + np.where(enc_frg_mdst > dst[0])[0].shape[0]
+    trs, prc = max(enc_mdst, key=lambda x: x[1])
+    return {
+        'Writer No': usr_num,
+        'Precision': prc / len(enc_mdst),
+        'Threshold': trs
+    }
+
+
+def evaluate_lsvc(usr_num, enc_gen, enc_frg, fns, lsvcs_dir):
     x, y = get_lsvc_train_data(enc_gen, enc_frg)
     return train_lsvc(x, y, usr_num, fns, lsvcs_dir)
 
@@ -214,7 +239,13 @@ def get_autoencoder_train_data(data, usr_num, msk_val):
         sequence.pad_sequences(data.frg[usr_num][ae_smp_cnt:], value=msk_val)
 
 
-def prepare_evaluations_csv(out_dir, fns):
+def prepare_mahalanobis_distances_evaluations_csv(mdst_dir, fns):
+    with open(os.path.join(mdst_dir, 'evaluations.csv'), 'w') as f:
+        w = csv.DictWriter(f, fieldnames=fns)
+        w.writeheader()
+
+
+def prepare_lsvc_evaluations_csv(out_dir, fns):
     with open(os.path.join(out_dir, 'evaluations.csv'), 'w') as f:
         w = csv.DictWriter(f, fieldnames=fns)
         w.writeheader()
@@ -247,24 +278,29 @@ def prepare_output_directories(epc, earc, darc, ct, bd):
     return out_dir, aes_dir, lsvcs_dir, mdst_dir
 
 
-def process_models(data, epc, earc, darc, ct, bd, msk_val, fns):
+def process_models(data, epc, earc, darc, ct, bd, msk_val, lsvc_fns, mhln_fns):
     out_dir, aes_dir, lsvcs_dir, mdst_dir = prepare_output_directories(epc, earc, darc, ct, bd)
-    prepare_evaluations_csv(out_dir, fns)
+    prepare_mahalanobis_distances_evaluations_csv(mdst_dir, mhln_fns)
+    prepare_lsvc_evaluations_csv(out_dir, lsvc_fns)
     for usr_num in range(usr_cnt):
         x, y, tr_gen_x, gen_x, frg_x = get_autoencoder_train_data(data, usr_num, msk_val)
         e = load_encoder(x, y, epc, earc, darc, ct, bd, usr_num + 1, msk_val, aes_dir)
         tr_enc_gen, enc_gen, enc_frg = get_encoded_data(e, tr_gen_x, gen_x, frg_x, msk_val)
 
         enc_gen_mdst, enc_frg_mdst = get_mahalanobis_distances(tr_enc_gen, enc_gen, enc_frg)
-        save_mahalanobis_distances(usr_num + 1, mdst_dir, enc_gen_mdst, enc_frg_mdst)
+        mhln_evl = evaluate_mahalanobis(usr_num + 1, enc_gen_mdst, enc_frg_mdst)
+        save_mahalanobis_evaluation(usr_num + 1, mdst_dir, enc_gen_mdst, enc_frg_mdst, mhln_evl, mhln_fns)
 
-        evl = evaluate_model(usr_num + 1, enc_gen, enc_frg, fns, lsvcs_dir)
-        evl.update({
-            fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
-            fns[2]: np.mean(list(map(len, data.frg[usr_num])))
+        lsvc_evl = evaluate_lsvc(usr_num + 1, enc_gen, enc_frg, lsvc_fns, lsvcs_dir)
+        lsvc_evl.update({
+            lsvc_fns[1]: np.mean(list(map(len, data.gen[usr_num]))),
+            lsvc_fns[2]: np.mean(list(map(len, data.frg[usr_num])))
         })
-        save_evaluation(evl, fns, out_dir)
-    save_avg_evaluation(fns, out_dir)
+        save_lsvc_evaluation(lsvc_evl, lsvc_fns, out_dir)
+    save_mahalanobis_avg_evaluation(mhln_fns, mdst_dir)
+    save_lsvc_avg_evaluation(lsvc_fns, out_dir)
 
 if __name__ == '__main__':
-    process_models(get_data(), ae_tr_epochs, enc_arc, dec_arc, cell_type, bd_cell_type, mask_value, csv_fns)
+    process_models(
+        get_data(), ae_tr_epochs, enc_arc, dec_arc, cell_type, bd_cell_type, mask_value, lsvc_csv_fns, mhln_csv_fns
+    )
