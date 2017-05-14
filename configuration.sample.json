@@ -1,5 +1,6 @@
 {
   "general": {
+    "random_seed": 100,
     "verbose": 1,
     "output_directory_template": "./models/{bd}{ct}-{earc}-{darc}-{epc}"
   },

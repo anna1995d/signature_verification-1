@@ -23,6 +23,7 @@ with open(CONIFG_PATH, 'r') as cf:
     CONFIG = json.load(cf)
 
 # General Configuration
+np.random.seed(CONFIG['general']['random_seed'])
 verbose = CONFIG['general']['verbose']
 output_directory_temp = os.path.join(PATH, CONFIG['general']['output_directory_template'])
 

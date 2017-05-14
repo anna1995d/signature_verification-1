@@ -66,9 +66,8 @@ class Data(object):
             res.append(Data.extract_sample(
                 smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
             ))
-        np.random.shuffle(res)
 
-        return res
+        return np.random.permutation(res)
 
     @staticmethod
     def extract_forged(smp_stp, rl_win_sz, rl_win_stp, nrm, usr, smp_cnt, ftr_cnt, path_temp):
@@ -79,9 +78,8 @@ class Data(object):
             res.append(Data.extract_sample(
                 smp_stp=smp_stp, rl_win_sz=rl_win_sz, rl_win_stp=rl_win_stp, ftr_cnt=ftr_cnt, nrm=nrm, path=path
             ))
-        np.random.shuffle(res)
 
-        return res
+        return np.random.permutation(res)
 
     def __init__(self, smp_stp, rl_win_sz, rl_win_stp, ftr_cnt, nrm, usr_cnt, gen_smp_cnt, frg_smp_cnt, gen_path_temp,
                  frg_path_temp):
