@@ -1,8 +1,6 @@
 from keras.layers import Masking, InputLayer, RepeatVector
 from keras.layers.wrappers import Bidirectional
 from keras.models import Sequential
-from sklearn import svm
-from sklearn.externals import joblib
 
 from seq2seq.logging import elogger
 from seq2seq.rnn.layers import AttentionWithContext
@@ -65,8 +63,3 @@ class Encoder(object):
 
     def load(self, path):
         self.encoder.load_weights(path, by_name=True)
-
-
-class LinearSVC(svm.LinearSVC):
-    def save(self, path):
-        joblib.dump(self, path)
