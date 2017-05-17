@@ -48,7 +48,5 @@ def load_encoder(x, y, usr_num):
     return e
 
 
-def get_encoded_data(e, tr_gen_x, gen_x, frg_x):
-    return e.predict(inp=sequence.pad_sequences(tr_gen_x, value=CONFIG.msk_val)), \
-           e.predict(inp=sequence.pad_sequences(gen_x, value=CONFIG.msk_val)), \
-           e.predict(inp=sequence.pad_sequences(frg_x, value=CONFIG.msk_val))
+def get_encoded_data(e, non_enc):
+    return e.predict(inp=sequence.pad_sequences(non_enc, value=CONFIG.msk_val))
