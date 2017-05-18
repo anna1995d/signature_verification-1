@@ -102,6 +102,8 @@
         "decoder": [
           9
         ],
+        "latent_mean": 0.0,
+        "latent_std": 1.0,
         "bidirectional": true,
         "bidirectional_merge_mode": "ave",
         "cell_type": "GRU"

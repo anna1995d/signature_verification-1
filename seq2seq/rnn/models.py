@@ -1,5 +1,7 @@
-from keras import layers
-from keras.layers import Masking, Input, RepeatVector
+import tensorflow as tf
+import keras.backend as K
+from keras import layers, losses
+from keras.layers import Masking, Input, RepeatVector, Dense, Lambda, Activation
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -11,35 +13,69 @@ from utils.config import CONFIG
 
 # TODO: Add EarlyStopping Callback
 # TODO: Add LearningRateScheduler if it is useful
-class Autoencoder(object):
+class AttentiveRecurrentVariationalAutoencoder(object):
     def __init__(self, max_len):
         cell = getattr(layers, CONFIG.cell_type)
 
         # Input
-        inp = Input(shape=(None, CONFIG.inp_dim), name='input')
-        msk = Masking(mask_value=CONFIG.msk_val, name='mask')(inp)
+        inp = Input(shape=(None, CONFIG.inp_dim))
+        msk = Masking(mask_value=CONFIG.msk_val)(inp)
 
         # Encoder
-        c = cell(CONFIG.enc_arc[0], **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=0))
-        enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(msk)
-        for i, ln in enumerate(CONFIG.enc_arc[1:], 1):
-            c = cell(ln, **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=i))
-            enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(enc)
+        enc = None
+        for ln in CONFIG.enc_arc:
+            c = cell(ln, **CONFIG.ae_lcfg)
+            enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(
+                msk if enc is None else enc
+            )
 
         # Attention
         att = AttentionWithContext()(enc)
+        act = Activation('sigmoid')(att)  # TODO: Test this ...
+
+        # Latent
+        z_mean = Dense(CONFIG.enc_arc[-1])(act)
+        z_log_sigma = Dense(CONFIG.enc_arc[-1])(act)
+
+        def sampling(args):
+            epsilon = K.random_normal(
+                shape=(CONFIG.ae_btch_sz, CONFIG.enc_arc[-1]), mean=CONFIG.ltn_mn, stddev=CONFIG.ltn_std
+            )
+            return args[0] + K.exp(args[1] / 2) * epsilon
+
+        z = Lambda(sampling)([z_mean, z_log_sigma])
+
+        gnr_layers = [RepeatVector(max_len)]
+
+        # Repeat
+        rpt = gnr_layers[-1](z)
 
         # Decoder
-        rpt_vec = RepeatVector(max_len)(att)
+        dec = None
+        for ln in CONFIG.dec_arc:
+            c = cell(ln, **CONFIG.ae_lcfg)
+            gnr_layers.append(Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)
+            dec = gnr_layers[-1](rpt if dec is None else dec)
 
-        c = cell(CONFIG.dec_arc[0], **CONFIG.ae_lcfg, name='decoder_{index}'.format(index=0))
-        dec = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(rpt_vec)
-        for i, ln in enumerate(CONFIG.dec_arc[1:], 1):
-            c = cell(ln, **CONFIG.ae_lcfg, name='decoder_{index}'.format(index=i))
-            dec = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(dec)
+        def vae_loss(y_true, y_pred):  # TODO: Test this ...
+            xent_loss = losses.mean_squared_error(y_true, y_pred)
+            kl_loss = - 0.5 * K.sum(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1) * max_len
+            return tf.transpose(tf.add(tf.transpose(xent_loss), kl_loss))
 
+        # Autoencoder
+        CONFIG.ae_ccfg['loss'] = [vae_loss]
         self.seq_autoenc = Model(inp, dec)
         self.seq_autoenc.compile(**CONFIG.ae_ccfg)
+
+        # Encoder
+        self.seq_enc = Model(inp, z_mean)
+
+        # Generator
+        gnr_inp = Input(shape=(CONFIG.enc_arc[-1],))
+        gnr = None
+        for layer in gnr_layers:
+            gnr = layer(gnr_inp if gnr is None else gnr)
+        self.seq_gnr = Model(gnr_inp, gnr)
 
     def fit(self, x, y, usr_num):
         self.seq_autoenc.fit(
@@ -50,32 +86,8 @@ class Autoencoder(object):
             callbacks=[elogger, rnn_tblogger(usr_num)]
         )
 
-    def save(self, path):
-        self.seq_autoenc.save(path)
-
-
-class Encoder(object):
-    def __init__(self):
-        cell = getattr(layers, CONFIG.cell_type)
-
-        # Input
-        inp = Input(shape=(None, CONFIG.inp_dim), name='input')
-        msk = Masking(mask_value=CONFIG.msk_val, name='mask')(inp)
-
-        # Encoder
-        c = cell(CONFIG.enc_arc[0], **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=0))
-        c.return_sequences = (0 != len(CONFIG.enc_arc) - 1)
-        enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(msk)
-        for i, ln in enumerate(CONFIG.enc_arc[1:], 1):
-            c = cell(ln, **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=i))
-            c.return_sequences = (i != len(CONFIG.enc_arc) - 1)
-            enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(enc)
-
-        self.seq_enc = Model(inp, enc)
-        self.seq_enc.compile(**CONFIG.ae_ccfg)
-
     def predict(self, inp):
         return self.seq_enc.predict(inp)
 
-    def load(self, path):
-        self.seq_enc.load_weights(path, by_name=True)
+    def save(self, path):
+        self.seq_autoenc.save(path)

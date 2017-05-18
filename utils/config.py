@@ -52,6 +52,8 @@ class Configuration(object):
         self.msk_val = config['rnn']['autoencoder']['architecture']['mask_value']
         self.enc_arc = config['rnn']['autoencoder']['architecture']['encoder']
         self.dec_arc = config['rnn']['autoencoder']['architecture']['decoder']
+        self.ltn_mn = config['rnn']['autoencoder']['architecture']['latent_mean']
+        self.ltn_std = config['rnn']['autoencoder']['architecture']['latent_std']
         self.bd_cell_type = config['rnn']['autoencoder']['architecture']['bidirectional']
         self.bd_merge_mode = config['rnn']['autoencoder']['architecture']['bidirectional_merge_mode']
         self.cell_type = config['rnn']['autoencoder']['architecture']['cell_type']
