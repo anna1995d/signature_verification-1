@@ -1,41 +1,53 @@
-from keras.layers import Masking, InputLayer, RepeatVector
+from keras import layers
+from keras.layers import Masking, Input, RepeatVector
 from keras.layers.wrappers import Bidirectional
-from keras.models import Sequential
+from keras.models import Model
 
 from seq2seq.logging import elogger
 from seq2seq.rnn.layers import AttentionWithContext
 from seq2seq.rnn.logging import rnn_tblogger
+from utils.config import CONFIG
 
 
 # TODO: Add EarlyStopping Callback
 # TODO: Add LearningRateScheduler if it is useful
 class Autoencoder(object):
-    def __init__(self, cell, bidir, bidir_mrgm, inp_dim, max_len, earc, darc, msk_val, ccfg, lcfg):
-        self.seq_autoenc = Sequential()
+    def __init__(self, max_len):
+        cell = getattr(layers, CONFIG.cell_type)
 
         # Input
-        self.seq_autoenc.add(InputLayer(input_shape=(None, inp_dim), name='input'))
-        self.seq_autoenc.add(Masking(mask_value=msk_val, name='mask'))
+        inp = Input(shape=(None, CONFIG.inp_dim), name='input')
+        msk = Masking(mask_value=CONFIG.msk_val, name='mask')(inp)
 
         # Encoder
-        for i, ln in enumerate(earc):
-            c = cell(ln, **lcfg, name='encoder_{index}'.format(index=i))
-            self.seq_autoenc.add(Bidirectional(c, merge_mode=bidir_mrgm) if bidir else c)
+        c = cell(CONFIG.enc_arc[0], **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=0))
+        enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(msk)
+        for i, ln in enumerate(CONFIG.enc_arc[1:], 1):
+            c = cell(ln, **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=i))
+            enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(enc)
 
         # Attention
-        self.seq_autoenc.add(AttentionWithContext())
+        att = AttentionWithContext()(enc)
 
         # Decoder
-        self.seq_autoenc.add(RepeatVector(max_len))
-        for i, ln in enumerate(darc):
-            c = cell(ln, **lcfg, name='decoder_{index}'.format(index=i))
-            self.seq_autoenc.add(Bidirectional(c, merge_mode=bidir_mrgm) if bidir else c)
+        rpt_vec = RepeatVector(max_len)(att)
 
-        self.seq_autoenc.compile(**ccfg)
+        c = cell(CONFIG.dec_arc[0], **CONFIG.ae_lcfg, name='decoder_{index}'.format(index=0))
+        dec = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(rpt_vec)
+        for i, ln in enumerate(CONFIG.dec_arc[1:], 1):
+            c = cell(ln, **CONFIG.ae_lcfg, name='decoder_{index}'.format(index=i))
+            dec = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(dec)
 
-    def fit(self, x, y, epochs, batch_size, verbose, usr_num):
+        self.seq_autoenc = Model(inp, dec)
+        self.seq_autoenc.compile(**CONFIG.ae_ccfg)
+
+    def fit(self, x, y, usr_num):
         self.seq_autoenc.fit(
-            x, y, epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[elogger, rnn_tblogger(usr_num)]
+            x, y,
+            epochs=CONFIG.ae_tr_epochs,
+            batch_size=CONFIG.ae_btch_sz,
+            verbose=CONFIG.verbose,
+            callbacks=[elogger, rnn_tblogger(usr_num)]
         )
 
     def save(self, path):
@@ -43,23 +55,27 @@ class Autoencoder(object):
 
 
 class Encoder(object):
-    def __init__(self, cell, bidir, bidir_mrgm, inp_dim, earc, msk_val, ccfg, lcfg):
-        self.encoder = Sequential()
+    def __init__(self):
+        cell = getattr(layers, CONFIG.cell_type)
 
         # Input
-        self.encoder.add(InputLayer(input_shape=(None, inp_dim), name='input'))
-        self.encoder.add(Masking(mask_value=msk_val, name='mask'))
+        inp = Input(shape=(None, CONFIG.inp_dim), name='input')
+        msk = Masking(mask_value=CONFIG.msk_val, name='mask')(inp)
 
         # Encoder
-        for i, ln in enumerate(earc):
-            c = cell(ln, **lcfg, name='encoder_{index}'.format(index=i))
-            c.return_sequences = (i != len(earc) - 1)
-            self.encoder.add(Bidirectional(c, merge_mode=bidir_mrgm) if bidir else c)
+        c = cell(CONFIG.enc_arc[0], **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=0))
+        c.return_sequences = (0 != len(CONFIG.enc_arc) - 1)
+        enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(msk)
+        for i, ln in enumerate(CONFIG.enc_arc[1:], 1):
+            c = cell(ln, **CONFIG.ae_lcfg, name='encoder_{index}'.format(index=i))
+            c.return_sequences = (i != len(CONFIG.enc_arc) - 1)
+            enc = (Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)(enc)
 
-        self.encoder.compile(**ccfg)
+        self.seq_enc = Model(inp, enc)
+        self.seq_enc.compile(**CONFIG.ae_ccfg)
 
     def predict(self, inp):
-        return self.encoder.predict(inp)
+        return self.seq_enc.predict(inp)
 
     def load(self, path):
-        self.encoder.load_weights(path, by_name=True)
+        self.seq_enc.load_weights(path, by_name=True)
