@@ -56,7 +56,7 @@
     },
     "autoencoder": {
       "train": {
-        "batch_size": 16,
+        "batch_size": 32,
         "epochs": 50,
         "sampling_count": 15
       },
