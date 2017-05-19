@@ -88,7 +88,7 @@
           "args": {
           }
         },
-        "loss": "mean_squared_error",
+        "loss": "cosine_proximity",
         "metrics": [
           "accuracy"
         ]
@@ -102,6 +102,7 @@
         "decoder": [
           9
         ],
+        "context_activation": "tanh",
         "latent_mean": 0.0,
         "latent_std": 1.0,
         "bidirectional": true,

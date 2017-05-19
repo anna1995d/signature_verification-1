@@ -1,4 +1,3 @@
-import tensorflow as tf
 import keras.backend as K
 from keras import layers, losses
 from keras.layers import Masking, Input, RepeatVector, Dense, Lambda, Activation
@@ -31,7 +30,7 @@ class AttentiveRecurrentVariationalAutoencoder(object):
 
         # Attention
         att = AttentionWithContext()(enc)
-        act = Activation('sigmoid')(att)  # TODO: Test this ...
+        act = Activation(CONFIG.ctx_act)(att)
 
         # Latent
         z_mean = Dense(CONFIG.enc_arc[-1])(act)
@@ -57,10 +56,10 @@ class AttentiveRecurrentVariationalAutoencoder(object):
             gnr_layers.append(Bidirectional(c, merge_mode=CONFIG.bd_merge_mode) if CONFIG.bd_cell_type else c)
             dec = gnr_layers[-1](rpt if dec is None else dec)
 
-        def vae_loss(y_true, y_pred):  # TODO: Test this ...
-            xent_loss = losses.mean_squared_error(y_true, y_pred)
-            kl_loss = - 0.5 * K.sum(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1) * max_len
-            return tf.transpose(tf.add(tf.transpose(xent_loss), kl_loss))
+        def vae_loss(y_true, y_pred):
+            xent_loss = K.sum(getattr(losses, CONFIG.loss_fn)(y_true, y_pred), axis=-1)
+            kl_loss = - 0.5 * K.sum(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1)
+            return xent_loss + kl_loss
 
         # Autoencoder
         CONFIG.ae_ccfg['loss'] = [vae_loss]

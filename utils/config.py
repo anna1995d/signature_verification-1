@@ -57,11 +57,13 @@ class Configuration(object):
         self.bd_cell_type = config['rnn']['autoencoder']['architecture']['bidirectional']
         self.bd_merge_mode = config['rnn']['autoencoder']['architecture']['bidirectional_merge_mode']
         self.cell_type = config['rnn']['autoencoder']['architecture']['cell_type']
+        self.ctx_act = config['rnn']['autoencoder']['architecture']['context_activation']
 
         self.ae_ccfg = config['rnn']['autoencoder']['compile_config']
         self.ae_ccfg['optimizer'] = getattr(optimizers, self.ae_ccfg['optimizer']['name'])(
             **self.ae_ccfg['optimizer']['args']
         )
+        self.loss_fn = config['rnn']['autoencoder']['compile_config'].pop('loss')
         self.ae_lcfg = config['rnn']['autoencoder']['layers_config']
 
         # Logger Configuration
