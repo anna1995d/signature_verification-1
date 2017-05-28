@@ -56,21 +56,22 @@ class Configuration(object):
         self.ltn_std = config['rnn']['autoencoder']['architecture']['latent_std']
         self.bd_cell_type = config['rnn']['autoencoder']['architecture']['bidirectional']
         self.bd_merge_mode = config['rnn']['autoencoder']['architecture']['bidirectional_merge_mode']
-        self.cell_type = config['rnn']['autoencoder']['architecture']['cell_type']
-        self.ctx_act = config['rnn']['autoencoder']['architecture']['context_activation']
+        self.ct = config['rnn']['autoencoder']['architecture']['cell_type']
 
         self.ae_ccfg = config['rnn']['autoencoder']['compile_config']
         self.ae_ccfg['optimizer'] = getattr(optimizers, self.ae_ccfg['optimizer']['name'])(
             **self.ae_ccfg['optimizer']['args']
         )
-        self.loss_fn = config['rnn']['autoencoder']['compile_config'].pop('loss')
+        self.loss_fn = config['rnn']['autoencoder']['compile_config']['loss']
         self.ae_lcfg = config['rnn']['autoencoder']['layers_config']
+
+        self.clbs = config['rnn']['autoencoder']['callbacks']
 
         # Logger Configuration
         self.log_frm = config['logger']['log_format']
         self.log_fl = config['logger']['log_file'].format(
             bd='b' if self.bd_cell_type else '',
-            ct=self.cell_type,
+            ct=self.ct,
             earc='x'.join(map(str, self.enc_arc)),
             darc='x'.join(map(str, self.dec_arc)),
             epc=self.ae_tr_epochs
@@ -84,7 +85,7 @@ class Configuration(object):
         self.mhln_csv_fns = config['export']['mahalanobis_csv_fieldnames']
         self.out_dir = self.out_dir_temp.format(
             bd='b' if self.bd_cell_type else '',
-            ct=self.cell_type,
+            ct=self.ct,
             earc='x'.join(map(str, self.enc_arc)),
             darc='x'.join(map(str, self.dec_arc)),
             epc=self.ae_tr_epochs

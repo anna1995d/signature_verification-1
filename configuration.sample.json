@@ -9,11 +9,6 @@
     "log_file": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/seq2seq.log",
     "log_level": "info"
   },
-  "tensorboard": {
-    "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
-    "histogram_freq": 1,
-    "write_images": true
-  },
   "export": {
     "model_save_template": "U{usr_num}.dat",
     "lsvc_csv_fieldnames": [
@@ -48,12 +43,6 @@
     }
   },
   "rnn": {
-    "visualize": {
-      "tsne_args": {
-        "init": "pca",
-        "method": "exact"
-      }
-    },
     "autoencoder": {
       "train": {
         "batch_size": 32,
@@ -102,12 +91,25 @@
         "decoder": [
           9
         ],
-        "context_activation": "tanh",
         "latent_mean": 0.0,
         "latent_std": 1.0,
         "bidirectional": true,
         "bidirectional_merge_mode": "ave",
         "cell_type": "GRU"
+      },
+      "callbacks": {
+        "tensorboard": {
+          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+          "histogram_freq": 1,
+          "write_images": true
+        },
+        "early_stopping": {
+          "monitor": "loss",
+          "min_delta": 0,
+          "patience": 0,
+          "verbose": 0,
+          "mode": "auto"
+        }
       }
     }
   }

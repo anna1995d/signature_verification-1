@@ -2,7 +2,7 @@ import os
 
 from keras.preprocessing import sequence
 
-from seq2seq.rnn.models import AttentiveRecurrentVariationalAutoencoder
+from seq2seq.rnn.models import AttentiveRecurrentAutoencoder
 from utils.config import CONFIG
 
 
@@ -16,10 +16,10 @@ def get_autoencoder_train_data(data, usr_num):
 
 
 def load_encoder(x, y, usr_num):
-    aevae = AttentiveRecurrentVariationalAutoencoder(max_len=x.shape[1])
-    aevae.fit(x, y, usr_num=usr_num)
-    aevae.save(path=os.path.join(CONFIG.aes_dir, CONFIG.mdl_save_temp.format(usr_num=usr_num)))
-    return aevae
+    arae = AttentiveRecurrentAutoencoder(max_len=x.shape[1])
+    arae.fit(x, y, usr_num=usr_num)
+    arae.save(path=os.path.join(CONFIG.aes_dir, CONFIG.mdl_save_temp.format(usr_num=usr_num)))
+    return arae
 
 
 def get_encoded_data(e, non_enc):
