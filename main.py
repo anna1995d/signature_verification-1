@@ -13,10 +13,11 @@ def process_models():
     lsvcs_dir = prepare_lsvc_output_directory(CONFIG.out_dir)
     prepare_lsvc_evaluations_csv(lsvcs_dir)
     for usr_num in range(1, CONFIG.usr_cnt + 1):
-        x, y, tr_gen_x, gen_x, frg_x = get_autoencoder_train_data(DATA, usr_num - 1)
+        x, y, tr_gen_x, tr_frg_x, gen_x, frg_x = get_autoencoder_train_data(DATA, usr_num - 1)
         e = load_encoder(x, y, usr_num)
 
         tr_enc_gen = get_encoded_data(e, tr_gen_x)
+        tr_enc_frg = get_encoded_data(e, tr_frg_x)
         enc_gen = get_encoded_data(e, gen_x)
         enc_frg = get_encoded_data(e, frg_x)
 

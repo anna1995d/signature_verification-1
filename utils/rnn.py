@@ -11,6 +11,7 @@ def get_autoencoder_train_data(data, usr_num):
     return sequence.pad_sequences(gen_x, value=CONFIG.msk_val), \
         sequence.pad_sequences(gen_y, value=CONFIG.msk_val), \
         sequence.pad_sequences(data.gen[usr_num][:CONFIG.ae_smp_cnt], value=CONFIG.msk_val), \
+        sequence.pad_sequences(data.frg[usr_num][:CONFIG.ae_smp_cnt], value=CONFIG.msk_val), \
         sequence.pad_sequences(data.gen[usr_num][CONFIG.ae_smp_cnt:], value=CONFIG.msk_val), \
         sequence.pad_sequences(data.frg[usr_num][CONFIG.ae_smp_cnt:], value=CONFIG.msk_val)
 
