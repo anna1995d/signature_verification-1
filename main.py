@@ -20,10 +20,6 @@ def process_models():
         tr_enc_frg = get_encoded_data(e, tr_frg_x)
         enc_gen = get_encoded_data(e, gen_x)
         enc_frg = get_encoded_data(e, frg_x)
-
-        print(enc_gen)
-        print(enc_frg)
-
         save_encoded_representations(usr_num, tr_enc_gen, enc_gen, enc_frg)
 
         import numpy as np

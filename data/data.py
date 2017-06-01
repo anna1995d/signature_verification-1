@@ -19,20 +19,20 @@ class Data(object):
 
     @staticmethod
     def extract(d):
-        drv = Data.calculate_derivatives(d, smpl=True)
-        t_n = np.arctan(drv[:, 1], drv[:, 0]).reshape((-1, 1))
-        t_n[np.argwhere(np.isnan(t_n))] = 0
-        v_n = np.sqrt(drv[:, 0] ** 2 + drv[:, 1] ** 2).reshape((-1, 1))
+        drvs = Data.calculate_derivatives(d, smpl=True)
+        drv = Data.calculate_derivatives(d, smpl=False)
+        t_n = np.arctan(drvs[:, 1], drvs[:, 0]).reshape((-1, 1))
+        v_n = np.sqrt(drvs[:, 0] ** 2 + drvs[:, 1] ** 2).reshape((-1, 1))
         dt_n = Data.calculate_derivatives(t_n, smpl=True)
-        r_n = np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps)
+        r_n = np.nan_to_num(np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps))
 
         return np.concatenate((
             d,
-            Data.calculate_derivatives(d, smpl=False),
+            drvs,
+            drv,
             t_n,
             v_n,
             r_n,
-            drv,
         ), axis=1)
 
     @staticmethod

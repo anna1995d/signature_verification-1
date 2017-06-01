@@ -31,6 +31,9 @@ class Autoencoder(object):
     def save(self, path):
         self.seq_autoenc.save(path)
 
+    def load(self, path):
+        self.seq_autoenc.load(path)
+
 
 # TODO: Add LearningRateScheduler if it is useful
 class RecurrentVariationalAutoencoder(Autoencoder):
