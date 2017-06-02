@@ -6,10 +6,11 @@ from sklearn.metrics import classification_report
 
 from seq2seq.models import LinearSVC
 from utils.config import CONFIG
+from utils.data import DATA
 
 
 def get_lsvc_train_data(enc_gen, enc_frg):
-    return np.concatenate((enc_gen, enc_frg)), \
+    return np.concatenate((np.nan_to_num(enc_gen), np.nan_to_num(enc_frg))), \
            np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0])))
 
 
@@ -23,6 +24,8 @@ def evaluate_lsvc(c, x, y, usr_num):
     cr = list(map(float, classification_report(y_true=y, y_pred=c.predict(x)).split('\n')[-2].split()[3:6]))
     return {
         CONFIG.lsvc_csv_fns[0]: usr_num,
+        CONFIG.lsvc_csv_fns[1]: np.mean(list(map(len, DATA.gen[usr_num - 1]))),
+        CONFIG.lsvc_csv_fns[2]: np.mean(list(map(len, DATA.frg[usr_num - 1]))),
         CONFIG.lsvc_csv_fns[3]: cr[0],
         CONFIG.lsvc_csv_fns[4]: cr[1],
         CONFIG.lsvc_csv_fns[5]: cr[2]
