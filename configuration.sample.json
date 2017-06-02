@@ -99,7 +99,7 @@
       },
       "callbacks": {
         "tensorboard": {
-          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard",
           "histogram_freq": 1,
           "write_images": true
         },
