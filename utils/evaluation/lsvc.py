@@ -52,7 +52,4 @@ def save_lsvc_avg_evaluation():
                 [float(r[CONFIG.lsvc_csv_fns[i]]) for r in rows]
             ) for i in range(1, len(CONFIG.lsvc_csv_fns))
         })
-
-    with open(os.path.join(CONFIG.out_dir, 'lsvc_evaluations.csv'), 'a') as f:
-        w = csv.DictWriter(f, fieldnames=CONFIG.lsvc_csv_fns)
-        w.writerow(avg)
+    save_lsvc_evaluation(avg)
