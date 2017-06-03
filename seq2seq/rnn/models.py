@@ -16,13 +16,13 @@ class Autoencoder(object):
         self.seq_enc = None
         self.seq_autoenc = None
 
-    def fit(self, x, y, usr_num):
+    def fit(self, x, y):
         self.seq_autoenc.fit(
             x, y,
             epochs=CONFIG.ae_tr_epochs,
             batch_size=CONFIG.ae_btch_sz,
             verbose=CONFIG.verbose,
-            callbacks=[elogger, rnn_tblogger(usr_num), EarlyStopping(**CONFIG.clbs['early_stopping'])]
+            callbacks=[elogger, rnn_tblogger(), EarlyStopping(**CONFIG.clbs['early_stopping'])]
         )
 
     def predict(self, inp):

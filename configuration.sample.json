@@ -55,7 +55,7 @@
         "stateful": false,
         "unroll": false,
         "implementation": 2,
-        "activation": "relu",
+        "activation": "tanh",
         "recurrent_activation": "hard_sigmoid",
         "use_bias": true,
         "kernel_initializer": "glorot_uniform",
@@ -85,8 +85,8 @@
       "architecture": {
         "mask_value": 0.0,
         "encoder": [
-          9,
-          60
+          72,
+          100
         ],
         "decoder": [
           9
@@ -99,7 +99,7 @@
       },
       "callbacks": {
         "tensorboard": {
-          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard/U{usr_num}",
+          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard",
           "histogram_freq": 1,
           "write_images": true
         },

@@ -90,8 +90,6 @@ class Configuration(object):
             darc='x'.join(map(str, self.dec_arc)),
             epc=self.ae_tr_epochs
         )
-        self.aes_dir = os.path.join(self.out_dir, 'autoencoders')
-        self.enc_dir = os.path.join(self.out_dir, 'encoded')
 
 
 CONFIG = Configuration()

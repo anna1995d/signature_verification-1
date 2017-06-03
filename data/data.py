@@ -106,5 +106,7 @@ class Data(object):
             path_temp=frg_path_temp
         ) for usr in range(1, usr_cnt + 1)]
 
+        self.gen_max_len = max(map(lambda x: max(map(lambda y: len(y), x)), self.gen))
+
     def get_genuine_combinations(self, usr_num, smp_cnt):
         return np.array(list(itertools.product(self.gen[usr_num][:smp_cnt], self.gen[usr_num][:smp_cnt]))).T
