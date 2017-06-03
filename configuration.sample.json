@@ -55,7 +55,7 @@
         "stateful": false,
         "unroll": false,
         "implementation": 2,
-        "activation": "relu",
+        "activation": "tanh",
         "recurrent_activation": "hard_sigmoid",
         "use_bias": true,
         "kernel_initializer": "glorot_uniform",
@@ -85,8 +85,8 @@
       "architecture": {
         "mask_value": 0.0,
         "encoder": [
-          9,
-          60
+          72,
+          100
         ],
         "decoder": [
           9
