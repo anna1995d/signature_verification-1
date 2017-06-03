@@ -11,7 +11,7 @@
   },
   "export": {
     "model_save_template": "U{usr_num}.dat",
-    "lsvc_csv_fieldnames": [
+    "svc_csv_fieldnames": [
       "Writer No",
       "Gen-AVG-len",
       "Frg-AVG-len",
