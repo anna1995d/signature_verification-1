@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 from sklearn.metrics import classification_report
-from sklearn.svm import SVC
+from sklearn.svm import NuSVC
 
 from utils.config import CONFIG
 from utils.data import DATA
@@ -28,7 +28,7 @@ def get_svc_train_data(e):
 
 
 def train_svc(x, y):
-    c = SVC()
+    c = NuSVC(nu=0.7, gamma=0.01, verbose=True)
     c.fit(x, y)
     return c
 
