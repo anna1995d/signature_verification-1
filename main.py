@@ -8,7 +8,6 @@ from utils.rnn import get_autoencoder_train_data, load_encoder
 
 def process_models():
     prepare_output_directory()
-    prepare_svc_evaluations_csv()
 
     x, y = get_autoencoder_train_data()
     e = load_encoder(x, y)
@@ -16,6 +15,7 @@ def process_models():
     x, y = get_svc_train_data(e)
     c = train_svc(x, y)
 
+    prepare_svc_evaluations_csv()
     for usr_num, (x, y) in enumerate(zip(*get_svc_evaluation_data(e)), 1):
         evl = evaluate_svc(c, x, y, usr_num)
         save_svc_evaluation(evl)

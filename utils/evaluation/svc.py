@@ -56,7 +56,7 @@ def get_svc_train_data(e):
 
 
 def train_svc(x, y):
-    c = NuSVC(nu=0.7, gamma=0.01, verbose=CONFIG.verbose)
+    c = NuSVC(nu=0.79, gamma=0.0001, verbose=CONFIG.verbose)
     c.fit(x, y)
     return c
 
