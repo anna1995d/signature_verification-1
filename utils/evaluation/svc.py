@@ -55,8 +55,8 @@ def get_svc_train_data(e):
     return x, y
 
 
-def train_svc(x, y):
-    c = NuSVC(nu=0.7, gamma=0.01, verbose=CONFIG.verbose)
+def train_svc(x, y, nu, gamma):
+    c = NuSVC(nu=nu / 100.0, gamma=gamma / 100.0)
     c.fit(x, y)
     return c
 
@@ -100,4 +100,5 @@ def save_svc_avg_evaluation():
                 [float(r[CONFIG.svc_csv_fns[i]]) for r in rows]
             ) for i in range(1, len(CONFIG.svc_csv_fns))
         })
+    print(avg[CONFIG.svc_csv_fns[-1]])
     save_svc_evaluation(avg)
