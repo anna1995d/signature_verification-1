@@ -5,32 +5,64 @@ import numpy as np
 from sklearn.metrics import classification_report
 from sklearn.svm import NuSVC
 
+from utils import compute_distances
 from utils.config import CONFIG
 from utils.data import DATA
 from utils.rnn import get_encoded_data
 
 
+def _get_svc_data(e, usr_num_gen):
+    x, y = list(), list()
+    for usr_num in usr_num_gen:
+        ref_enc_gen, enc_gen, enc_frg = [
+            get_encoded_data(e, DATA.gen[usr_num][:CONFIG.svc_smp_cnt]),
+            get_encoded_data(e, DATA.gen[usr_num][CONFIG.svc_smp_cnt:]),
+            get_encoded_data(e, DATA.frg[usr_num])
+        ]
+
+        ref_dists, gen_dists, frg_dists = [
+            compute_distances(ref_enc_gen),
+            compute_distances(enc_gen, ref_enc_gen),
+            compute_distances(enc_frg, ref_enc_gen),
+        ]
+
+        ref_mdists = np.mean(ref_dists, axis=1)
+        feat_vec = np.array([
+            np.mean(np.min(ref_dists, axis=1)), np.min(ref_mdists), np.mean(np.max(ref_dists, axis=1))
+        ], ndmin=2)
+
+        gen_x = np.nan_to_num(np.concatenate([
+            np.min(gen_dists, axis=1, keepdims=True),
+            np.mean(gen_dists[:, np.argmin(ref_mdists)].reshape((-1, 1)), axis=1, keepdims=True),
+            np.max(gen_dists, axis=1, keepdims=True)
+        ], axis=1) / feat_vec)
+        frg_x = np.nan_to_num(np.concatenate([
+            np.min(frg_dists, axis=1, keepdims=True),
+            np.mean(frg_dists[:, np.argmin(ref_mdists)].reshape((-1, 1)), axis=1, keepdims=True),
+            np.max(frg_dists, axis=1, keepdims=True)
+        ], axis=1) / feat_vec)
+        x.append(np.concatenate([gen_x, frg_x]))
+
+        gen_y = np.ones_like(gen_x[:, 0])
+        frg_y = np.zeros_like(frg_x[:, 0])
+        y.append(np.concatenate([gen_y, frg_y]))
+
+    return x, y
+
+
 def get_svc_train_data(e):
-    gen, frg, gen_mean = list(), list(), list()
-    for usr_num in range(CONFIG.usr_cnt):
-        enc_gen, enc_frg = get_encoded_data(e, DATA.gen[usr_num][:CONFIG.ae_smp_cnt]), \
-                           get_encoded_data(e, DATA.frg[usr_num][:CONFIG.ae_smp_cnt])
-        enc_gen_mean, enc_frg_mean = np.mean(enc_gen, axis=0), np.mean(enc_frg, axis=0)
-
-        gen.append(enc_gen - enc_gen_mean)
-        frg.append(enc_frg - enc_frg_mean)
-        gen_mean.append(enc_gen_mean)
-
-    enc_gen, enc_frg = np.concatenate(gen, axis=0), np.concatenate(frg, axis=0)
-
-    return np.concatenate((np.nan_to_num(enc_gen), np.nan_to_num(enc_frg))), \
-        np.concatenate((np.ones_like(enc_gen[:, 0]), np.zeros_like(enc_frg[:, 0]))), np.array(gen_mean)
+    x, y = list(map(lambda vec: np.concatenate(vec, axis=0), _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))))
+    return x, y
 
 
 def train_svc(x, y):
-    c = NuSVC(nu=0.7, gamma=0.01, verbose=True)
+    c = NuSVC(nu=0.7, gamma=0.01, verbose=CONFIG.verbose)
     c.fit(x, y)
     return c
+
+
+def get_svc_evaluation_data(e):
+    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
 
 
 def evaluate_svc(c, x, y, usr_num):

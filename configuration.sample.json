@@ -112,5 +112,10 @@
         }
       }
     }
+  },
+  "svc": {
+    "reference_sample_count": 5,
+    "train_user_count": 30,
+    "test_user_count": 10
   }
 }
