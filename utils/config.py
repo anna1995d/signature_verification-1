@@ -67,6 +67,11 @@ class Configuration(object):
 
         self.clbs = config['rnn']['autoencoder']['callbacks']
 
+        # SVC Configuration
+        self.svc_smp_cnt = config['svc']['reference_sample_count']
+        self.svc_tr_usr_cnt = config['svc']['train_user_count']
+        self.svc_ts_usr_cnt = config['svc']['test_user_count']
+
         # Logger Configuration
         self.log_frm = config['logger']['log_format']
         self.log_fl = config['logger']['log_file'].format(
@@ -81,7 +86,7 @@ class Configuration(object):
 
         # Export Configuration
         self.mdl_save_temp = config['export']['model_save_template']
-        self.lsvc_csv_fns = config['export']['lsvc_csv_fieldnames']
+        self.svc_csv_fns = config['export']['svc_csv_fieldnames']
         self.mhln_csv_fns = config['export']['mahalanobis_csv_fieldnames']
         self.out_dir = self.out_dir_temp.format(
             bd='b' if self.bd_cell_type else '',

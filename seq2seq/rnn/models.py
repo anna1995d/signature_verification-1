@@ -32,7 +32,7 @@ class Autoencoder(object):
         self.seq_autoenc.save(path)
 
     def load(self, path):
-        self.seq_autoenc.load(path)
+        self.seq_autoenc.load_weights(path)
 
 
 # TODO: Add LearningRateScheduler if it is useful

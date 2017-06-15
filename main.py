@@ -1,31 +1,24 @@
 #!/usr/bin/env python
 
-from utils.config import CONFIG
-from utils.evaluation.lsvc import evaluate_lsvc, prepare_lsvc_evaluations_csv, get_lsvc_train_data, train_lsvc, \
-    save_lsvc_evaluation, save_lsvc_avg_evaluation
+from utils.evaluation.svc import prepare_svc_evaluations_csv, get_svc_train_data, get_optimized_svc_evaluation, \
+    save_svc_evaluation, get_svc_evaluation_data
 from utils.io import prepare_output_directory
-from utils.rnn import get_autoencoder_train_data, get_autoencoder_evaluation_data, load_encoder, get_encoded_data
+from utils.rnn import get_autoencoder_train_data, load_encoder
 
 
-def process_models():
+def process_model():
     prepare_output_directory()
-
-    prepare_lsvc_evaluations_csv()
 
     x, y = get_autoencoder_train_data()
     e = load_encoder(x, y)
 
-    for usr_num in range(1, CONFIG.usr_cnt + 1):
-        tr_gen_x, tr_frg_x, gen_x, frg_x = get_autoencoder_evaluation_data(usr_num - 1)
+    x_train, y_train = get_svc_train_data(e)
+    x_cv, y_cv = get_svc_evaluation_data(e)
+    evl = get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv)
 
-        enc_gen, enc_frg = get_encoded_data(e, gen_x), get_encoded_data(e, frg_x)
-
-        x, y = get_lsvc_train_data(enc_gen, enc_frg)
-        c = train_lsvc(x, y)
-        evl = evaluate_lsvc(c, x, y, usr_num)
-        save_lsvc_evaluation(evl)
-    save_lsvc_avg_evaluation()
+    prepare_svc_evaluations_csv()
+    save_svc_evaluation(evl)
 
 
 if __name__ == '__main__':
-    process_models()
+    process_model()

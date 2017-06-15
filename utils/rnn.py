@@ -8,13 +8,6 @@ from utils.data import DATA
 from utils.config import CONFIG
 
 
-def get_autoencoder_evaluation_data(usr_num):
-    return sequence.pad_sequences(DATA.gen[usr_num][:CONFIG.ae_smp_cnt], value=CONFIG.msk_val), \
-        sequence.pad_sequences(DATA.frg[usr_num][:CONFIG.ae_smp_cnt], value=CONFIG.msk_val), \
-        sequence.pad_sequences(DATA.gen[usr_num][CONFIG.ae_smp_cnt:], value=CONFIG.msk_val), \
-        sequence.pad_sequences(DATA.frg[usr_num][CONFIG.ae_smp_cnt:], value=CONFIG.msk_val)
-
-
 def get_autoencoder_train_data():
     x, y = list(), list()
     for usr_num in range(CONFIG.usr_cnt):

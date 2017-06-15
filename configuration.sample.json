@@ -11,13 +11,11 @@
   },
   "export": {
     "model_save_template": "U{usr_num}.dat",
-    "lsvc_csv_fieldnames": [
-      "Writer No",
-      "Gen-AVG-len",
-      "Frg-AVG-len",
-      "Precision",
-      "Recall",
-      "F1-Score"
+    "svc_csv_fieldnames": [
+      "Kernel",
+      "Nu",
+      "Gamma",
+      "F1"
     ],
     "mahalanobis_csv_fieldnames": [
       "Writer No",
@@ -45,9 +43,9 @@
   "rnn": {
     "autoencoder": {
       "train": {
-        "batch_size": 32,
+        "batch_size": 16,
         "epochs": 50,
-        "sampling_count": 15
+        "sampling_count": 20
       },
       "layers_config": {
         "return_sequences": true,
@@ -86,7 +84,7 @@
         "mask_value": 0.0,
         "encoder": [
           72,
-          95
+          150
         ],
         "decoder": [
           9
@@ -112,5 +110,10 @@
         }
       }
     }
+  },
+  "svc": {
+    "reference_sample_count": 5,
+    "train_user_count": 30,
+    "test_user_count": 10
   }
 }
