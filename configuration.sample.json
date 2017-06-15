@@ -43,9 +43,9 @@
   "rnn": {
     "autoencoder": {
       "train": {
-        "batch_size": 32,
+        "batch_size": 16,
         "epochs": 50,
-        "sampling_count": 15
+        "sampling_count": 20
       },
       "layers_config": {
         "return_sequences": true,
@@ -84,7 +84,7 @@
         "mask_value": 0.0,
         "encoder": [
           72,
-          95
+          150
         ],
         "decoder": [
           9
