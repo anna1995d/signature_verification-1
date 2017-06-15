@@ -12,10 +12,10 @@
   "export": {
     "model_save_template": "U{usr_num}.dat",
     "svc_csv_fieldnames": [
-      "Writer No",
-      "Precision",
-      "Recall",
-      "F1-Score"
+      "Kernel",
+      "Nu",
+      "Gamma",
+      "F1"
     ],
     "mahalanobis_csv_fieldnames": [
       "Writer No",

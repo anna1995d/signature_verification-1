@@ -2,7 +2,7 @@ import csv
 import os
 
 import numpy as np
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, make_scorer
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.svm import NuSVC
 
@@ -10,6 +10,11 @@ from utils import compute_distances
 from utils.config import CONFIG
 from utils.data import DATA
 from utils.rnn import get_encoded_data
+
+
+def _scorer(y, y_pred):
+    scores = list(map(float, classification_report(y_true=y, y_pred=y_pred).split('\n')[-2].split()[3:6]))
+    return scores[0]
 
 
 def _get_svc_data(e, usr_num_gen):
@@ -61,7 +66,7 @@ def get_svc_train_data(e):
     return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
 
 
-def get_optimized_svc(x_train, y_train, x_cv, y_cv):
+def get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv):
     x, y = np.concatenate([x_train, x_cv]), np.concatenate([y_train, y_cv])
     estimator = NuSVC()
     param_grid = [{
@@ -79,25 +84,21 @@ def get_optimized_svc(x_train, y_train, x_cv, y_cv):
             1e-9, 2e-9, 3e-9, 1e-10, 2e-10, 3e-10
         ]
     }]
-    scoring = 'f1'
-    cv = PredefinedSplit(test_fold=np.concatenate([np.zeros_like(x_train[:, 0]), np.ones_like(x_cv[:, 0]) * (-1)]))
-    c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv)
+    scoring = make_scorer(_scorer)
+    cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_train[:, 0]) * (-1), np.zeros_like(x_cv[:, 0])]))
+    c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv, return_train_score=False)
     c.fit(x, y)
-    return c.best_estimator_
+
+    return {
+        CONFIG.svc_csv_fns[0]: c.best_params_['kernel'],
+        CONFIG.svc_csv_fns[1]: c.best_params_['nu'],
+        CONFIG.svc_csv_fns[2]: c.best_params_['gamma'],
+        CONFIG.svc_csv_fns[3]: c.best_score_
+    }
 
 
 def get_svc_evaluation_data(e):
     return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
-
-
-def evaluate_svc(c, x, y, usr_num):
-    cr = list(map(float, classification_report(y_true=y, y_pred=c.predict(x)).split('\n')[-2].split()[3:6]))
-    return {
-        CONFIG.svc_csv_fns[0]: usr_num,
-        CONFIG.svc_csv_fns[1]: cr[0],
-        CONFIG.svc_csv_fns[2]: cr[1],
-        CONFIG.svc_csv_fns[3]: cr[2]
-    }
 
 
 def prepare_svc_evaluations_csv():
