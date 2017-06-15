@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.svm import NuSVC
 
 from utils import compute_distances
@@ -60,10 +61,29 @@ def get_svc_train_data(e):
     return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
 
 
-def train_svc(x, y):
-    c = NuSVC(nu=0.79, gamma=0.000027, verbose=CONFIG.verbose)
+def get_optimized_svc(x_train, y_train, x_cv, y_cv):
+    x, y = np.concatenate([x_train, x_cv]), np.concatenate([y_train, y_cv])
+    estimator = NuSVC()
+    param_grid = [{
+        'kernel': ['rbf', 'sigmoid'],
+        'nu': np.arange(start=0.70, stop=0.85, step=0.01, dtype=np.float64),
+        'gamma': [
+            0.1, 0.2, 0.3,
+            0.01, 0.02, 0.03,
+            0.001, 0.002, 0.003,
+            0.0001, 0.0002, 0.0003,
+            0.00001, 0.00002, 0.00003,
+            0.000001, 0.000002, 0.000003,
+            0.0000001, 0.0000002, 0.0000003,
+            1e-7, 2e-7, 3e-7, 1e-8, 2e-8, 3e-8,
+            1e-9, 2e-9, 3e-9, 1e-10, 2e-10, 3e-10
+        ]
+    }]
+    scoring = 'f1'
+    cv = PredefinedSplit(test_fold=np.concatenate([np.zeros_like(x_train[:, 0]), np.ones_like(x_cv[:, 0]) * (-1)]))
+    c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv)
     c.fit(x, y)
-    return c
+    return c.best_estimator_
 
 
 def get_svc_evaluation_data(e):
@@ -74,11 +94,9 @@ def evaluate_svc(c, x, y, usr_num):
     cr = list(map(float, classification_report(y_true=y, y_pred=c.predict(x)).split('\n')[-2].split()[3:6]))
     return {
         CONFIG.svc_csv_fns[0]: usr_num,
-        # CONFIG.svc_csv_fns[1]: np.mean(list(map(len, DATA.gen[usr_num - 1]))),
-        # CONFIG.svc_csv_fns[2]: np.mean(list(map(len, DATA.frg[usr_num - 1]))),
-        CONFIG.svc_csv_fns[3]: cr[0],
-        CONFIG.svc_csv_fns[4]: cr[1],
-        CONFIG.svc_csv_fns[5]: cr[2]
+        CONFIG.svc_csv_fns[1]: cr[0],
+        CONFIG.svc_csv_fns[2]: cr[1],
+        CONFIG.svc_csv_fns[3]: cr[2]
     }
 
 
