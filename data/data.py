@@ -26,14 +26,11 @@ class Data(object):
         dt_n = Data.calculate_derivatives(t_n, smpl=True)
         r_n = np.nan_to_num(np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps))
 
-        return np.concatenate((
-            d,
-            drvs,
-            drv,
-            t_n,
-            v_n,
-            r_n,
-        ), axis=1)
+        present = np.concatenate((d, drvs, drv, t_n, v_n, r_n), axis=1)
+        past = np.concatenate((present[0, :].reshape((1, -1)), present[:-1, :]))
+        future = np.concatenate((present[1:, :], present[-1, :].reshape((1, -1))))
+
+        return np.concatenate((past, present, future), axis=1)
 
     @staticmethod
     def normalize(d, nrm):
