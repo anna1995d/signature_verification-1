@@ -87,7 +87,7 @@
           150
         ],
         "decoder": [
-          27
+          9
         ],
         "latent_mean": 0.0,
         "latent_std": 1.0,
