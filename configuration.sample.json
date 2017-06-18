@@ -33,7 +33,7 @@
       "feature_count": 4
     },
     "reshaping": {
-      "input_dimension": 9,
+      "input_dimension": 27,
       "sampling_step": 1,
       "normalization": "ms",
       "rolling_window_size": 1,
