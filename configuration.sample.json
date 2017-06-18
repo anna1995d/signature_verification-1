@@ -25,12 +25,12 @@
   },
   "data": {
     "reading": {
-      "user_count": 40,
-      "genuine_sample_count": 20,
-      "forged_sample_count": 20,
-      "genuine_path_template": "./data_set/U{user}S{sample}.TXT",
-      "forged_path_template": "./data_set/U{user}S{sample}.TXT",
-      "feature_count": 4
+      "user_count": 210,
+      "genuine_sample_count": 15,
+      "forged_sample_count": 5,
+      "genuine_path_template": "./data_set/U{user}S{sample}.sig",
+      "forged_path_template": "./data_set/U{user}S{sample}.sig",
+      "feature_count": 3
     },
     "reshaping": {
       "input_dimension": 27,
@@ -45,7 +45,7 @@
       "train": {
         "batch_size": 16,
         "epochs": 50,
-        "sampling_count": 20
+        "sampling_count": 15
       },
       "layers_config": {
         "return_sequences": true,
@@ -113,7 +113,7 @@
   },
   "svc": {
     "reference_sample_count": 5,
-    "train_user_count": 30,
-    "test_user_count": 10
+    "train_user_count": 180,
+    "test_user_count": 30
   }
 }

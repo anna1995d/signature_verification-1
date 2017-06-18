@@ -48,7 +48,7 @@ class Data(object):
     @staticmethod
     def extract_sample(path):
         with open(path, 'r') as f:
-            raw_data = np.reshape(f.read().split()[1:], newshape=(-1, CONFIG.ftr_cnt))[::CONFIG.smp_stp, :2].astype(
+            raw_data = np.reshape(f.read().split(), newshape=(-1, CONFIG.ftr_cnt))[::CONFIG.smp_stp, :2].astype(
                 np.float64
             )
 
