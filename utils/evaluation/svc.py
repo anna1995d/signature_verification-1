@@ -21,8 +21,8 @@ def _get_svc_data(e, usr_num_gen):
     x, y = list(), list()
     for usr_num in usr_num_gen:
         ref_enc_gen, enc_gen, enc_frg = [
-            get_encoded_data(e, DATA.gen[usr_num][:CONFIG.svc_smp_cnt]),
-            get_encoded_data(e, DATA.gen[usr_num][CONFIG.svc_smp_cnt:]),
+            get_encoded_data(e, DATA.gen_x[usr_num][:CONFIG.svc_smp_cnt]),
+            get_encoded_data(e, DATA.gen_x[usr_num][CONFIG.svc_smp_cnt:]),
             get_encoded_data(e, DATA.frg[usr_num])
         ]
 
