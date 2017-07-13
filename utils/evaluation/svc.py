@@ -65,7 +65,7 @@ def get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv):
     estimator = NuSVC()
     param_grid = [{
         'kernel': ['rbf', 'sigmoid'],
-        'nu': np.arange(start=0.600, stop=0.850, step=0.001, dtype=np.float64),
+        'nu': np.arange(start=0.020, stop=0.660, step=0.001, dtype=np.float64),
         'gamma': [
             0.1, 0.2, 0.3,
             0.01, 0.02, 0.03,
