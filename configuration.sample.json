@@ -93,7 +93,7 @@
         "latent_std": 1.0,
         "bidirectional": true,
         "bidirectional_merge_mode": "ave",
-        "cell_type": "GRU"
+        "cell_type": "LSTM"
       },
       "callbacks": {
         "tensorboard": {
