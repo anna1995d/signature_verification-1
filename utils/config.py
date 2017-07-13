@@ -17,8 +17,8 @@ class Configuration(object):
         logging.basicConfig(filename=self.log_fl, level=self.log_lvl, format=self.log_frm)
 
     def __init__(self):
-        path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        config_path = os.path.join(path, 'configuration.json')
+        self.path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        config_path = os.path.join(self.path, 'configuration.json')
         if not os.path.exists(config_path):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), 'configuration.json')
         with open(config_path, 'r') as cf:
@@ -28,7 +28,7 @@ class Configuration(object):
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
         self.verbose = config['general']['verbose']
-        self.out_dir_temp = os.path.join(path, config['general']['output_directory_template'])
+        self.out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
 
         # Data Configuration
         self.inp_dim = config['data']['reshaping']['input_dimension']
@@ -40,8 +40,8 @@ class Configuration(object):
         self.usr_cnt = config['data']['reading']['user_count']
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']
         self.frg_smp_cnt = config['data']['reading']['forged_sample_count']
-        self.gen_path_temp = os.path.join(path, config['data']['reading']['genuine_path_template'])
-        self.frg_path_temp = os.path.join(path, config['data']['reading']['forged_path_template'])
+        self.gen_path_temp = os.path.join(self.path, config['data']['reading']['genuine_path_template'])
+        self.frg_path_temp = os.path.join(self.path, config['data']['reading']['forged_path_template'])
         self.ftr_cnt = config['data']['reading']['feature_count']
 
         # Autoencoder Configuration
