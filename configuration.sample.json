@@ -16,11 +16,6 @@
       "Nu",
       "Gamma",
       "F1"
-    ],
-    "mahalanobis_csv_fieldnames": [
-      "Writer No",
-      "Precision",
-      "Threshold"
     ]
   },
   "data": {

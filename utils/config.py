@@ -87,7 +87,6 @@ class Configuration(object):
         # Export Configuration
         self.mdl_save_temp = config['export']['model_save_template']
         self.svc_csv_fns = config['export']['svc_csv_fieldnames']
-        self.mhln_csv_fns = config['export']['mahalanobis_csv_fieldnames']
         self.out_dir = self.out_dir_temp.format(
             bd='b' if self.bd_cell_type else '',
             ct=self.ct,
