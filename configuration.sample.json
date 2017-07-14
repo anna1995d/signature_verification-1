@@ -29,7 +29,7 @@
     },
     "reshaping": {
       "input_dimension": 27,
-      "sampling_step": 1,
+      "sampling_step": 4,
       "normalization": "ms",
       "rolling_window_size": 1,
       "rolling_window_step": 1
@@ -66,7 +66,7 @@
       },
       "compile_config": {
         "optimizer": {
-          "name": "adam",
+          "name": "nadam",
           "args": {
           }
         },
