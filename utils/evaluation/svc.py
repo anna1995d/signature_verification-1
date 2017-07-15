@@ -14,7 +14,7 @@ from utils.rnn import get_encoded_data
 
 def _scorer(y, y_pred):
     scores = list(map(float, classification_report(y_true=y, y_pred=y_pred).split('\n')[-2].split()[3:6]))
-    return scores[0]
+    return scores[2]
 
 
 def _get_svc_data(e, usr_num_gen):
@@ -60,8 +60,8 @@ def get_svc_train_data(e):
     return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
 
 
-def get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv):
-    x, y = np.concatenate([x_train, x_cv]), np.concatenate([y_train, y_cv])
+def get_optimized_svc_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
+    x, y = np.concatenate([x_tr, x_cv]), np.concatenate([y_tr, y_cv])
     estimator = NuSVC()
     param_grid = [{
         'kernel': ['rbf', 'sigmoid'],
@@ -79,20 +79,30 @@ def get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv):
         ]
     }]
     scoring = make_scorer(_scorer)
-    cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_train[:, 0]) * (-1), np.zeros_like(x_cv[:, 0])]))
+    cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_tr[:, 0]) * (-1), np.zeros_like(x_cv[:, 0])]))
     c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv, return_train_score=False)
     c.fit(x, y)
+
+    scores = list(map(
+        float, classification_report(y_true=y_ts, y_pred=c.best_estimator_.predict(x_ts)).split('\n')[-2].split()[3:6]
+    ))
 
     return {
         CONFIG.svc_csv_fns[0]: c.best_params_['kernel'],
         CONFIG.svc_csv_fns[1]: c.best_params_['nu'],
         CONFIG.svc_csv_fns[2]: c.best_params_['gamma'],
-        CONFIG.svc_csv_fns[3]: c.best_score_
+        CONFIG.svc_csv_fns[3]: scores[2]
     }
 
 
-def get_svc_evaluation_data(e):
-    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
+def get_svc_cross_validation_data(e):
+    start = CONFIG.svc_tr_usr_cnt
+    return _get_svc_data(e, range(start, start + CONFIG.svc_cv_usr_cnt))
+
+
+def get_svc_test_data(e):
+    start = CONFIG.svc_tr_usr_cnt + CONFIG.svc_cv_usr_cnt
+    return _get_svc_data(e, range(start, start + CONFIG.svc_ts_usr_cnt))
 
 
 def prepare_svc_evaluations_csv():

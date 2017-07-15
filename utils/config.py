@@ -70,6 +70,7 @@ class Configuration(object):
         # SVC Configuration
         self.svc_smp_cnt = config['svc']['reference_sample_count']
         self.svc_tr_usr_cnt = config['svc']['train_user_count']
+        self.svc_cv_usr_cnt = config['svc']['cross_validation_user_count']
         self.svc_ts_usr_cnt = config['svc']['test_user_count']
 
         # Logger Configuration

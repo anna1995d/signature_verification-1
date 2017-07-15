@@ -61,7 +61,7 @@
         "kernel_constraint": null,
         "recurrent_constraint": null,
         "bias_constraint": null,
-        "dropout": 0.0,
+        "dropout": 0.4,
         "recurrent_dropout": 0.0
       },
       "compile_config": {
@@ -108,7 +108,8 @@
   },
   "svc": {
     "reference_sample_count": 5,
-    "train_user_count": 180,
+    "train_user_count": 150,
+    "cross_validation_user_count": 30,
     "test_user_count": 30
   }
 }
