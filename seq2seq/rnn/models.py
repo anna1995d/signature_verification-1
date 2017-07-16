@@ -1,12 +1,11 @@
 import keras.backend as K
 from keras import layers, losses
-from keras.callbacks import EarlyStopping
 from keras.layers import Masking, Input, RepeatVector, Dense, Lambda
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
 from seq2seq.logging import elogger
-from seq2seq.rnn.layers import AttentionWithContext
+from seq2seq.rnn.layers import Attention
 from seq2seq.rnn.logging import rnn_tblogger
 from utils.config import CONFIG
 
@@ -22,7 +21,7 @@ class Autoencoder(object):
             epochs=CONFIG.ae_tr_epochs,
             batch_size=CONFIG.ae_btch_sz,
             verbose=CONFIG.verbose,
-            callbacks=[elogger, rnn_tblogger(), EarlyStopping(**CONFIG.clbs['early_stopping'])]
+            callbacks=[elogger, rnn_tblogger()]
         )
 
     def predict(self, inp):
@@ -120,7 +119,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             )
 
         # Attention
-        att = AttentionWithContext()(enc)
+        att = Attention()(enc)
 
         # Repeat
         rpt = RepeatVector(max_len)(att)
@@ -133,9 +132,12 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
                 rpt if dec is None else dec
             )
 
+        def sum_absolute_error(y_true, y_pred):
+            return K.sum(K.abs(y_true - y_pred), axis=-1)
+
         # Autoencoder
         self.seq_autoenc = Model(inp, dec)
-        self.seq_autoenc.compile(**CONFIG.ae_ccfg)
+        self.seq_autoenc.compile(loss=sum_absolute_error, **CONFIG.ae_ccfg)
 
         # Encoder
         self.seq_enc = Model(inp, att)

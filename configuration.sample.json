@@ -39,7 +39,7 @@
     "autoencoder": {
       "train": {
         "batch_size": 16,
-        "epochs": 50,
+        "epochs": 100,
         "sampling_count": 15
       },
       "layers_config": {
@@ -70,7 +70,6 @@
           "args": {
           }
         },
-        "loss": "cosine_proximity",
         "metrics": [
           "accuracy"
         ]
@@ -93,23 +92,15 @@
       "callbacks": {
         "tensorboard": {
           "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard",
-          "histogram_freq": 1,
-          "write_images": true
-        },
-        "early_stopping": {
-          "monitor": "loss",
-          "min_delta": 0,
-          "patience": 0,
-          "verbose": 0,
-          "mode": "auto"
+          "histogram_freq": 0,
+          "write_images": false
         }
       }
     }
   },
   "svc": {
     "reference_sample_count": 5,
-    "train_user_count": 150,
-    "cross_validation_user_count": 30,
+    "train_user_count": 180,
     "test_user_count": 30
   }
 }

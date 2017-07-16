@@ -62,7 +62,6 @@ class Configuration(object):
         self.ae_ccfg['optimizer'] = getattr(optimizers, self.ae_ccfg['optimizer']['name'])(
             **self.ae_ccfg['optimizer']['args']
         )
-        self.loss_fn = config['rnn']['autoencoder']['compile_config']['loss']
         self.ae_lcfg = config['rnn']['autoencoder']['layers_config']
 
         self.clbs = config['rnn']['autoencoder']['callbacks']
@@ -70,7 +69,6 @@ class Configuration(object):
         # SVC Configuration
         self.svc_smp_cnt = config['svc']['reference_sample_count']
         self.svc_tr_usr_cnt = config['svc']['train_user_count']
-        self.svc_cv_usr_cnt = config['svc']['cross_validation_user_count']
         self.svc_ts_usr_cnt = config['svc']['test_user_count']
 
         # Logger Configuration

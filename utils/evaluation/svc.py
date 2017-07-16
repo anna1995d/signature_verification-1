@@ -96,8 +96,7 @@ def get_optimized_svc_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
 
 
 def get_svc_cross_validation_data(e):
-    start = CONFIG.svc_tr_usr_cnt
-    return _get_svc_data(e, range(start, start + CONFIG.svc_cv_usr_cnt))
+    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
 
 
 def get_svc_test_data(e):
