@@ -100,8 +100,7 @@ def get_svc_cross_validation_data(e):
 
 
 def get_svc_test_data(e):
-    start = CONFIG.svc_tr_usr_cnt + CONFIG.svc_cv_usr_cnt
-    return _get_svc_data(e, range(start, start + CONFIG.svc_ts_usr_cnt))
+    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
 
 
 def prepare_svc_evaluations_csv():
