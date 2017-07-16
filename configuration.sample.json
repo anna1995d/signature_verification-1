@@ -2,11 +2,12 @@
   "general": {
     "random_seed": 100,
     "verbose": 1,
-    "output_directory_template": "./models/{bd}{ct}-{earc}-{darc}-{epc}"
+    "directory_template": "b{ct}-{earc}-{darc}-{epc}",
+    "output_directory_template": "./models/{dir}"
   },
   "logger": {
     "log_format": "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s",
-    "log_file": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/seq2seq.log",
+    "log_file": "./logs/{dir}/seq2seq.log",
     "log_level": "info"
   },
   "export": {
@@ -23,23 +24,19 @@
       "user_count": 210,
       "genuine_sample_count": 15,
       "forged_sample_count": 5,
-      "genuine_path_template": "./data_set/U{user}S{sample}.sig",
-      "forged_path_template": "./data_set/U{user}S{sample}.sig",
+      "signature_path_template": "./data_set/U{user}S{sample}.sig",
       "feature_count": 3
     },
     "reshaping": {
       "input_dimension": 27,
-      "sampling_step": 4,
-      "normalization": "ms",
-      "rolling_window_size": 1,
-      "rolling_window_step": 1
+      "sampling_step": 4
     }
   },
   "rnn": {
     "autoencoder": {
       "train": {
         "batch_size": 16,
-        "epochs": 50,
+        "epochs": 100,
         "sampling_count": 15
       },
       "layers_config": {
@@ -65,18 +62,12 @@
         "recurrent_dropout": 0.0
       },
       "compile_config": {
-        "optimizer": {
-          "name": "nadam",
-          "args": {
-          }
-        },
-        "loss": "cosine_proximity",
+        "optimizer": "nadam",
         "metrics": [
           "accuracy"
         ]
       },
       "architecture": {
-        "mask_value": 0.0,
         "encoder": [
           72,
           150
@@ -84,32 +75,18 @@
         "decoder": [
           9
         ],
-        "latent_mean": 0.0,
-        "latent_std": 1.0,
-        "bidirectional": true,
-        "bidirectional_merge_mode": "ave",
         "cell_type": "LSTM"
       },
       "callbacks": {
         "tensorboard": {
-          "log_dir_template": "./logs/{bd}{ct}-{earc}-{darc}-{epc}/tensorboard",
-          "histogram_freq": 1,
-          "write_images": true
-        },
-        "early_stopping": {
-          "monitor": "loss",
-          "min_delta": 0,
-          "patience": 0,
-          "verbose": 0,
-          "mode": "auto"
+          "log_dir_template": "./logs/{dir}/tensorboard"
         }
       }
     }
   },
   "svc": {
     "reference_sample_count": 5,
-    "train_user_count": 150,
-    "cross_validation_user_count": 30,
+    "train_user_count": 180,
     "test_user_count": 30
   }
 }
