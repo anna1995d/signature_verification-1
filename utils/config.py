@@ -1,6 +1,6 @@
 import os
 import errno
-import json
+import yaml
 import logging
 
 import numpy as np
@@ -17,25 +17,28 @@ class Configuration(object):
 
     def __init__(self):
         self.path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        config_path = os.path.join(self.path, 'configuration.json')
+        config_path = os.path.join(self.path, 'configuration.yaml')
         if not os.path.exists(config_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), 'configuration.json')
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), 'configuration.yaml')
         with open(config_path, 'r') as cf:
-            config = json.load(cf)
+            config = yaml.load(cf)
 
         # Autoencoder Configuration
-        self.ae_btch_sz = config['rnn']['autoencoder']['train']['batch_size']
-        self.ae_tr_epochs = config['rnn']['autoencoder']['train']['epochs']
-        self.ae_smp_cnt = config['rnn']['autoencoder']['train']['sampling_count']
+        self.ae_btch_sz = config['autoencoder']['train']['batch_size']
+        self.ae_tr_epochs = config['autoencoder']['train']['epochs']
+        self.ae_smp_cnt = config['autoencoder']['train']['sampling_count']
 
-        self.enc_arc = config['rnn']['autoencoder']['architecture']['encoder']
-        self.dec_arc = config['rnn']['autoencoder']['architecture']['decoder']
-        self.ct = config['rnn']['autoencoder']['architecture']['cell_type']
+        self.enc_arc = list(map(
+            lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
+        ))
+        self.dec_arc = list(map(
+            lambda x: x[1], sorted(list(config['autoencoder']['architecture']['decoder'].items()), key=lambda x: x[0])
+        ))
+        self.ct = config['autoencoder']['architecture']['cell_type']
 
-        self.ae_ccfg = config['rnn']['autoencoder']['compile_config']
-        self.ae_lcfg = config['rnn']['autoencoder']['layers_config']
+        self.ae_ccfg = config['autoencoder']['compile_config']
 
-        self.clbs = config['rnn']['autoencoder']['callbacks']
+        self.clbs = config['autoencoder']['callbacks']
 
         # General Configuration
         self.rnd_sd = config['general']['random_seed']
@@ -43,8 +46,8 @@ class Configuration(object):
         self.verbose = config['general']['verbose']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
-            earc='x'.join(map(str, self.enc_arc)),
-            darc='x'.join(map(str, self.dec_arc)),
+            earc='x'.join(map(lambda x: str(x['units']), self.enc_arc)),
+            darc='x'.join(map(lambda x: str(x['units']), self.dec_arc)),
             epc=self.ae_tr_epochs
         )
         self.out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])

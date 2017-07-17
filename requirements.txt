@@ -6,3 +6,4 @@ numpy
 h5py
 scikit-learn
 libs/tensorflow
+PyYAML

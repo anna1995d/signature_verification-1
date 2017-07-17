@@ -37,55 +37,16 @@ pip install /tmp/tensorflow_pkg/[tensorflow_package]
 ```
 
 ### Configuration
-The configuraion must be in _`configuration.json`_. For a sample configuration see the provided sample [here][sample-config]. 
-
-#### Logger
-_Configuration for logs during training phase._
-
-Key | Value | Description
-:---: | :---: | :---:
-`log_format` | `str`, available attributes are `%(asctime)s`, `%(name)s`, `%(levelname)s` and `%(message)s`  | logger output format
-`log_file` | `str` | logger output file path
-`log_level` | `str`, available choices are `critical`, `fatal`, `error`, `warning`, `info`, `debug` and `notset` | logger logging level
-
-#### Export
-_Configuration for exporting models during training phase._
-
-Key | Value | Description
-:---: | :---: | :---:
-`model_save_template` | `str`, it must contain `{name}` | path template for saving models
-
-#### Data
-_Configuration for reading data during training phase._
-
-Key | Value | Description
-:---: | :---: | :---:
-`user_count` | `int` | count of different users
-`input_dimension` | `int` | count of input data features
-`genuine_sample_count` | `int` | count of genuine samples for each user
-`forged_sample_count` | `int` | count of forged samples for each user
-`forger_count` | `int` | count of forgers per user
-`genuine_path_template` | `str`, it must contain `{user}` and `{sample}` | path template for genuine data
-`forged_path_template` | `str`, it must contain `{user}`, `{sample}` and `{forger}` | path template for forged data
-
-#### Autoencoder
-_Configuration for training phase of Autoencoder._
-
-Key | Value | Description
-:---: | :---: | :---:
-`batch_size` | `int` | count of samples to be processed at each step of training
-`encoded_length` | `json`, it must contain `start`, `finish` and `step` | length of encoded representaion
-`train_epochs` | `json`, it must contain `start`, `finish` and `step` | count of epochs during training phase
-`cell_types` | `list`, availble choices are `LSTM`, `GRU` and `SimpleRNN` | list of cells to use for training phase
+The configuraion must be in _`configuration.yaml`_. For a sample configuration see the provided sample [here][sample-config]. 
 
 #### Sample configuration
-If you want to use a pre-written configuration, you could use the provided sample _`configuration.sample.json`_.  
+If you want to use the pre-written configuration, you could copy the provided sample _`configuration.sample.yaml`_.  
 
 ```bash
-rsync -a --ignore-existing configuration.sample.json configuration.json
+rsync -a --ignore-existing configuration.sample.yaml configuration.yaml
 ```
 
 [tf-doc]: https://www.tensorflow.org/install/install_sources/
 [anaconda-doc]: https://docs.continuum.io/anaconda/install/
 [virtualenv-doc]: https://virtualenv.pypa.io/en/stable/installation/
-[sample-config]: https://github.com/kahrabian/signature_verification/blob/master/configuration.sample.json
+[sample-config]: https://github.com/kahrabian/signature_verification/blob/master/configuration.sample.yaml

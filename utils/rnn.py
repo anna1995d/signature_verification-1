@@ -20,7 +20,7 @@ def get_autoencoder_train_data():
 def load_encoder(x, y):
     arae = AttentiveRecurrentAutoencoder(max_len=x.shape[1])
     arae.fit(x, y)
-    arae.save(path=os.path.join(CONFIG.out_dir, 'autoencoder.dat'))
+    arae.save(path=os.path.join(CONFIG.out_dir, 'autoencoder.h5'))
     return arae
 
 

@@ -25,7 +25,7 @@ class Autoencoder(object):
         self.seq_autoenc.save(path)
 
     def load(self, path):
-        self.seq_autoenc.load_weights(path)
+        self.seq_autoenc.load_model(path)
 
 
 class RecurrentVariationalAutoencoder(Autoencoder):
@@ -40,8 +40,8 @@ class RecurrentVariationalAutoencoder(Autoencoder):
 
         # Encoder
         enc = None
-        for idx, ln in enumerate(CONFIG.enc_arc):
-            enc = Bidirectional(cell(ln, **CONFIG.ae_lcfg), merge_mode='ave')(msk if enc is None else enc)
+        for layer in CONFIG.enc_arc:
+            enc = Bidirectional(cell(**layer), merge_mode='ave')(msk if enc is None else enc)
 
         # Latent
         c = cell(CONFIG.enc_arc[-1], **CONFIG.ae_lcfg)
@@ -63,8 +63,8 @@ class RecurrentVariationalAutoencoder(Autoencoder):
 
         # Decoder
         dec = None
-        for ln in CONFIG.dec_arc:
-            dec = Bidirectional(cell(ln, **CONFIG.ae_lcfg), merge_mode='ave')(rpt if dec is None else dec)
+        for layer in CONFIG.dec_arc:
+            dec = Bidirectional(cell(**layer), merge_mode='ave')(rpt if dec is None else dec)
 
         def vae_loss(y_true, y_pred):
             kl_loss = - 0.5 * K.sum(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1)
@@ -90,8 +90,8 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
 
         # Encoder
         enc = None
-        for ln in CONFIG.enc_arc:
-            enc = Bidirectional(cell(ln, **CONFIG.ae_lcfg), merge_mode='ave')(msk if enc is None else enc)
+        for layer in CONFIG.enc_arc:
+            enc = Bidirectional(cell(**layer), merge_mode='ave')(msk if enc is None else enc)
 
         # Attention
         att = Attention()(enc)
@@ -101,8 +101,8 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
 
         # Decoder
         dec = None
-        for ln in CONFIG.dec_arc:
-            dec = Bidirectional(cell(ln, **CONFIG.ae_lcfg), merge_mode='ave')(rpt if dec is None else dec)
+        for layer in CONFIG.dec_arc:
+            dec = Bidirectional(cell(**layer), merge_mode='ave')(rpt if dec is None else dec)
 
         def sum_absolute_error(y_true, y_pred):
             return K.sum(K.abs(y_true - y_pred), axis=-1)

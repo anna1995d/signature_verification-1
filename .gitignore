@@ -140,5 +140,5 @@ logs/*
 screenlog.*
 old_models_*/
 old_dataset_*/
-configuration.json
+configuration.yaml
 sigv-*

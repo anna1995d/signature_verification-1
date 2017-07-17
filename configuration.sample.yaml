@@ -1,0 +1,67 @@
+general:
+  random_seed: 100
+  verbose: 1
+  directory_template: "b{ct}-{earc}-{darc}-{epc}"
+  output_directory_template: "./models/{dir}"
+
+logger:
+  log_format: "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s"
+  log_file: "./logs/{dir}/seq2seq.log"
+  log_level: "info"
+
+export:
+  model_save_template: "U{usr_num}.dat"
+  svc_csv_fieldnames:
+    - "Kernel"
+    - "Nu"
+    - "Gamma"
+    - "F1"
+
+data:
+  reading:
+    user_count: 210
+    genuine_sample_count: 15
+    forged_sample_count: 5
+    signature_path_template: "./data_set/U{user}S{sample}.sig"
+    feature_count: 3
+
+  reshaping:
+    input_dimension: 27
+    sampling_step: 4
+
+svc:
+  reference_sample_count: 5
+  train_user_count: 180
+  test_user_count: 30
+
+autoencoder:
+  train:
+    batch_size: 16
+    epochs: 100
+    sampling_count: 15
+
+  compile_config:
+    optimizer: "nadam"
+    metrics:
+      - "accuracy"
+
+  callbacks:
+    tensorboard:
+      log_dir_template: "./logs/{dir}/tensorboard"
+
+  architecture:
+    global: &global
+      return_sequences: true
+      implementation: 2
+    encoder:
+      0:
+        <<: *global
+        units: 72
+      1:
+        <<: *global
+        units: 150
+    decoder:
+      0:
+        <<: *global
+        units: 9
+    cell_type: "LSTM"
