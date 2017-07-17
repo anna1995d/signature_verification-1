@@ -14,7 +14,7 @@ def get_autoencoder_train_data():
         (gen_x, gen_y) = DATA.get_genuine_combinations(usr_num)
         x.append(sequence.pad_sequences(gen_x, maxlen=DATA.gen_max_len))
         y.append(sequence.pad_sequences(gen_y, maxlen=DATA.gen_max_len))
-    return np.concatenate(x, axis=0), np.concatenate(y, axis=0)
+    return np.concatenate(x), np.concatenate(y)
 
 
 def load_encoder(x, y):

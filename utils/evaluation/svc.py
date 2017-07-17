@@ -53,7 +53,7 @@ def _get_svc_data(e, usr_num_gen):
         frg_y = np.zeros_like(frg_x[:, 0])
         y.append(np.concatenate([gen_y, frg_y]))
 
-    return np.concatenate(x, axis=0), np.concatenate(y, axis=0)
+    return np.concatenate(x), np.concatenate(y)
 
 
 def get_svc_train_data(e):
