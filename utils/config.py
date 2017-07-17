@@ -1,9 +1,9 @@
-import os
 import errno
-import yaml
 import logging
+import os
 
 import numpy as np
+import yaml
 
 
 class Configuration(object):

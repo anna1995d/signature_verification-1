@@ -17,13 +17,13 @@ def _scorer(y, y_pred):
     return scores[2]
 
 
-def _get_svc_data(e, usr_num_gen):
+def _get_svc_data(es, usr_num_gen):
     x, y = list(), list()
     for usr_num in usr_num_gen:
         ref_enc_gen, enc_gen, enc_frg = [
-            get_encoded_data(e, DATA.gen_x[usr_num][:CONFIG.svc_smp_cnt]),
-            get_encoded_data(e, DATA.gen_x[usr_num][CONFIG.svc_smp_cnt:]),
-            get_encoded_data(e, DATA.frg_x[usr_num])
+            get_encoded_data(es[usr_num], DATA.gen_x[usr_num][:CONFIG.svc_smp_cnt]),
+            get_encoded_data(es[usr_num], DATA.gen_x[usr_num][CONFIG.svc_smp_cnt:]),
+            get_encoded_data(es[usr_num], DATA.frg_x[usr_num])
         ]
 
         ref_dists, gen_dists, frg_dists = [
@@ -56,8 +56,8 @@ def _get_svc_data(e, usr_num_gen):
     return np.concatenate(x), np.concatenate(y)
 
 
-def get_svc_train_data(e):
-    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
+def get_svc_train_data(es):
+    return _get_svc_data(es, range(CONFIG.svc_tr_usr_cnt))
 
 
 def get_optimized_svc_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
@@ -95,12 +95,12 @@ def get_optimized_svc_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
     }
 
 
-def get_svc_cross_validation_data(e):
-    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt))
+def get_svc_cross_validation_data(es):
+    return _get_svc_data(es, range(CONFIG.svc_tr_usr_cnt))
 
 
-def get_svc_test_data(e):
-    return _get_svc_data(e, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
+def get_svc_test_data(es):
+    return _get_svc_data(es, range(CONFIG.svc_tr_usr_cnt, CONFIG.svc_tr_usr_cnt + CONFIG.svc_ts_usr_cnt))
 
 
 def prepare_svc_evaluations_csv():

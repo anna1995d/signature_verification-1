@@ -48,6 +48,7 @@ class Data(object):
             data = np.reshape(f.read().split(), newshape=(-1, CONFIG.ftr_cnt))[::CONFIG.smp_stp, :2].astype(np.float64)
         return Data.extract_features(data)
 
+    # TODO: Merge below two functions
     @staticmethod
     def extract_genuine(usr_num):
         gen_x, gen_y = list(), list()
@@ -55,7 +56,7 @@ class Data(object):
             x, y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
             gen_x.append(x)
             gen_y.append(y)
-        return gen_x, gen_y
+        return gen_x, gen_y, max(map(lambda tmp: len(tmp), gen_x))
 
     @staticmethod
     def extract_forged(usr_num):
@@ -67,17 +68,16 @@ class Data(object):
         return frg_x, frg_y
 
     def __init__(self):
-        self.gen_x, self.gen_y, self.frg_x, self.frg_y = list(), list(), list(), list()
+        self.gen_x, self.gen_y, self.frg_x, self.frg_y, self.gen_max_len = list(), list(), list(), list(), list()
         for usr_num in range(1, CONFIG.usr_cnt + 1):
-            x, y = Data.extract_genuine(usr_num=usr_num)
+            x, y, max_len = Data.extract_genuine(usr_num=usr_num)
             self.gen_x.append(x)
             self.gen_y.append(y)
+            self.gen_max_len.append(max_len)
 
             x, y = Data.extract_forged(usr_num=usr_num)
             self.frg_x.append(x)
             self.frg_y.append(y)
-
-        self.gen_max_len = max(map(lambda tmp_x: max(map(lambda tmp_y: len(tmp_y), tmp_x)), self.gen_x))
 
     def get_genuine_combinations(self, usr_num):
         return np.array(list(itertools.product(self.gen_x[usr_num], self.gen_y[usr_num]))).T
