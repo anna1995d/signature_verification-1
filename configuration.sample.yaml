@@ -1,6 +1,5 @@
 general:
   random_seed: 100
-  verbose: 1
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
 
@@ -38,12 +37,13 @@ autoencoder:
   train:
     batch_size: 16
     epochs: 100
-    sampling_count: 15
+    verbose: 1
+    validation_split: 0.2
 
   compile_config:
     optimizer: "nadam"
     metrics:
-      - "accuracy"
+      - "acc"
 
   callbacks:
     tensorboard:

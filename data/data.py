@@ -80,6 +80,4 @@ class Data(object):
         self.gen_max_len = max(map(lambda tmp_x: max(map(lambda tmp_y: len(tmp_y), tmp_x)), self.gen_x))
 
     def get_genuine_combinations(self, usr_num):
-        return np.array(
-            list(itertools.product(self.gen_x[usr_num][:CONFIG.ae_smp_cnt], self.gen_y[usr_num][:CONFIG.ae_smp_cnt]))
-        ).T
+        return np.array(list(itertools.product(self.gen_x[usr_num], self.gen_y[usr_num]))).T

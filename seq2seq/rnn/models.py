@@ -4,7 +4,7 @@ from keras.layers import Masking, Input, RepeatVector, Lambda
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
-from seq2seq.logging import elogger
+from seq2seq.logging import blogger, elogger
 from seq2seq.rnn.layers import Attention
 from seq2seq.rnn.logging import rnn_tblogger
 from utils.config import CONFIG
@@ -16,7 +16,7 @@ class Autoencoder(object):
         self.seq_autoenc = None
 
     def fit(self, x, y):
-        self.seq_autoenc.fit(x, y, CONFIG.ae_btch_sz, CONFIG.ae_tr_epochs, CONFIG.verbose, [elogger, rnn_tblogger()])
+        self.seq_autoenc.fit(x, y, callbacks=[blogger, elogger, rnn_tblogger()], **CONFIG.ae_tr)
 
     def predict(self, inp):
         return self.seq_enc.predict(inp)

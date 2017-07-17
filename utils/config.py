@@ -24,9 +24,7 @@ class Configuration(object):
             config = yaml.load(cf)
 
         # Autoencoder Configuration
-        self.ae_btch_sz = config['autoencoder']['train']['batch_size']
-        self.ae_tr_epochs = config['autoencoder']['train']['epochs']
-        self.ae_smp_cnt = config['autoencoder']['train']['sampling_count']
+        self.ae_tr = config['autoencoder']['train']
 
         self.enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
@@ -43,12 +41,11 @@ class Configuration(object):
         # General Configuration
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
-        self.verbose = config['general']['verbose']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
             earc='x'.join(map(lambda x: str(x['units']), self.enc_arc)),
             darc='x'.join(map(lambda x: str(x['units']), self.dec_arc)),
-            epc=self.ae_tr_epochs
+            epc=self.ae_tr['epochs']
         )
         self.out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
 
