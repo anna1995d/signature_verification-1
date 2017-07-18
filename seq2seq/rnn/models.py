@@ -17,7 +17,7 @@ class Autoencoder(object):
         self.seq_autoenc = None
 
     def fit(self, x, y):
-        callbacks = [blogger, elogger, rnn_tblogger(), EarlyStopping(monitor='acc', patience=2, verbose=1)]
+        callbacks = [blogger, elogger, rnn_tblogger(), EarlyStopping(monitor='acc', patience=5, verbose=1)]
         self.seq_autoenc.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
 
     def predict(self, inp):
