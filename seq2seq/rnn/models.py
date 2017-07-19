@@ -6,7 +6,7 @@ from keras.models import Model
 from keras.callbacks import EarlyStopping
 
 from seq2seq.logging import blogger, elogger
-from seq2seq.rnn.layers import Attention
+from seq2seq.rnn.layers import AttentionWithContext
 from seq2seq.rnn.logging import rnn_tblogger
 from utils.config import CONFIG
 
@@ -96,7 +96,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             enc = Bidirectional(cell(**layer), merge_mode='ave')(msk if enc is None else enc)
 
         # Attention
-        att = Attention()(enc)
+        att = AttentionWithContext()(enc)
 
         # Repeat
         rpt = RepeatVector(max_len)(att)
@@ -106,12 +106,9 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
         for layer in CONFIG.dec_arc:
             dec = Bidirectional(cell(**layer), merge_mode='ave')(rpt if dec is None else dec)
 
-        def sum_absolute_error(y_true, y_pred):
-            return K.sum(K.abs(y_true - y_pred), axis=-1)
-
         # Autoencoder
         self.seq_autoenc = Model(inp, dec)
-        self.seq_autoenc.compile(loss=sum_absolute_error, **CONFIG.ae_ccfg)
+        self.seq_autoenc.compile(**CONFIG.ae_ccfg)
 
         # Encoder
         self.seq_enc = Model(inp, att)

@@ -27,20 +27,23 @@ class Data(object):
         v_n = np.sqrt(drv_s[:, 0] ** 2 + drv_s[:, 1] ** 2).reshape((-1, 1))
         dt_n = Data.calculate_derivatives(t_n, smp=True)
         r_n = np.nan_to_num(np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps))
-        return np.concatenate((data, drv_s, drv, t_n, v_n, r_n), axis=1)
+
+        present = np.concatenate((data, drv_s, drv, t_n, v_n, r_n), axis=1)
+        past = np.concatenate((present[0, :].reshape((1, -1)), present[:-1, :]))
+        future = np.concatenate((present[1:, :], present[-1, :].reshape((1, -1))))
+
+        return np.concatenate((past, present, future), axis=1), present
 
     @staticmethod
     def normalize(data):
-        data = (data - np.mean(data, axis=0)) / np.std(data, axis=0, ddof=1)
-        return np.concatenate((
-            np.concatenate((data[0, :].reshape((1, -1)), data[:-1, :])),
-            data,
-            np.concatenate((data[1:, :], data[-1, :].reshape((1, -1))))
-        ), axis=1), data
+        data -= np.mean(data, axis=0)
+        data -= np.std(data, axis=0, ddof=1)
+        data -= data[0]
+        return data
 
     @staticmethod
     def extract_features(data):
-        return Data.normalize(Data.extract(data))
+        return Data.extract(Data.normalize(data))
 
     @staticmethod
     def extract_sample(path):
@@ -56,7 +59,7 @@ class Data(object):
             x, y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
             gen_x.append(x)
             gen_y.append(y)
-        return gen_x, gen_y, max(map(lambda tmp: len(tmp), gen_x))
+        return gen_x, gen_y
 
     @staticmethod
     def extract_forged(usr_num):
@@ -68,16 +71,17 @@ class Data(object):
         return frg_x, frg_y
 
     def __init__(self):
-        self.gen_x, self.gen_y, self.frg_x, self.frg_y, self.gen_max_len = list(), list(), list(), list(), list()
+        self.gen_x, self.gen_y, self.frg_x, self.frg_y = list(), list(), list(), list()
         for usr_num in range(1, CONFIG.usr_cnt + 1):
-            x, y, max_len = Data.extract_genuine(usr_num=usr_num)
+            x, y = Data.extract_genuine(usr_num=usr_num)
             self.gen_x.append(x)
             self.gen_y.append(y)
-            self.gen_max_len.append(max_len)
 
             x, y = Data.extract_forged(usr_num=usr_num)
             self.frg_x.append(x)
             self.frg_y.append(y)
+
+        self.gen_max_len = max(map(lambda tmp_x: max(map(lambda tmp_y: len(tmp_y), tmp_x)), self.gen_x))
 
     def get_genuine_combinations(self, usr_num):
         return np.array(list(itertools.product(self.gen_x[usr_num], self.gen_y[usr_num]))).T
