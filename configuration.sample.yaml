@@ -60,7 +60,7 @@ autoencoder:
     global: &global
       return_sequences: true
       implementation: 2
-      dropout": 0.4
+      dropout: 0.4
     encoder:
       0:
         <<: *global
