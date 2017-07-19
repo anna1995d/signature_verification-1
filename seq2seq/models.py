@@ -1,13 +1,13 @@
 import keras.backend as K
 from keras import layers
+from keras.callbacks import EarlyStopping
 from keras.layers import Masking, Input, RepeatVector, Lambda
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
-from keras.callbacks import EarlyStopping
 
+from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import blogger, elogger
-from seq2seq.rnn.layers import AttentionWithContext
-from seq2seq.rnn.logging import rnn_tblogger
+from seq2seq.logging import rnn_tblogger
 from utils.config import CONFIG
 
 

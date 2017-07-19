@@ -9,6 +9,10 @@ class AttentionWithContext(Layer):
                  kernel_constraint=None, align_constraint=None, bias_constraint=None,
                  use_bias=True, **kwargs):
 
+        self.kernel = None
+        self.bias = None
+        self.align = None
+
         self.supports_masking = True
         self.kernel_initializer = initializers.get('glorot_uniform')
 
@@ -23,10 +27,6 @@ class AttentionWithContext(Layer):
         self.use_bias = use_bias
 
         super(AttentionWithContext, self).__init__(**kwargs)
-
-        self.kernel = None
-        self.bias = None
-        self.align = None
 
     def build(self, input_shape):
         assert len(input_shape) == 3
@@ -63,16 +63,9 @@ class AttentionWithContext(Layer):
         return None
 
     def call(self, inputs, mask=None):
-        uit = K.dot(inputs, self.kernel)
-        if self.use_bias:
-            uit += self.bias
-        uit = K.tanh(uit)
-
+        uit = K.tanh(K.dot(inputs, self.kernel) + (self.bias if self.use_bias else 0))
         ait = K.sum(uit * self.align, axis=2) if K.backend() == 'tensorflow' else K.dot(uit, self.align)
-
-        a = K.exp(ait)
-        if mask is not None:
-            a *= K.cast(mask, K.floatx())
+        a = K.exp(ait) * (K.cast(mask, K.floatx()) if mask is not None else 1)
         a /= K.cast(K.sum(a, axis=1, keepdims=True) + K.epsilon(), K.floatx())
         a = K.expand_dims(a)
 

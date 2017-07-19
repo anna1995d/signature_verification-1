@@ -20,7 +20,7 @@ class Data(object):
             )) / 10
 
     @staticmethod
-    def extract(data):
+    def extract_features(data):
         drv_s = Data.calculate_derivatives(data, smp=True)
         drv = Data.calculate_derivatives(data, smp=False)
         t_n = np.arctan(drv_s[:, 1], drv_s[:, 0]).reshape((-1, 1))
@@ -42,42 +42,28 @@ class Data(object):
         return data
 
     @staticmethod
-    def extract_features(data):
-        return Data.extract(Data.normalize(data))
-
-    @staticmethod
     def extract_sample(path):
         with open(path, 'r') as f:
             data = np.reshape(f.read().split(), newshape=(-1, CONFIG.ftr_cnt))[::CONFIG.smp_stp, :2].astype(np.float64)
-        return Data.extract_features(data)
-
-    # TODO: Merge below two functions
-    @staticmethod
-    def extract_genuine(usr_num):
-        gen_x, gen_y = list(), list()
-        for smp in range(CONFIG.gen_smp_cnt):
-            x, y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
-            gen_x.append(x)
-            gen_y.append(y)
-        return gen_x, gen_y
+        return Data.extract_features(Data.normalize(data))
 
     @staticmethod
-    def extract_forged(usr_num):
-        frg_x, frg_y = list(), list()
-        for smp in range(CONFIG.gen_smp_cnt, CONFIG.gen_smp_cnt + CONFIG.frg_smp_cnt):
-            x, y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
-            frg_x.append(x)
-            frg_y.append(y)
-        return frg_x, frg_y
+    def extract_user(usr_num, start=0, stop=CONFIG.gen_smp_cnt + CONFIG.frg_smp_cnt):
+        x, y = list(), list()
+        for smp in range(start, stop):
+            tmp_x, tmp_y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
+            x.append(tmp_x)
+            y.append(tmp_y)
+        return x, y
 
     def __init__(self):
         self.gen_x, self.gen_y, self.frg_x, self.frg_y = list(), list(), list(), list()
         for usr_num in range(1, CONFIG.usr_cnt + 1):
-            x, y = Data.extract_genuine(usr_num=usr_num)
+            x, y = Data.extract_user(usr_num=usr_num, stop=CONFIG.gen_smp_cnt)
             self.gen_x.append(x)
             self.gen_y.append(y)
 
-            x, y = Data.extract_forged(usr_num=usr_num)
+            x, y = Data.extract_user(usr_num=usr_num, start=CONFIG.gen_smp_cnt)
             self.frg_x.append(x)
             self.frg_y.append(y)
 

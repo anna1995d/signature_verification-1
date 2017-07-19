@@ -3,7 +3,7 @@ import os
 import numpy as np
 from keras.preprocessing import sequence
 
-from seq2seq.rnn.models import AttentiveRecurrentAutoencoder
+from seq2seq.models import AttentiveRecurrentAutoencoder
 from utils.config import CONFIG
 from utils.data import DATA
 
