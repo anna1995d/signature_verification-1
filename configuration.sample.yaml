@@ -30,7 +30,7 @@ data:
 
   reshaping:
     input_dimension: 27
-    sampling_step: 2
+    sampling_step: 3
 
 classifiers:
   reference_sample_count: 5
@@ -39,12 +39,12 @@ classifiers:
 
 autoencoder:
   train:
-    batch_size: 16
+    batch_size: 32
     epochs: 100
     verbose: 1
 
   compile_config:
-    loss: "cosine_proximity"
+    loss: "mape"
     optimizer: "nadam"
     metrics:
       - "acc"
@@ -55,7 +55,7 @@ autoencoder:
     early_stopping:
       monitor: "loss"
       min_delta: 0
-      patience: 0
+      patience: 10
       verbose: 1
       mode: "auto"
 

@@ -36,9 +36,7 @@ class Data(object):
 
     @staticmethod
     def normalize(data):
-        data -= np.mean(data, axis=0)
-        data -= np.std(data, axis=0, ddof=1)
-        data -= data[0]
+        data = (data - np.mean(data, axis=0)) / np.std(data, axis=0, ddof=1)
         return data
 
     @staticmethod
