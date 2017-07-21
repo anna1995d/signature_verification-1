@@ -5,6 +5,7 @@ from utils.config import CONFIG
 
 
 def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
+    # TODO: Configure parameters
     knc = KNeighborsClassifier()
     knc.fit(x_tr, y_tr)
 
