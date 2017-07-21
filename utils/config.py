@@ -59,11 +59,11 @@ class Configuration(object):
         self.sig_path_temp = os.path.join(self.path, config['data']['reading']['signature_path_template'])
         self.ftr_cnt = config['data']['reading']['feature_count']
 
-        # SVC Configuration
-        self.svc_smp_cnt = config['svc']['reference_sample_count']
-        self.svc_tr_usr_cnt = config['svc']['train_user_count']
-        self.svc_cv_usr_cnt = config['svc']['cross_validation_user_count']
-        self.svc_ts_usr_cnt = config['svc']['test_user_count']
+        # Classifiers Configuration
+        self.ref_smp_cnt = config['classifiers']['reference_sample_count']
+        self.clf_tr_usr_cnt = config['classifiers']['train_user_count']
+        self.clf_cv_usr_cnt = config['classifiers']['cross_validation_user_count']
+        self.clf_ts_usr_cnt = config['classifiers']['test_user_count']
 
         # Logger Configuration
         self.log_frm = config['logger']['log_format']
@@ -72,8 +72,7 @@ class Configuration(object):
         self.configure_logger()
 
         # Export Configuration
-        self.mdl_save_temp = config['export']['model_save_template']
-        self.svc_csv_fns = config['export']['svc_csv_fieldnames']
+        self.csv = config['export']['csv']
         self.out_dir = self.out_dir_temp.format(dir=self.dir_temp)
 
 

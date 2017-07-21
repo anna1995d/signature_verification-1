@@ -1,24 +1,21 @@
 #!/usr/bin/env python
 
-from utils.evaluation.svc import prepare_svc_evaluations_csv, get_svc_train_data, get_optimized_svc_evaluation, \
-    save_svc_evaluation, get_svc_cross_validation_data, get_svc_test_data
-from utils.io import prepare_output_directory
-from utils.rnn import get_autoencoder_train_data, load_encoder
+from utils.evaluation import svc, knc, data, utils
+from utils import io, rnn
 
 
 def process_model():
-    prepare_output_directory()
+    io.prepare_output_directory()
 
-    x, y = get_autoencoder_train_data()
-    e = load_encoder(x, y)
+    x, y = rnn.get_autoencoder_train_data()
+    e = rnn.load_encoder(x, y)
 
-    x_train, y_train = get_svc_train_data(e)
-    x_cv, y_cv = get_svc_cross_validation_data(e)
-    x_ts, y_ts = get_svc_test_data(e)
-    evl = get_optimized_svc_evaluation(x_train, y_train, x_cv, y_cv, x_ts, y_ts)
+    x_tr, y_tr = data.get_evaluation_train_data(e)
+    x_cv, y_cv = data.get_evaluation_cross_validation_data(e)
+    x_ts, y_ts = data.get_evaluation_test_data(e)
 
-    prepare_svc_evaluations_csv()
-    save_svc_evaluation(evl)
+    utils.save_evaluation(svc.get_optimized_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts), 'svc')
+    utils.save_evaluation(knc.get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts), 'knc')
 
 
 if __name__ == '__main__':

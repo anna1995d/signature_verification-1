@@ -9,12 +9,16 @@ logger:
   log_level: "info"
 
 export:
-  model_save_template: "U{usr_num}.dat"
-  svc_csv_fieldnames:
-    - "Kernel"
-    - "Nu"
-    - "Gamma"
-    - "F1"
+  csv:
+    svc:
+      - "Kernel"
+      - "Nu"
+      - "Gamma"
+      - "F1"
+    knc:
+      - "Precision"
+      - "Recall"
+      - "F1"
 
 data:
   reading:
@@ -28,7 +32,7 @@ data:
     input_dimension: 27
     sampling_step: 2
 
-svc:
+classifiers:
   reference_sample_count: 5
   train_user_count: 24
   cross_validation_user_count: 8
