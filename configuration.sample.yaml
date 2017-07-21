@@ -18,21 +18,21 @@ export:
 
 data:
   reading:
-    user_count: 210
-    genuine_sample_count: 15
-    forged_sample_count: 5
-    signature_path_template: "./data_set/U{user}S{sample}.sig"
-    feature_count: 3
+    user_count: 40
+    genuine_sample_count: 20
+    forged_sample_count: 20
+    signature_path_template: "./data_set/U{user}S{sample}.TXT"
+    feature_count: 4
 
   reshaping:
     input_dimension: 27
-    sampling_step: 4
+    sampling_step: 2
 
 svc:
   reference_sample_count: 5
-  train_user_count: 150
-  cross_validation_user_count: 30
-  test_user_count: 30
+  train_user_count: 24
+  cross_validation_user_count: 8
+  test_user_count: 8
 
 autoencoder:
   train:
