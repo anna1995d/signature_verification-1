@@ -49,11 +49,6 @@ def get_evaluation_train_data(e):
     return _get_evaluation_data(e, range(CONFIG.clf_tr_usr_cnt))
 
 
-def get_evaluation_cross_validation_data(e):
-    start = CONFIG.clf_tr_usr_cnt
-    return _get_evaluation_data(e, range(start, start + CONFIG.clf_cv_usr_cnt))
-
-
 def get_evaluation_test_data(e):
-    start = CONFIG.clf_tr_usr_cnt + CONFIG.clf_cv_usr_cnt
+    start = CONFIG.clf_tr_usr_cnt
     return _get_evaluation_data(e, range(start, start + CONFIG.clf_ts_usr_cnt))

@@ -11,12 +11,12 @@ def _scorer(y, y_pred):
     return scores[2]
 
 
-def get_optimized_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
-    x, y = np.concatenate([x_tr, x_cv]), np.concatenate([y_tr, y_cv])
+def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
+    x, y = np.concatenate([x_tr, x_tr]), np.concatenate([y_tr, y_tr])
     estimator = NuSVC()
     param_grid = [{
         'kernel': ['rbf', 'sigmoid'],
-        'nu': np.arange(start=0.020, stop=0.660, step=0.001, dtype=np.float64),
+        'nu': np.arange(start=0.010, stop=0.850, step=0.001, dtype=np.float64),
         'gamma': [
             0.1, 0.2, 0.3,
             0.01, 0.02, 0.03,
@@ -30,7 +30,7 @@ def get_optimized_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts):
         ]
     }]
     scoring = make_scorer(_scorer)
-    cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_tr[:, 0]) * (-1), np.zeros_like(x_cv[:, 0])]))
+    cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_tr[:, 0]) * (-1), np.zeros_like(x_tr[:, 0])]))
     c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv, return_train_score=False)
     c.fit(x, y)
 

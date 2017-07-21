@@ -24,10 +24,10 @@ class Autoencoder(object):
         return self.seq_enc.predict(inp)
 
     def save(self, path):
-        self.seq_autoenc.save(path)
+        self.seq_autoenc.save_weights(path)
 
     def load(self, path):
-        self.seq_autoenc.load_model(path)
+        self.seq_autoenc.load_weights(path)
 
 
 class RecurrentVariationalAutoencoder(Autoencoder):

@@ -62,7 +62,6 @@ class Configuration(object):
         # Classifiers Configuration
         self.ref_smp_cnt = config['classifiers']['reference_sample_count']
         self.clf_tr_usr_cnt = config['classifiers']['train_user_count']
-        self.clf_cv_usr_cnt = config['classifiers']['cross_validation_user_count']
         self.clf_ts_usr_cnt = config['classifiers']['test_user_count']
 
         # Logger Configuration

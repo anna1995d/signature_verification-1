@@ -34,8 +34,7 @@ data:
 
 classifiers:
   reference_sample_count: 5
-  train_user_count: 24
-  cross_validation_user_count: 8
+  train_user_count: 32
   test_user_count: 8
 
 autoencoder:

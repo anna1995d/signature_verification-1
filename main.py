@@ -11,10 +11,9 @@ def process_model():
     e = rnn.load_encoder(x, y)
 
     x_tr, y_tr = data.get_evaluation_train_data(e)
-    x_cv, y_cv = data.get_evaluation_cross_validation_data(e)
     x_ts, y_ts = data.get_evaluation_test_data(e)
 
-    utils.save_evaluation(svc.get_optimized_evaluation(x_tr, y_tr, x_cv, y_cv, x_ts, y_ts), 'svc')
+    utils.save_evaluation(svc.get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts), 'svc')
     utils.save_evaluation(knc.get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts), 'knc')
 
 
