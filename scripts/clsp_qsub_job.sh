@@ -16,5 +16,5 @@
 #$ -pe smp 8
 
 source activate sigv
-CUDA_VISIBLE_DEVICES=`/home/gkumar/scripts/free-gpu` TF_CPP_MIN_LOG_LEVEL=3 KERAS_BACKEND=tensorflow python main.py
+CUDA_VISIBLE_DEVICES=`/home/gkumar/scripts/free-gpu` KERAS_BACKEND=theano python main.py
 source deactivate sigv

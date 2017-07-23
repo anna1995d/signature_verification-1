@@ -50,8 +50,6 @@ autoencoder:
       - "acc"
 
   callbacks:
-    tensorboard:
-      log_dir_template: "./logs/{dir}/tensorboard"
     early_stopping:
       monitor: "loss"
       min_delta: 0
