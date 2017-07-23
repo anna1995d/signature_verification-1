@@ -7,7 +7,6 @@ from keras.models import Model
 
 from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import blogger, elogger
-from seq2seq.logging import rnn_tblogger
 from utils.config import CONFIG
 
 
@@ -17,7 +16,7 @@ class Autoencoder(object):
         self.seq_autoenc = None
 
     def fit(self, x, y):
-        callbacks = [blogger, elogger, rnn_tblogger(), EarlyStopping(**CONFIG.clbs['early_stopping'])]
+        callbacks = [blogger, elogger, EarlyStopping(**CONFIG.clbs['early_stopping'])]
         self.seq_autoenc.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
 
     def predict(self, inp):
