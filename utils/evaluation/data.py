@@ -30,12 +30,12 @@ def _get_evaluation_data(e, usr_num_gen):
             np.min(gen_dists, axis=1, keepdims=True),
             np.mean(gen_dists[:, np.argmin(ref_mdists)].reshape((-1, 1)), axis=1, keepdims=True),
             np.max(gen_dists, axis=1, keepdims=True)
-        ], axis=1) - feat_vec) * 100)
+        ], axis=1) / feat_vec))
         frg_x = np.nan_to_num((np.concatenate([
             np.min(frg_dists, axis=1, keepdims=True),
             np.mean(frg_dists[:, np.argmin(ref_mdists)].reshape((-1, 1)), axis=1, keepdims=True),
             np.max(frg_dists, axis=1, keepdims=True)
-        ], axis=1) - feat_vec) * 100)
+        ], axis=1) / feat_vec))
         x.append(np.concatenate([gen_x, frg_x]))
 
         gen_y = np.ones_like(gen_x[:, 0])

@@ -29,13 +29,15 @@ data:
     feature_count: 4
 
   reshaping:
-    input_dimension: 27
+    input_dimension: 9
     sampling_step: 3
 
 classifiers:
   reference_sample_count: 5
   train_user_count: 32
   test_user_count: 8
+  knc:
+    n_neighbors: 45
 
 autoencoder:
   train:
@@ -65,10 +67,11 @@ autoencoder:
     encoder:
       0:
         <<: *global
-        units: 72
+        go_backwards: true
+        units: 9
       1:
         <<: *global
-        units: 150
+        units: 25
     decoder:
       0:
         <<: *global

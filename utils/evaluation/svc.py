@@ -31,7 +31,9 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     }]
     scoring = make_scorer(_scorer)
     cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_tr[:, 0]) * (-1), np.zeros_like(x_tr[:, 0])]))
-    c = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv, return_train_score=False)
+    c = GridSearchCV(
+        estimator=estimator, param_grid=param_grid, scoring=scoring, cv=cv, return_train_score=False, n_jobs=-1
+    )
     c.fit(x, y)
 
     scores = list(map(

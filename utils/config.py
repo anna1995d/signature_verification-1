@@ -63,6 +63,7 @@ class Configuration(object):
         self.ref_smp_cnt = config['classifiers']['reference_sample_count']
         self.clf_tr_usr_cnt = config['classifiers']['train_user_count']
         self.clf_ts_usr_cnt = config['classifiers']['test_user_count']
+        self.knc = config['classifiers']['knc']
 
         # Logger Configuration
         self.log_frm = config['logger']['log_format']
