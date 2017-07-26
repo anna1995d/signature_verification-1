@@ -1,7 +1,7 @@
 import keras.backend as K
-from keras import layers
+from keras import layers, losses
 from keras.callbacks import EarlyStopping
-from keras.layers import Masking, Input, RepeatVector, Lambda
+from keras.layers import Masking, Input, RepeatVector, Lambda, Dense
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -45,19 +45,14 @@ class RecurrentVariationalAutoencoder(Autoencoder):
             enc = Bidirectional(cell(**layer), merge_mode='ave')(msk if enc is None else enc)
 
         # Latent
-        c = cell(CONFIG.enc_arc[-1], **CONFIG.ae_lcfg)
-        c.return_sequences = False
-        z_mean = Bidirectional(c, merge_mode='ave')(enc)
-
-        c = cell(CONFIG.enc_arc[-1], **CONFIG.ae_lcfg)
-        c.return_sequences = False
-        z_log_sigma = Bidirectional(c, merge_mode='ave')(enc)
+        z_mean = Dense(units=CONFIG.enc_arc[-1]['units'])(enc)
+        z_log_sigma = Dense(units=CONFIG.enc_arc[-1]['units'])(enc)
 
         def sampling(args):
-            epsilon = K.random_normal(shape=(1, CONFIG.enc_arc[-1]), mean=0.0, stddev=1.0)
+            epsilon = K.random_normal(shape=(1, CONFIG.enc_arc[-1]['units']), mean=0.0, stddev=1.0)
             return args[0] + K.exp(args[1] / 2) * epsilon
 
-        z = Lambda(sampling)([z_mean, z_log_sigma])
+        z = Lambda(sampling, output_shape=(CONFIG.enc_arc[-1]['units'],))([z_mean, z_log_sigma])
 
         # Repeat
         rpt = RepeatVector(max_len)(z)
@@ -67,9 +62,12 @@ class RecurrentVariationalAutoencoder(Autoencoder):
         for layer in CONFIG.dec_arc:
             dec = Bidirectional(cell(**layer), merge_mode='ave')(rpt if dec is None else dec)
 
+        loss_fn = CONFIG.ae_ccfg.pop('loss')
+
         def vae_loss(y_true, y_pred):
+            xent_loss = K.sum(getattr(losses, loss_fn)(y_true, y_pred), axis=-1)
             kl_loss = - 0.5 * K.sum(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1)
-            return K.sum(K.sum(K.abs(y_true - y_pred), axis=-1), axis=-1) + kl_loss
+            return xent_loss + kl_loss
 
         # Autoencoder
         self.seq_autoenc = Model(inp, dec)
