@@ -1,5 +1,0 @@
-[submodule "tensorflow"]
-	path = libs/tensorflow
-	url = https://github.com/tensorflow/tensorflow
-	branch = v1.0.1
-	ignore = dirty
