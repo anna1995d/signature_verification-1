@@ -15,8 +15,8 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     x, y = np.concatenate([x_tr, x_tr]), np.concatenate([y_tr, y_tr])
     estimator = NuSVC()
     param_grid = [{
-        'kernel': ['rbf', 'sigmoid', 'linear', 'poly'],
-        'nu': np.arange(start=0.010, stop=0.850, step=0.001, dtype=np.float64),
+        'kernel': ['rbf', 'sigmoid'],
+        'nu': np.arange(start=0.500, stop=0.850, step=0.001, dtype=np.float64),
         'gamma': [
             0.1, 0.2, 0.3,
             0.01, 0.02, 0.03,
