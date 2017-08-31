@@ -16,5 +16,5 @@
 #$ -pe smp 8
 
 source activate sigv
-CUDA_VISIBLE_DEVICES=`/home/gkumar/scripts/free-gpu` KERAS_BACKEND=theano python main.py
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=`/home/gkumar/scripts/free-gpu` KERAS_BACKEND=theano python -W ignore main.py
 source deactivate sigv

@@ -6,7 +6,7 @@ from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
 from seq2seq.layers import AttentionWithContext
-from seq2seq.logging import blogger, elogger
+from seq2seq.logging import elogger
 from utils.config import CONFIG
 
 
@@ -16,7 +16,7 @@ class Autoencoder(object):
         self.seq_autoenc = None
 
     def fit(self, x, y):
-        callbacks = [blogger, elogger, EarlyStopping(**CONFIG.clbs['early_stopping'])]
+        callbacks = [elogger, EarlyStopping(**CONFIG.clbs['early_stopping'])]
         self.seq_autoenc.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
 
     def predict(self, inp):
@@ -36,7 +36,7 @@ class RecurrentVariationalAutoencoder(Autoencoder):
         cell = getattr(layers, CONFIG.ct)
 
         # Input
-        inp = Input(shape=(None, CONFIG.inp_dim))
+        inp = Input(shape=(None, CONFIG.inp_dim * CONFIG.win_sze))
         msk = Masking()(inp)
 
         # Encoder
@@ -84,7 +84,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
         cell = getattr(layers, CONFIG.ct)
 
         # Input
-        inp = Input(shape=(None, CONFIG.inp_dim))
+        inp = Input(shape=(None, CONFIG.inp_dim * CONFIG.win_sze))
         msk = Masking()(inp)
 
         # Encoder

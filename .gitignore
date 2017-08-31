@@ -133,6 +133,7 @@ ENV/
 .ropeproject
 
 .idea/
+.vscode/
 models/*
 !logs
 logs/*
