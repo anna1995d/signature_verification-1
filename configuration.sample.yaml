@@ -30,7 +30,7 @@ data:
 
   reshaping:
     input_dimension: 14
-    sampling_step: 3
+    sampling_step: 2
     window_size: 1
     window_step: 1
 
@@ -67,12 +67,15 @@ autoencoder:
       return_sequences: true
       implementation: 2
       activation: "relu"
-      dropout: 0.4
+      dropout: 0.2
+      merge_mode: "ave"
+
     encoder:
       0:
         <<: *global
         go_backwards: true
-        units: 175
+        units: 200
+
     decoder:
       0:
         <<: *global
@@ -80,4 +83,5 @@ autoencoder:
       1:
         <<: *global
         units: 14
+
     cell_type: "LSTM"

@@ -90,7 +90,9 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
         # Encoder
         enc = None
         for layer in CONFIG.enc_arc:
-            enc = Bidirectional(cell(**layer), merge_mode='ave')(msk if enc is None else enc)
+            merge_mode = layer.pop('merge_mode')
+            enc = Bidirectional(cell(**layer), merge_mode=merge_mode)(msk if enc is None else enc)
+            layer['merge_mode'] = merge_mode
 
         # Attention
         att = AttentionWithContext()(enc)
@@ -101,7 +103,9 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
         # Decoder
         dec = None
         for layer in CONFIG.dec_arc:
-            dec = Bidirectional(cell(**layer), merge_mode='ave')(rpt if dec is None else dec)
+            merge_mode = layer.pop('merge_mode')
+            dec = Bidirectional(cell(**layer), merge_mode=merge_mode)(rpt if dec is None else dec)
+            layer['merge_mode'] = merge_mode
 
         # Autoencoder
         self.seq_autoenc = Model(inp, dec)
