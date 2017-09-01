@@ -4,6 +4,7 @@ import os
 
 import numpy as np
 import yaml
+from keras import optimizers
 
 
 class Configuration(object):
@@ -35,6 +36,9 @@ class Configuration(object):
         self.ct = config['autoencoder']['architecture']['cell_type']
 
         self.ae_ccfg = config['autoencoder']['compile_config']
+        self.ae_ccfg['optimizer'] = getattr(optimizers, self.ae_ccfg['optimizer']['name'])(
+            **self.ae_ccfg['optimizer']['args']
+        )
 
         self.clbs = config['autoencoder']['callbacks']
 

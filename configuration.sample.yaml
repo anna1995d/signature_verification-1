@@ -50,7 +50,9 @@ autoencoder:
 
   compile_config:
     loss: "mape"
-    optimizer: "nadam"
+    optimizer:
+      name: "nadam"
+      args: {}
     metrics:
       - "mae"
       - "mse"
