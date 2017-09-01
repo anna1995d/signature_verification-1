@@ -1,7 +1,7 @@
 import os
 
 from keras import layers
-from keras.callbacks import EarlyStopping, TerminateOnNaN, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import Masking, Input, RepeatVector
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
@@ -18,8 +18,7 @@ class Autoencoder(object):
 
     def fit(self, x, y):
         callbacks = [
-            elogger, TerminateOnNaN,
-            EarlyStopping(**CONFIG.clbs['early_stopping']),
+            elogger, EarlyStopping(**CONFIG.clbs['early_stopping']),
             ModelCheckpoint(os.path.join(CONFIG.out_dir, 'best_autoencoder.h5'))
         ]
         self.seq_autoenc.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
