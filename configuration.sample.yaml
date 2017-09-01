@@ -51,7 +51,7 @@ autoencoder:
   compile_config:
     loss: "mape"
     optimizer:
-      name: "nadam"
+      name: "rmsprop"
       args: {}
     metrics:
       - "mae"
