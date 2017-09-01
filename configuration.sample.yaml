@@ -30,6 +30,8 @@ data:
 
   reshaping:
     input_dimension: 14
+    output_dimension: 14
+    output_activation: "relu"
     sampling_step: 2
     window_size: 1
     window_step: 1
@@ -68,7 +70,7 @@ autoencoder:
       implementation: 2
       activation: "relu"
       dropout: 0.2
-      merge_mode: "ave"
+      merge_mode: "concat"
 
     encoder:
       0:
@@ -79,9 +81,6 @@ autoencoder:
     decoder:
       0:
         <<: *global
-        units: 25
-      1:
-        <<: *global
-        units: 14
+        units: 200
 
     cell_type: "LSTM"
