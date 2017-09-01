@@ -58,7 +58,7 @@ autoencoder:
     early_stopping:
       monitor: "loss"
       min_delta: 0
-      patience: 10
+      patience: 100
       verbose: 1
       mode: "auto"
 
@@ -74,12 +74,12 @@ autoencoder:
       0:
         <<: *global
         go_backwards: true
-        units: 200
+        units: 100
 
     decoder:
       0:
         <<: *global
-        units: 200
+        units: 50
       1:
         <<: *global
         merge_mode: "ave"
