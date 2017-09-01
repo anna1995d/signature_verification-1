@@ -51,8 +51,6 @@ class Configuration(object):
 
         # Data Configuration
         self.inp_dim = config['data']['reshaping']['input_dimension']
-        self.out_dim = config['data']['reshaping']['output_dimension']
-        self.out_act = config['data']['reshaping']['output_activation']
         self.smp_stp = config['data']['reshaping']['sampling_step']
         self.win_sze = config['data']['reshaping']['window_size']
         self.win_stp = config['data']['reshaping']['window_step']

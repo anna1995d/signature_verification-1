@@ -1,7 +1,7 @@
 from keras import layers
 from keras.callbacks import EarlyStopping
-from keras.layers import Masking, Input, RepeatVector, Dense
-from keras.layers.wrappers import Bidirectional, TimeDistributed
+from keras.layers import Masking, Input, RepeatVector
+from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
 from seq2seq.layers import AttentionWithContext
@@ -58,10 +58,8 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             dec = Bidirectional(cell(**layer), merge_mode=merge_mode)(rpt if dec is None else dec)
             layer['merge_mode'] = merge_mode
 
-        res = TimeDistributed(Dense(CONFIG.out_dim, activation=CONFIG.out_act))(dec)
-
         # Autoencoder
-        self.seq_autoenc = Model(inp, res)
+        self.seq_autoenc = Model(inp, dec)
         self.seq_autoenc.compile(**CONFIG.ae_ccfg)
 
         # Encoder
