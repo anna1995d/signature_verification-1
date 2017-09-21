@@ -62,8 +62,7 @@ class Configuration(object):
         self.usr_cnt = config['data']['reading']['user_count']
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']
         self.frg_smp_cnt = config['data']['reading']['forged_sample_count']
-        self.sig_path_temp = os.path.join(self.path, config['data']['reading']['signature_path_template'])
-        self.ftr_cnt = config['data']['reading']['feature_count']
+        self.dataset_path = os.path.join(self.path, config['data']['reading']['dataset_path'])
 
         # Classifiers Configuration
         self.ref_smp_cnt = config['classifiers']['reference_sample_count']

@@ -36,9 +36,8 @@ class Data(object):
         return (data - np.mean(data, axis=0)) / (np.std(data, axis=0, ddof=1) + np.finfo(np.float64).eps)
 
     @staticmethod
-    def extract_sample(path):
-        with open(path, 'r') as f:
-            data = np.reshape(f.read().split(), newshape=(-1, CONFIG.ftr_cnt))[::CONFIG.smp_stp, :2].astype(np.float64)
+    def extract_sample(dataset, usr, smp):
+        data = dataset['U{usr}S{smp}'.format(usr=usr, smp=smp)][::CONFIG.smp_stp].astype(np.float64)
         features = Data.normalize(Data.extract_features(data))
         flatten_features = features.flatten()
         step = CONFIG.win_stp * CONFIG.inp_dim
@@ -47,20 +46,22 @@ class Data(object):
         return np.concatenate([flatten_features[i:i + window].reshape((1, -1)) for i in iterator], axis=0), features
 
     @staticmethod
-    def extract_user(usr_num, start=0, stop=CONFIG.gen_smp_cnt + CONFIG.frg_smp_cnt):
+    def extract_user(dataset, usr, start=0, stop=CONFIG.gen_smp_cnt + CONFIG.frg_smp_cnt):
         xs, ys = list(), list()
         for smp in range(start, stop):
-            x, y = Data.extract_sample(path=CONFIG.sig_path_temp.format(user=usr_num, sample=smp + 1))
+            x, y = Data.extract_sample(dataset, usr, smp)
             xs.append(x), ys.append(y)
         return xs, ys
 
     def __init__(self):
+        dataset = np.load(CONFIG.dataset_path)
+
         self.gen_x, self.gen_y, self.frg_x, self.frg_y = list(), list(), list(), list()
-        for usr_num in range(1, CONFIG.usr_cnt + 1):
-            x, y = Data.extract_user(usr_num=usr_num, stop=CONFIG.gen_smp_cnt)
+        for usr in range(CONFIG.usr_cnt):
+            x, y = Data.extract_user(dataset, usr, stop=CONFIG.gen_smp_cnt)
             self.gen_x.append(x), self.gen_y.append(y)
 
-            x, y = Data.extract_user(usr_num=usr_num, start=CONFIG.gen_smp_cnt)
+            x, y = Data.extract_user(dataset, usr, start=CONFIG.gen_smp_cnt)
             self.frg_x.append(x), self.frg_y.append(y)
 
         self.gen_max_len = max(map(lambda tmp_x: max(map(lambda tmp_y: len(tmp_y), tmp_x)), self.gen_x))
