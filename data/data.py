@@ -50,6 +50,8 @@ class Data(object):
         xs, ys = list(), list()
         for smp in range(start, stop):
             x, y = Data.extract_sample(dataset, usr, smp)
+            if len(y) > CONFIG.len_thr:
+                continue
             xs.append(x), ys.append(y)
         return xs, ys
 
@@ -64,7 +66,7 @@ class Data(object):
             x, y = Data.extract_user(dataset, usr, start=CONFIG.gen_smp_cnt)
             self.frg_x.append(x), self.frg_y.append(y)
 
-        self.gen_max_len = max(map(lambda tmp_x: max(map(lambda tmp_y: len(tmp_y), tmp_x)), self.gen_x))
+        self.gen_max_len = max(map(len, np.concatenate(self.gen_x)))
 
     def get_genuine_combinations(self, usr_num):
         return np.array(list(zip(self.gen_x[usr_num], self.gen_y[usr_num]))).T

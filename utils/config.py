@@ -58,6 +58,7 @@ class Configuration(object):
         self.smp_stp = config['data']['reshaping']['sampling_step']
         self.win_sze = config['data']['reshaping']['window_size']
         self.win_stp = config['data']['reshaping']['window_step']
+        self.len_thr = config['data']['reshaping']['length_threshold']
 
         self.usr_cnt = config['data']['reading']['user_count']
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']

@@ -32,6 +32,7 @@ data:
     sampling_step: 2
     window_size: 1
     window_step: 1
+    length_threshold: 300
 
 classifiers:
   reference_sample_count: 5
