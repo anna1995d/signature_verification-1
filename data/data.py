@@ -69,4 +69,7 @@ class Data(object):
         self.gen_max_len = max(map(len, np.concatenate(self.gen_x)))
 
     def get_genuine_combinations(self, usr_num):
-        return np.array(list(zip(self.gen_x[usr_num], self.gen_y[usr_num]))).T
+        if len(self.gen_x[usr_num]) > 0:
+            return np.array(list(zip(self.gen_x[usr_num], self.gen_y[usr_num]))).T
+        else:
+            return None, None
