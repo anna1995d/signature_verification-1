@@ -10,8 +10,8 @@ from utils.data import DATA
 
 def get_autoencoder_train_data():
     x, y = list(), list()
-    for usr_num in range(CONFIG.usr_cnt):
-        (gen_x, gen_y) = DATA.get_genuine_combinations(usr_num)
+    for usr in range(CONFIG.usr_cnt):
+        (gen_x, gen_y) = DATA.get_genuine_combinations(usr)
         if gen_x is None:
             continue
         x.append(sequence.pad_sequences(gen_x, maxlen=DATA.gen_max_len))

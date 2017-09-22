@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 from utils import compute_distances
@@ -6,14 +8,20 @@ from utils.data import DATA
 from utils.rnn import get_encoded_data
 
 
-def _get_evaluation_data(e, usr_num_gen):
+def _get_evaluation_data(e, usr_iter):
+    dists = dict()
     x, y = list(), list()
-    for usr_num in usr_num_gen:
+    for usr in usr_iter:
         ref_enc_gen, enc_gen, enc_frg = [
-            get_encoded_data(e, DATA.gen_x[usr_num][:CONFIG.ref_smp_cnt]),
-            get_encoded_data(e, DATA.gen_x[usr_num][CONFIG.ref_smp_cnt:]),
-            get_encoded_data(e, DATA.frg_x[usr_num])
+            get_encoded_data(e, DATA.gen_x[usr][:CONFIG.ref_smp_cnt]),
+            get_encoded_data(e, DATA.gen_x[usr][CONFIG.ref_smp_cnt:]),
+            get_encoded_data(e, DATA.frg_x[usr])
         ]
+
+        dists.update({
+            'gen_{usr}'.format(usr=usr): compute_distances(enc_gen),
+            'frg_{usr}'.format(usr=usr): compute_distances(enc_gen, enc_frg)
+        })
 
         ref_dists, gen_dists, frg_dists = [
             compute_distances(ref_enc_gen),
@@ -41,6 +49,8 @@ def _get_evaluation_data(e, usr_num_gen):
         gen_y = np.ones_like(gen_x[:, 0])
         frg_y = np.zeros_like(frg_x[:, 0])
         y.append(np.concatenate([gen_y, frg_y]))
+
+    np.savez_compressed(os.path.join(CONFIG.out_dir, 'distances'), **dists)
 
     return np.concatenate(x), np.concatenate(y)
 
