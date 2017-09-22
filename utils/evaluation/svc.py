@@ -16,18 +16,8 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     estimator = NuSVC()
     param_grid = [{
         'kernel': ['rbf', 'sigmoid'],
-        'nu': np.arange(start=0.500, stop=0.850, step=0.001, dtype=np.float64),
-        'gamma': [
-            0.1, 0.2, 0.3,
-            0.01, 0.02, 0.03,
-            0.001, 0.002, 0.003,
-            0.0001, 0.0002, 0.0003,
-            0.00001, 0.00002, 0.00003,
-            0.000001, 0.000002, 0.000003,
-            0.0000001, 0.0000002, 0.0000003,
-            1e-7, 2e-7, 3e-7, 1e-8, 2e-8, 3e-8,
-            1e-9, 2e-9, 3e-9, 1e-10, 2e-10, 3e-10
-        ]
+        'nu': np.arange(**CONFIG.svc['nu'], dtype=np.float32),
+        'gamma': CONFIG.svc['gamma']
     }]
     scoring = make_scorer(_scorer)
     cv = PredefinedSplit(test_fold=np.concatenate([np.ones_like(x_tr[:, 0]) * (-1), np.zeros_like(x_tr[:, 0])]))

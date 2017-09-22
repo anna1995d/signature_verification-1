@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
-from utils.evaluation import svc, knc, data, utils
 from utils import io, rnn
+from utils.evaluation import svc, knc, data, utils
 
 
 def process_model():
     io.prepare_output_directory()
 
     x, y = rnn.get_autoencoder_train_data()
-    e = rnn.load_encoder(x, y)
+    encoder = rnn.load_encoder(x, y)
 
-    x_tr, y_tr = data.get_evaluation_train_data(e)
-    x_ts, y_ts = data.get_evaluation_test_data(e)
+    x_train, y_train = data.get_evaluation_train_data(encoder)
+    x_test, y_test = data.get_evaluation_test_data(encoder)
 
-    utils.save_evaluation(svc.get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts), 'svc')
-    utils.save_evaluation(knc.get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts), 'knc')
+    utils.save_evaluation(svc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'svc')
+    utils.save_evaluation(knc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'knc')
 
 
 if __name__ == '__main__':
