@@ -70,6 +70,7 @@ class Configuration(object):
         self.clf_tr_wrt_cnt = config['classifiers']['train_writer_count']
         self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
         self.knc = config['classifiers']['knc']
+        self.svc = config['classifiers']['svc']
 
         # Logger Configuration
         self.log_frm = config['logger']['log_format']

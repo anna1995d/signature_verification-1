@@ -5,6 +5,7 @@ import numpy as np
 from utils.config import CONFIG
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
 
 
 class Data(object):
