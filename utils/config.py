@@ -27,6 +27,7 @@ class Configuration(object):
         # Autoencoder Configuration
         self.ae_tr = config['autoencoder']['train']
 
+        self.drp = config['autoencoder']['architecture']['global']['dropout']
         self.enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
         ))
@@ -54,7 +55,7 @@ class Configuration(object):
         self.out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
 
         # Data Configuration
-        self.inp_dim = config['data']['reshaping']['input_dimension']
+        self.ftr = config['data']['reshaping']['features']
         self.smp_stp = config['data']['reshaping']['sampling_step']
         self.win_sze = config['data']['reshaping']['window_size']
         self.win_stp = config['data']['reshaping']['window_step']

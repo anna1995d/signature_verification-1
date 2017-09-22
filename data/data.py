@@ -46,8 +46,8 @@ class Data(object):
         # TODO: Check the old format
         features = Data.normalize(Data.extract_features(data))
         flatten_features = features.flatten()
-        step = CONFIG.win_stp * CONFIG.inp_dim
-        window = CONFIG.win_sze * CONFIG.inp_dim
+        step = CONFIG.win_stp * CONFIG.ftr
+        window = CONFIG.win_sze * CONFIG.ftr
         iterator = range(0, flatten_features.shape[0] - window + 1, step)
         return np.concatenate([flatten_features[i:i + window].reshape((1, -1)) for i in iterator], axis=0), features
 

@@ -2,7 +2,7 @@ import os
 
 from keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.layers import Masking, Input, RepeatVector
+from keras.layers import Masking, Input, RepeatVector, Dropout, TimeDistributed, Dense
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -40,7 +40,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
         cell = getattr(layers, CONFIG.ct)
 
         # Input
-        inp = Input(shape=(None, CONFIG.inp_dim * CONFIG.win_sze))
+        inp = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
         msk = Masking()(inp)
 
         # Encoder
@@ -49,6 +49,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             merge_mode = layer.pop('merge_mode')
             enc = Bidirectional(cell(**layer), merge_mode=merge_mode)(msk if enc is None else enc)
             layer['merge_mode'] = merge_mode
+        enc = Dropout(CONFIG.drp)(enc)
 
         # Attention
         att = AttentionWithContext()(enc)
@@ -62,9 +63,13 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             merge_mode = layer.pop('merge_mode')
             dec = Bidirectional(cell(**layer), merge_mode=merge_mode)(rpt if dec is None else dec)
             layer['merge_mode'] = merge_mode
+        dec = Dropout(CONFIG.drp)(dec)
+
+        # Dense
+        out = TimeDistributed(Dense(CONFIG.ftr))(dec)
 
         # Autoencoder
-        self.seq_autoenc = Model(inp, dec)
+        self.seq_autoenc = Model(inp, out)
         self.seq_autoenc.compile(**CONFIG.ae_ccfg)
 
         # Encoder

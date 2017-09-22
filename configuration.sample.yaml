@@ -28,7 +28,7 @@ data:
     dataset_path: "dataset.npz"
 
   reshaping:
-    input_dimension: 14
+    features: 14
     sampling_step: 2
     window_size: 1
     window_step: 1
@@ -111,15 +111,19 @@ autoencoder:
       0:
         <<: *global
         go_backwards: true
+        dropout: 0.0
+        units: 100
+      1:
+        <<: *global
         units: 100
 
     decoder:
       0:
         <<: *global
-        units: 50
+        dropout: 0.0
+        units: 100
       1:
         <<: *global
-        merge_mode: "ave"
-        units: 14
+        units: 100
 
     cell_type: "LSTM"
