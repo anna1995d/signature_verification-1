@@ -16,7 +16,7 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     estimator = NuSVC()
     param_grid = [{
         'kernel': ['rbf', 'sigmoid'],
-        'nu': np.arange(**CONFIG.svc['nu'], dtype=np.float64),
+        'nu': np.arange(**CONFIG.svc['nu'], dtype=np.float32),
         'gamma': CONFIG.svc['gamma']
     }]
     scoring = make_scorer(_scorer)

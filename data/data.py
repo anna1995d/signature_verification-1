@@ -29,7 +29,7 @@ class Data(object):
         t_n = np.arctan(drv_s[:, 1], drv_s[:, 0]).reshape((-1, 1))
         v_n = np.sqrt(drv_s[:, 0] ** 2 + drv_s[:, 1] ** 2).reshape((-1, 1))
         dt_n = Data.calculate_derivatives(t_n, simple=True)
-        r_n = np.nan_to_num(np.log(np.abs(v_n / (dt_n + np.finfo(np.float64).eps)) + np.finfo(np.float64).eps))
+        r_n = np.nan_to_num(np.log(np.abs(v_n / (dt_n + np.finfo(np.float32).eps)) + np.finfo(np.float32).eps))
         dv_n = Data.calculate_derivatives(v_n, simple=True)
         a_n = np.sqrt(dv_n ** 2 + (v_n * dt_n) ** 2)
         dar = Data.calculate_derivatives(np.concatenate((r_n, a_n), axis=1), simple=True)
@@ -38,11 +38,11 @@ class Data(object):
 
     @staticmethod
     def normalize(data):
-        return (data - np.mean(data, axis=0)) / (np.std(data, axis=0, ddof=1) + np.finfo(np.float64).eps)
+        return (data - np.mean(data, axis=0)) / (np.std(data, axis=0, ddof=1) + np.finfo(np.float32).eps)
 
     @staticmethod
     def extract_sample(dataset, writer, sample):
-        data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)][::CONFIG.smp_stp].astype(np.float64)
+        data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)][::CONFIG.smp_stp].astype(np.float32)
         # TODO: Check the old format
         features = Data.normalize(Data.extract_features(data))
         flatten_features = features.flatten()
