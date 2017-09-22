@@ -82,7 +82,7 @@ class Data(object):
         logger.info('Genuine max length: {gen_max_len}'.format(gen_max_len=self.gen_max_len))
 
         frg_max_len = max(map(len, np.concatenate(self.frg_y)))
-        logger.info('Genuine max length: {frg_max_len}'.format(frg_max_len=frg_max_len))
+        logger.info('Forged max length: {frg_max_len}'.format(frg_max_len=frg_max_len))
 
     def get_genuine_combinations(self, writer):
         if len(self.gen_x[writer]) > 0:
