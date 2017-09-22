@@ -7,7 +7,7 @@ from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
 from seq2seq.layers import AttentionWithContext
-from seq2seq.logging import elogger
+from seq2seq.logging import epoch_logger
 from utils.config import CONFIG
 
 
@@ -18,8 +18,8 @@ class Autoencoder(object):
 
     def fit(self, x, y):
         callbacks = [
-            elogger, EarlyStopping(**CONFIG.clbs['early_stopping']),
-            ModelCheckpoint(os.path.join(CONFIG.out_dir, 'best_autoencoder.h5'))
+            epoch_logger, EarlyStopping(**CONFIG.clbs['early_stopping']),
+            ModelCheckpoint(os.path.join(CONFIG.out_dir, 'best_model.hdf5'))
         ]
         self.seq_autoenc.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
 

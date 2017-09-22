@@ -8,19 +8,19 @@ from utils.data import DATA
 from utils.rnn import get_encoded_data
 
 
-def _get_evaluation_data(e, usr_iter):
+def _get_evaluation_data(encoder, writer_iterator):
     dists = dict()
     x, y = list(), list()
-    for usr in usr_iter:
+    for writer in writer_iterator:
         ref_enc_gen, enc_gen, enc_frg = [
-            get_encoded_data(e, DATA.gen_x[usr][:CONFIG.ref_smp_cnt]),
-            get_encoded_data(e, DATA.gen_x[usr][CONFIG.ref_smp_cnt:]),
-            get_encoded_data(e, DATA.frg_x[usr])
+            get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.ref_smp_cnt]),
+            get_encoded_data(encoder, DATA.gen_x[writer][CONFIG.ref_smp_cnt:]),
+            get_encoded_data(encoder, DATA.frg_x[writer])
         ]
 
         dists.update({
-            'gen_{usr}'.format(usr=usr): compute_distances(enc_gen),
-            'frg_{usr}'.format(usr=usr): compute_distances(enc_gen, enc_frg)
+            'gen_{wrt}'.format(wrt=writer): compute_distances(enc_gen),
+            'frg_{wrt}'.format(wrt=writer): compute_distances(enc_gen, enc_frg)
         })
 
         ref_dists, gen_dists, frg_dists = [
@@ -55,10 +55,10 @@ def _get_evaluation_data(e, usr_iter):
     return np.concatenate(x), np.concatenate(y)
 
 
-def get_evaluation_train_data(e):
-    return _get_evaluation_data(e, range(CONFIG.clf_tr_usr_cnt))
+def get_evaluation_train_data(encoder):
+    return _get_evaluation_data(encoder, range(CONFIG.clf_tr_wrt_cnt))
 
 
-def get_evaluation_test_data(e):
-    start = CONFIG.clf_tr_usr_cnt
-    return _get_evaluation_data(e, range(start, start + CONFIG.clf_ts_usr_cnt))
+def get_evaluation_test_data(encoder):
+    start = CONFIG.clf_tr_wrt_cnt
+    return _get_evaluation_data(encoder, range(start, start + CONFIG.clf_ts_wrt_cnt))

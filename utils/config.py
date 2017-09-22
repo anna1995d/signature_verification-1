@@ -60,15 +60,15 @@ class Configuration(object):
         self.win_stp = config['data']['reshaping']['window_step']
         self.len_thr = config['data']['reshaping']['length_threshold']
 
-        self.usr_cnt = config['data']['reading']['user_count']
+        self.wrt_cnt = config['data']['reading']['writer_count']
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']
         self.frg_smp_cnt = config['data']['reading']['forged_sample_count']
         self.dataset_path = os.path.join(self.path, config['data']['reading']['dataset_path'])
 
         # Classifiers Configuration
         self.ref_smp_cnt = config['classifiers']['reference_sample_count']
-        self.clf_tr_usr_cnt = config['classifiers']['train_user_count']
-        self.clf_ts_usr_cnt = config['classifiers']['test_user_count']
+        self.clf_tr_wrt_cnt = config['classifiers']['train_writer_count']
+        self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
         self.knc = config['classifiers']['knc']
 
         # Logger Configuration

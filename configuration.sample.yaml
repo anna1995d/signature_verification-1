@@ -5,7 +5,7 @@ general:
 
 logger:
   log_format: "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s"
-  log_file: "./logs/{dir}/seq2seq.log"
+  log_file: "./models/{dir}/seq2seq.log"
   log_level: "info"
 
 export:
@@ -22,7 +22,7 @@ export:
 
 data:
   reading:
-    user_count: 10000
+    writer_count: 10000
     genuine_sample_count: 24
     forged_sample_count: 30
     dataset_path: "dataset.npz"
@@ -36,8 +36,8 @@ data:
 
 classifiers:
   reference_sample_count: 5
-  train_user_count: 8000
-  test_user_count: 2000
+  train_writer_count: 8000
+  test_writer_count: 2000
   knc:
     n_neighbors: 45
 
@@ -60,10 +60,8 @@ autoencoder:
   callbacks:
     early_stopping:
       monitor: "loss"
-      min_delta: 0
-      patience: 100
+      patience: 10
       verbose: 1
-      mode: "auto"
 
   architecture:
     global: &global
