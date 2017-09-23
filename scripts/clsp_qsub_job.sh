@@ -13,7 +13,7 @@
 #$ -l gpu=1
 #$ -l 'arch=*64*'
 #$ -l mem_free=8G,ram_free=8G
-#$ -l "hostname=b1[123456789]*|c*"
+#$ -l "hostname=b*|c*"
 #$ -pe smp 8
 
 source activate sigv
