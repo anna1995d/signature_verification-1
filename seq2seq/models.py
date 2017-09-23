@@ -70,6 +70,7 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
 
         # Autoencoder
         self.seq_autoenc = Model(inp, out)
+        self.seq_autoenc.summary()
         self.seq_autoenc.compile(**CONFIG.ae_ccfg)
 
         # Encoder
