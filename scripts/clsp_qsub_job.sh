@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 #$ -cwd
+#$ -q g.q
 #$ -o ./models
 #$ -e ./models
 #$ -j y
@@ -11,7 +12,7 @@
 #$ -M "kahrabian@gmail.com"
 #$ -l gpu=1
 #$ -l 'arch=*64*'
-#$ -l mem_free=16G,ram_free=16G
+#$ -l mem_free=8G,ram_free=8G
 #$ -l "hostname=b1[123456789]*|c*"
 #$ -pe smp 8
 
