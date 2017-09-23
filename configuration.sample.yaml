@@ -124,6 +124,7 @@ autoencoder:
         units: 100
       1:
         <<: *global
-        units: 100
+        merge_mode: "ave"
+        units: 14
 
     cell_type: "LSTM"

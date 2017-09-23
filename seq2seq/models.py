@@ -2,7 +2,7 @@ import os
 
 from keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.layers import Masking, Input, RepeatVector, Dropout, TimeDistributed, Dense
+from keras.layers import Masking, Input, RepeatVector, Dropout
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -63,13 +63,9 @@ class AttentiveRecurrentAutoencoder(Autoencoder):
             merge_mode = layer.pop('merge_mode')
             dec = Bidirectional(cell(**layer), merge_mode=merge_mode)(rpt if dec is None else dec)
             layer['merge_mode'] = merge_mode
-        dec = Dropout(CONFIG.drp)(dec)
-
-        # Dense
-        out = TimeDistributed(Dense(CONFIG.ftr))(dec)
 
         # Autoencoder
-        self.seq_autoenc = Model(inp, out)
+        self.seq_autoenc = Model(inp, dec)
         self.seq_autoenc.summary()
         self.seq_autoenc.compile(**CONFIG.ae_ccfg)
 
