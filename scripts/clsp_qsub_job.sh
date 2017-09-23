@@ -16,5 +16,5 @@
 #$ -pe smp 8
 
 source activate sigv
-CUDA_VISIBLE_DEVICES=`free-gpu` python -W ignore main.py
+CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=`free-gpu` python -W ignore main.py
 source deactivate sigv
