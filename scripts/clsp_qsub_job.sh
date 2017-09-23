@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 #$ -cwd
-#$ -q g.q
 #$ -o ./models
 #$ -e ./models
 #$ -j y
