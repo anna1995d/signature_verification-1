@@ -42,8 +42,8 @@ classifiers:
     n_neighbors: 45
   svc:
     nu:
-      start: 0.500
-      stop: 0.850
+      start: 0.250
+      stop: 0.750
       step: 0.001
     gamma:
       - 1.0e-1
