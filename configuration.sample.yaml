@@ -29,7 +29,7 @@ data:
 
   reshaping:
     features: 14
-    sampling_step: 2
+    sampling_step: 3
     window_size: 1
     window_step: 1
     length_threshold: 30000
@@ -87,7 +87,7 @@ autoencoder:
   compile_config:
     loss: "mape"
     optimizer:
-      name: "nadam"
+      name: "adam"
       args: {}
     metrics:
       - "mae"
@@ -104,7 +104,7 @@ autoencoder:
       return_sequences: true
       implementation: 2
       activation: "relu"
-      dropout: 0.2
+      dropout: 0.5
       merge_mode: "concat"
 
     encoder:
@@ -115,7 +115,7 @@ autoencoder:
         units: 100
       1:
         <<: *global
-        units: 100
+        units: 150
 
     decoder:
       0:
