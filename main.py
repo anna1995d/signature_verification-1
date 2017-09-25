@@ -13,8 +13,8 @@ def process_model():
     x_train, y_train = data.get_evaluation_train_data(encoder)
     x_test, y_test = data.get_evaluation_test_data(encoder)
 
-    utils.save_evaluation(svc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'svc')
     utils.save_evaluation(knc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'knc')
+    utils.save_evaluation(svc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'svc')
 
 
 if __name__ == '__main__':

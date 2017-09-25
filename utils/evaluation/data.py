@@ -60,5 +60,4 @@ def get_evaluation_train_data(encoder):
 
 
 def get_evaluation_test_data(encoder):
-    start = CONFIG.clf_tr_wrt_cnt
-    return _get_evaluation_data(encoder, range(start, start + CONFIG.clf_ts_wrt_cnt))
+    return _get_evaluation_data(encoder, range(CONFIG.clf_tr_wrt_cnt, CONFIG.clf_tr_wrt_cnt + CONFIG.clf_ts_wrt_cnt))

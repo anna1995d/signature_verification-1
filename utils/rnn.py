@@ -10,8 +10,8 @@ from utils.data import DATA
 
 def get_autoencoder_train_data():
     x, y = list(), list()
-    for writer in range(CONFIG.wrt_cnt):
-        (gen_x, gen_y) = DATA.get_genuine_combinations(writer)
+    for writer in range(CONFIG.clf_tr_wrt_cnt):
+        (gen_x, gen_y) = DATA.get_train_data(writer)
         if gen_x is None and gen_y is None:
             continue
         x.append(sequence.pad_sequences(gen_x, maxlen=DATA.gen_max_len))

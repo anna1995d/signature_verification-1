@@ -84,9 +84,10 @@ class Data(object):
         frg_max_len = max(map(len, np.concatenate(self.frg_y)))
         logger.info('Forged max length: {frg_max_len}'.format(frg_max_len=frg_max_len))
 
-    def get_genuine_combinations(self, writer):
-        if len(self.gen_x[writer]) > 0:
-            return np.array(list(zip(self.gen_x[writer], self.gen_y[writer]))).T
+    def get_train_data(self, writer):
+        if len(self.gen_x[writer]) > 0 or len(self.frg_x[writer]) > 0:
+            return np.array(list(zip(self.gen_x[writer], self.gen_y[writer])) +
+                            list(zip(self.frg_x[writer], self.frg_y[writer]))).T
         else:
             logger.info('Writer with no sequence: writer #{wrt}'.format(wrt=writer))
             return None, None
