@@ -1,5 +1,6 @@
 general:
   random_seed: 100
+  classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
 
@@ -19,10 +20,14 @@ export:
       - "Precision"
       - "Recall"
       - "F1"
+    sms:
+      - "Precision"
+      - "Recall"
+      - "F1"
 
 data:
   reading:
-    writer_count: 250
+    writer_count: 500
     genuine_sample_count: 24
     forged_sample_count: 30
     dataset_path: "dataset.npz"
@@ -36,8 +41,8 @@ data:
 
 classifiers:
   reference_sample_count: 5
-  train_writer_count: 200
-  test_writer_count: 50
+  train_writer_count: 400
+  test_writer_count: 100
   knc:
     n_neighbors: 45
   svc:
@@ -58,6 +63,49 @@ classifiers:
       - 5.0e-4
       - 3.0e-4
       - 1.0e-4
+
+siamese:
+  train:
+    batch_size: 128
+    epochs: 1000
+    validation_split: 0.0
+    verbose: 1
+
+  test:
+    reference_count: 9
+    evaluation_count: 15
+
+  compile_config:
+    loss: "binary_crossentropy"
+    optimizer:
+      name: "adam"
+      args: {}
+    metrics:
+      - "acc"
+
+  callbacks:
+    early_stopping:
+      monitor: "loss"
+      patience: 10
+      verbose: 1
+
+  architecture:
+    global: &siamese
+      activation: "relu"
+      dropout: 0.5
+
+    before:
+      0:
+        <<: *siamese
+        dropout: 0.0
+        units: 150
+
+    after:
+      0:
+        <<: *siamese
+        units: 75
+
+  merge_mode: 'subtract'
 
 autoencoder:
   train:
@@ -82,7 +130,7 @@ autoencoder:
       verbose: 1
 
   architecture:
-    global: &global
+    global: &autoencoder
       return_sequences: true
       implementation: 2
       activation: "relu"
@@ -91,21 +139,21 @@ autoencoder:
 
     encoder:
       0:
-        <<: *global
+        <<: *autoencoder
         go_backwards: true
         dropout: 0.0
         units: 100
       1:
-        <<: *global
+        <<: *autoencoder
         units: 150
 
     decoder:
       0:
-        <<: *global
+        <<: *autoencoder
         dropout: 0.0
         units: 100
       1:
-        <<: *global
+        <<: *autoencoder
         merge_mode: "ave"
         units: 14
 

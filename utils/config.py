@@ -27,7 +27,7 @@ class Configuration(object):
         # Autoencoder Configuration
         self.ae_tr = config['autoencoder']['train']
 
-        self.drp = config['autoencoder']['architecture']['global']['dropout']
+        self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
         self.enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
         ))
@@ -41,11 +41,12 @@ class Configuration(object):
             **self.ae_ccfg['optimizer']['args']
         )
 
-        self.clbs = config['autoencoder']['callbacks']
+        self.ae_clbs = config['autoencoder']['callbacks']
 
         # General Configuration
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
+        self.clf_rpt_dgt = config['general']['classification_report_digits']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
             earc='x'.join(map(lambda x: str(x['units']), self.enc_arc)),
@@ -72,6 +73,27 @@ class Configuration(object):
         self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
         self.knc = config['classifiers']['knc']
         self.svc = config['classifiers']['svc']
+
+        # Siamese Configuration
+        self.sms_tr = config['siamese']['train']
+        self.sms_ts_ref_cnt = config['siamese']['test']['reference_count']
+        self.sms_ts_evl_cnt = config['siamese']['test']['evaluation_count']
+
+        self.sms_drp = config['siamese']['architecture']['global']['dropout']
+        self.sms_brn_arc = list(map(
+            lambda x: x[1], sorted(list(config['siamese']['architecture']['before'].items()), key=lambda x: x[0])
+        ))
+        self.sms_clf_arc = list(map(
+            lambda x: x[1], sorted(list(config['siamese']['architecture']['after'].items()), key=lambda x: x[0])
+        ))
+        self.sms_mrg_md = config['siamese']['merge_mode']
+
+        self.sms_ccfg = config['siamese']['compile_config']
+        self.sms_ccfg['optimizer'] = getattr(optimizers, self.sms_ccfg['optimizer']['name'])(
+            **self.sms_ccfg['optimizer']['args']
+        )
+
+        self.sms_clbs = config['siamese']['callbacks']
 
         # Logger Configuration
         self.log_frm = config['logger']['log_format']
