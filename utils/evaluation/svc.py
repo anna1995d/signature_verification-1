@@ -26,9 +26,9 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     )
     c.fit(x, y)
 
-    scores = list(map(
-        float, classification_report(y_true=y_ts, y_pred=c.best_estimator_.predict(x_ts)).split('\n')[-2].split()[3:6]
-    ))
+    scores = list(map(float, classification_report(
+        y_true=y_ts, y_pred=c.best_estimator_.predict(x_ts), digits=CONFIG.clf_rpt_dgt
+    ).split('\n')[-2].split()[3:6]))
 
     return {
         CONFIG.csv['svc'][0]: c.best_params_['kernel'],

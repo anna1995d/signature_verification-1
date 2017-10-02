@@ -46,6 +46,7 @@ class Configuration(object):
         # General Configuration
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
+        self.clf_rpt_dgt = config['general']['classification_report_digits']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
             earc='x'.join(map(lambda x: str(x['units']), self.enc_arc)),

@@ -26,8 +26,8 @@ class CustomModel(object):
             callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint)))
         self.model.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
 
-    def predict(self, inp):
-        return self.model.predict(inp) if self.predictor is None else self.predictor.predict(inp)
+    def predict(self, x):
+        return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)
 
     def save(self, path):
         self.model.save_weights(path)
@@ -79,7 +79,7 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 class SiameseClassifier(CustomModel):
     def __init__(self):
         # Single Branch Input
-        branch_input = Input(shape=(CONFIG.enc_arc[-1]['units'],))
+        branch_input = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
 
         # Single Branch Model
         branch_out = None
@@ -92,8 +92,8 @@ class SiameseClassifier(CustomModel):
         model = Model(branch_input, branch_out)
 
         # Siamese Input
-        input_a = Input(shape=(CONFIG.enc_arc[-1]['units'],))
-        input_b = Input(shape=(CONFIG.enc_arc[-1]['units'],))
+        input_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
+        input_b = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
 
         # Siamese Branches
         branch_a = model(input_a)

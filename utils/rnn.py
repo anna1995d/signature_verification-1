@@ -27,4 +27,4 @@ def load_encoder(x, y):
 
 
 def get_encoded_data(encoder, original):
-    return encoder.predict(inp=sequence.pad_sequences(original))
+    return encoder.predict(sequence.pad_sequences(original))

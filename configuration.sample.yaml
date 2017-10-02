@@ -1,5 +1,6 @@
 general:
   random_seed: 100
+  classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
 
@@ -19,14 +20,14 @@ export:
       - "Precision"
       - "Recall"
       - "F1"
-    siamese:
+    sms:
       - "Precision"
       - "Recall"
       - "F1"
 
 data:
   reading:
-    writer_count: 250
+    writer_count: 500
     genuine_sample_count: 24
     forged_sample_count: 30
     dataset_path: "dataset.npz"
@@ -40,8 +41,8 @@ data:
 
 classifiers:
   reference_sample_count: 5
-  train_writer_count: 200
-  test_writer_count: 50
+  train_writer_count: 400
+  test_writer_count: 100
   knc:
     n_neighbors: 45
   svc:
@@ -93,7 +94,7 @@ siamese:
       0:
         <<: *siamese
         dropout: 0.0
-        units: 75
+        units: 150
 
     after:
       0:
