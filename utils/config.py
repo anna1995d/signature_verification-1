@@ -76,6 +76,8 @@ class Configuration(object):
 
         # Siamese Configuration
         self.sms_tr = config['siamese']['train']
+        self.sms_ts_ref_cnt = config['siamese']['test']['reference_count']
+        self.sms_ts_evl_cnt = config['siamese']['test']['evaluation_count']
 
         self.sms_drp = config['siamese']['architecture']['global']['dropout']
         self.sms_brn_arc = list(map(

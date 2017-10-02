@@ -67,9 +67,9 @@ def get_evaluation_test_data(encoder):
     return _get_evaluation_data(encoder, range(CONFIG.clf_tr_wrt_cnt, CONFIG.clf_tr_wrt_cnt + CONFIG.clf_ts_wrt_cnt))
 
 
-def _get_siamese_evaluation_data(encoder, writer_iterator):
+def get_siamese_evaluation_train_data(encoder):
     x, y = list(), list()
-    for writer in writer_iterator:
+    for writer in range(CONFIG.clf_tr_wrt_cnt):
         encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer]),
             get_encoded_data(encoder, DATA.frg_x[writer])
@@ -84,14 +84,24 @@ def _get_siamese_evaluation_data(encoder, writer_iterator):
         x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_forgery)))
         y.extend(np.zeros((len(encoded_genuine) * len(encoded_forgery), 1)))
 
-    return np.split(np.swapaxes(np.concatenate(x), 0, 1), 2), np.concatenate(y)
-
-
-def get_siamese_evaluation_train_data(encoder):
-    return _get_siamese_evaluation_data(encoder, range(CONFIG.clf_tr_wrt_cnt))
+    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
 
 
 def get_siamese_evaluation_test_data(encoder):
-    return _get_siamese_evaluation_data(
-        encoder, range(CONFIG.clf_tr_wrt_cnt, CONFIG.clf_tr_wrt_cnt + CONFIG.clf_ts_wrt_cnt)
-    )
+    x, y = list(), list()
+    for writer in range(CONFIG.clf_tr_wrt_cnt, CONFIG.clf_tr_wrt_cnt + CONFIG.clf_ts_wrt_cnt):
+        reference, encoded_genuine, encoded_forgery = [
+            get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.sms_ts_ref_cnt]),
+            get_encoded_data(
+                encoder, DATA.gen_x[writer][CONFIG.sms_ts_ref_cnt:CONFIG.sms_ts_ref_cnt + CONFIG.sms_ts_evl_cnt]
+            ),
+            get_encoded_data(encoder, DATA.frg_x[writer][:CONFIG.sms_ts_ref_cnt])
+        ]
+
+        x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_genuine)))
+        y.extend(np.ones((len(reference) * len(encoded_genuine), 1)))
+
+        x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_forgery)))
+        y.extend(np.zeros((len(reference) * len(encoded_forgery), 1)))
+
+    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
