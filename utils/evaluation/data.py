@@ -95,13 +95,13 @@ def get_siamese_evaluation_test_data(encoder):
             get_encoded_data(
                 encoder, DATA.gen_x[writer][CONFIG.sms_ts_ref_cnt:CONFIG.sms_ts_ref_cnt + CONFIG.sms_ts_evl_cnt]
             ),
-            get_encoded_data(encoder, DATA.frg_x[writer][:CONFIG.sms_ts_ref_cnt])
+            get_encoded_data(encoder, DATA.frg_x[writer][:CONFIG.sms_ts_evl_cnt])
         ]
 
         x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_genuine)))
-        y.extend(np.ones((len(reference) * len(encoded_genuine), 1)))
+        y.extend(np.ones((len(encoded_genuine), 1)))
 
         x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_forgery)))
-        y.extend(np.zeros((len(reference) * len(encoded_forgery), 1)))
+        y.extend(np.zeros((len(encoded_forgery), 1)))
 
     return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)

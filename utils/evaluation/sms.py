@@ -12,9 +12,10 @@ def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     sms.fit(x_tr, y_tr)
     sms.save(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
 
-    scores = list(map(float, classification_report(
-        y_true=y_ts, y_pred=(sms.predict(x_ts) >= 0.5).astype(np.int32), digits=CONFIG.clf_rpt_dgt
-    ).split('\n')[-2].split()[3:6]))
+    y_pred = (np.mean(np.reshape(sms.predict(x_ts), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
+    scores = list(map(
+        float, classification_report(y_true=y_ts, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt).split('\n')[-2].split()[3:6]
+    ))
 
     return {
         CONFIG.csv['sms'][0]: scores[0],
