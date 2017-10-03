@@ -134,7 +134,7 @@ autoencoder:
       return_sequences: true
       implementation: 2
       activation: "relu"
-      dropout: 0.5
+      dropout: 0.6
       merge_mode: "concat"
 
     encoder:
