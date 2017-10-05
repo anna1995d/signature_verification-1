@@ -30,7 +30,7 @@ data:
     writer_count: 500
     genuine_sample_count: 24
     forged_sample_count: 30
-    dataset_path: "dataset.npz"
+    dataset_path: "./datasets/synthetic_gpds_10000.npz"
 
   reshaping:
     features: 14
