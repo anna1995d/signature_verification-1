@@ -44,10 +44,11 @@ class CustomModel(object):
 
 
 class AttentiveRecurrentAutoencoder(CustomModel):
-    def __init__(self, max_len):
+    def __init__(self, max_len, fold):
         seq_autoencoder, seq_encoder = self.build_model(max_len)
         super().__init__(
-            CONFIG.ae_tr, seq_autoencoder, seq_encoder, CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint.hdf5'
+            CONFIG.ae_tr, seq_autoencoder, seq_encoder,
+            CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint_fold{}.hdf5'.format(fold)
         )
 
     def __call__(self, max_len):
@@ -93,11 +94,12 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 
 
 class SiameseClassifier(CustomModel):
-    def __init__(self):
+    def __init__(self, fold):
         siamese = self.build_model()
         super().__init__(
             CONFIG.sms_tr, siamese,
-            early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
+            early_stopping=CONFIG.sms_clbs['early_stopping'],
+            model_checkpoint='siamese_checkpoint_fold{}.hdf5'.format(fold)
         )
 
     def __call__(self):
@@ -112,7 +114,7 @@ class SiameseClassifier(CustomModel):
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
             branch_out = Dense(**layer)(Dropout(dropout)(branch_input if branch_out is None else branch_out))
-            layer['merge_mode'] = dropout
+            layer['dropout'] = dropout
         branch_out = Dropout(CONFIG.sms_drp)(branch_input if branch_out is None else branch_out)
 
         model = Model(branch_input, branch_out)
@@ -133,7 +135,7 @@ class SiameseClassifier(CustomModel):
         for layer in CONFIG.sms_clf_arc:
             dropout = layer.pop('dropout')
             output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
-            layer['merge_mode'] = dropout
+            layer['dropout'] = dropout
         output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(output))
 
         # Classifier

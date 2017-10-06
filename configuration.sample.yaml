@@ -1,5 +1,7 @@
 general:
   random_seed: 100
+  split_count: 5
+  reference_sample_count: 5
   classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
@@ -28,11 +30,6 @@ data:
     window_size: 1
     window_step: 1
     length_threshold: 5000
-
-classifiers:
-  reference_sample_count: 5
-  train_writer_count: 400
-  test_writer_count: 100
 
 siamese:
   mode: "train"

@@ -8,9 +8,12 @@ from utils.config import CONFIG
 from utils.data import DATA
 
 
-def get_autoencoder_train_data():
+def get_autoencoder_train_data(fold):
     x, y = list(), list()
-    for writer in range(CONFIG.clf_tr_wrt_cnt):
+    for writer in range(CONFIG.wrt_cnt):
+        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) == fold:
+            continue
+
         (gen_x, gen_y) = DATA.get_train_data(writer)
         if gen_x is None and gen_y is None:
             continue
@@ -19,13 +22,13 @@ def get_autoencoder_train_data():
     return np.concatenate(x), np.concatenate(y)
 
 
-def load_encoder(x, y):
-    attentive_recurrent_autoencoder = AttentiveRecurrentAutoencoder(max_len=x.shape[1])
+def load_encoder(x, y, fold):
+    attentive_recurrent_autoencoder = AttentiveRecurrentAutoencoder(x.shape[1], fold)
     if CONFIG.ae_md == 'train':
         attentive_recurrent_autoencoder.fit(x, y)
-        attentive_recurrent_autoencoder.save(path=os.path.join(CONFIG.out_dir, 'autoencoder.hdf5'))
+        attentive_recurrent_autoencoder.save(os.path.join(CONFIG.out_dir, 'autoencoder_fold{}.hdf5').format(fold))
     else:
-        attentive_recurrent_autoencoder.load(path=os.path.join(CONFIG.out_dir, 'autoencoder.hdf5'))
+        attentive_recurrent_autoencoder.load(os.path.join(CONFIG.out_dir, 'autoencoder_fold{}.hdf5').format(fold))
     return attentive_recurrent_autoencoder
 
 

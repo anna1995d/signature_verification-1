@@ -12,9 +12,12 @@ from utils.data import DATA
 from utils.rnn import get_encoded_data
 
 
-def get_siamese_evaluation_train_data(encoder):
+def get_siamese_evaluation_train_data(encoder, fold):
     x, y = list(), list()
-    for writer in range(CONFIG.clf_tr_wrt_cnt):
+    for writer in range(CONFIG.wrt_cnt):
+        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) == fold:
+            continue
+
         encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer]),
             get_encoded_data(encoder, DATA.frg_x[writer])
@@ -32,9 +35,12 @@ def get_siamese_evaluation_train_data(encoder):
     return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
 
 
-def get_siamese_evaluation_test_data(encoder):
+def get_siamese_evaluation_test_data(encoder, fold):
     x, y = list(), list()
-    for writer in range(CONFIG.clf_tr_wrt_cnt, CONFIG.clf_tr_wrt_cnt + CONFIG.clf_ts_wrt_cnt):
+    for writer in range(CONFIG.wrt_cnt):
+        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) != fold:
+            continue
+
         reference, encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.sms_ts_ref_cnt]),
             get_encoded_data(
@@ -52,13 +58,13 @@ def get_siamese_evaluation_test_data(encoder):
     return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
 
 
-def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
-    sms = SiameseClassifier()
+def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts, fold):
+    sms = SiameseClassifier(fold)
     if CONFIG.sms_md == 'train':
         sms.fit(x_tr, y_tr)
-        sms.save(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
+        sms.save(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
     else:
-        sms.load(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
+        sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
     y_pred = (np.mean(np.reshape(sms.predict(x_ts), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
     scores = list(map(
@@ -72,4 +78,4 @@ def save_evaluation(evaluation):
     with open(os.path.join(CONFIG.out_dir, 'evaluation.csv'), 'w') as f:
         w = csv.DictWriter(f, fieldnames=CONFIG.evaluation)
         w.writeheader()
-        w.writerow(evaluation)
+        w.writerows(evaluation)

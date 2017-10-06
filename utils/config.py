@@ -47,6 +47,8 @@ class Configuration(object):
         # General Configuration
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
+        self.spt_cnt = config['general']['split_count']
+        self.ref_smp_cnt = config['general']['reference_sample_count']
         self.clf_rpt_dgt = config['general']['classification_report_digits']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
@@ -67,11 +69,6 @@ class Configuration(object):
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']
         self.frg_smp_cnt = config['data']['reading']['forged_sample_count']
         self.dataset_path = os.path.join(self.path, config['data']['reading']['dataset_path'])
-
-        # Classifiers Configuration
-        self.ref_smp_cnt = config['classifiers']['reference_sample_count']
-        self.clf_tr_wrt_cnt = config['classifiers']['train_writer_count']
-        self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
 
         # Siamese Configuration
         self.sms_md = config['siamese']['mode']
