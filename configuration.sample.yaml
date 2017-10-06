@@ -43,7 +43,6 @@ siamese:
     verbose: 1
 
   test:
-    split_count: 5
     reference_count: 9
     evaluation_count: 15
 

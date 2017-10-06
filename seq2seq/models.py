@@ -93,12 +93,11 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 
 
 class SiameseClassifier(CustomModel):
-    def __init__(self, index):
+    def __init__(self):
         siamese = self.build_model()
         super().__init__(
             CONFIG.sms_tr, siamese,
-            early_stopping=CONFIG.sms_clbs['early_stopping'],
-            model_checkpoint='siamese_checkpoint_fold{}.hdf5'.format(index)
+            early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
         )
 
     def __call__(self):
@@ -113,7 +112,7 @@ class SiameseClassifier(CustomModel):
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
             branch_out = Dense(**layer)(Dropout(dropout)(branch_input if branch_out is None else branch_out))
-            layer['dropout'] = dropout
+            layer['merge_mode'] = dropout
         branch_out = Dropout(CONFIG.sms_drp)(branch_input if branch_out is None else branch_out)
 
         model = Model(branch_input, branch_out)
@@ -134,7 +133,7 @@ class SiameseClassifier(CustomModel):
         for layer in CONFIG.sms_clf_arc:
             dropout = layer.pop('dropout')
             output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
-            layer['dropout'] = dropout
+            layer['merge_mode'] = dropout
         output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(output))
 
         # Classifier
