@@ -12,9 +12,10 @@ from utils.config import CONFIG
 
 
 class CustomModel(object):
-    def __init__(self, model, predictor=None, early_stopping=None, model_checkpoint=None):
-        self.predictor = predictor
+    def __init__(self, train_config, model, predictor=None, early_stopping=None, model_checkpoint=None):
+        self.train_config = train_config
         self.model = model
+        self.predictor = predictor
         self.early_stopping = early_stopping
         self.model_checkpoint = model_checkpoint
 
@@ -30,7 +31,7 @@ class CustomModel(object):
             callbacks.append(EarlyStopping(**self.early_stopping))
         if self.model_checkpoint is not None:
             callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint)))
-        self.model.fit(x, y, callbacks=callbacks, **CONFIG.ae_tr)
+        self.model.fit(x, y, callbacks=callbacks, **self.train_config)
 
     def predict(self, x):
         return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)
@@ -45,7 +46,9 @@ class CustomModel(object):
 class AttentiveRecurrentAutoencoder(CustomModel):
     def __init__(self, max_len):
         seq_autoencoder, seq_encoder = self.build_model(max_len)
-        super().__init__(seq_autoencoder, seq_encoder, CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint.hdf5')
+        super().__init__(
+            CONFIG.ae_tr, seq_autoencoder, seq_encoder, CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint.hdf5'
+        )
 
     def __call__(self, max_len):
         return self.build_model(max_len)[0]
@@ -93,7 +96,8 @@ class SiameseClassifier(CustomModel):
     def __init__(self):
         siamese = self.build_model()
         super().__init__(
-            siamese, early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
+            CONFIG.sms_tr, siamese,
+            early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
         )
 
     def __call__(self):
