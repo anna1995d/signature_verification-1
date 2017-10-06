@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from utils import io, rnn
-from utils.evaluation import knc, sms, svc, data, utils
+from utils import io, rnn, evaluation
 
 
 def process_model():
@@ -10,16 +9,10 @@ def process_model():
     x, y = rnn.get_autoencoder_train_data()
     encoder = rnn.load_encoder(x, y)
 
-    # KNN and SVM
-    x_train, y_train = data.get_evaluation_train_data(encoder)
-    x_test, y_test = data.get_evaluation_test_data(encoder)
-    utils.save_evaluation(knc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'knc')
-    utils.save_evaluation(svc.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'svc')
-
-    # Siamese
-    x_train, y_train = data.get_siamese_evaluation_train_data(encoder)
-    x_test, y_test = data.get_siamese_evaluation_test_data(encoder)
-    utils.save_evaluation(sms.get_optimized_evaluation(x_train, y_train, x_test, y_test), 'sms')
+    x_train, y_train = evaluation.get_siamese_evaluation_train_data(encoder)
+    x_test, y_test = evaluation.get_siamese_evaluation_test_data(encoder)
+    evl = evaluation.get_optimized_evaluation(x_train, y_train, x_test, y_test)
+    evaluation.save_evaluation(evl)
 
 
 if __name__ == '__main__':

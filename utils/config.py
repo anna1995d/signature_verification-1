@@ -71,8 +71,6 @@ class Configuration(object):
         self.ref_smp_cnt = config['classifiers']['reference_sample_count']
         self.clf_tr_wrt_cnt = config['classifiers']['train_writer_count']
         self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
-        self.knc = config['classifiers']['knc']
-        self.svc = config['classifiers']['svc']
 
         # Siamese Configuration
         self.sms_tr = config['siamese']['train']
@@ -102,7 +100,7 @@ class Configuration(object):
         self.configure_logger()
 
         # Export Configuration
-        self.csv = config['export']['csv']
+        self.evaluation = config['export']['evaluation']
         self.out_dir = self.out_dir_temp.format(dir=self.dir_temp)
 
 
