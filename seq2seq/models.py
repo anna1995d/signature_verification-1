@@ -18,6 +18,12 @@ class CustomModel(object):
         self.early_stopping = early_stopping
         self.model_checkpoint = model_checkpoint
 
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError('Function __call__ is not implemented for class {}!'.format(self.__class__))
+
+    def build_model(self, *args, **kwargs):
+        raise NotImplementedError('Function build_model is not implemented for class {}!'.format(self.__class__))
+
     def fit(self, x, y):
         callbacks = [epoch_logger]
         if self.early_stopping is not None:
@@ -38,6 +44,13 @@ class CustomModel(object):
 
 class AttentiveRecurrentAutoencoder(CustomModel):
     def __init__(self, max_len):
+        seq_autoencoder, seq_encoder = self.build_model(max_len)
+        super().__init__(seq_autoencoder, seq_encoder, CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint.hdf5')
+
+    def __call__(self, max_len):
+        return self.build_model(max_len)[0]
+
+    def build_model(self, max_len):
         cell = getattr(layers, CONFIG.ct)
 
         # Input
@@ -73,11 +86,20 @@ class AttentiveRecurrentAutoencoder(CustomModel):
         # Encoder
         seq_encoder = Model(network_input, attention)
 
-        super().__init__(seq_autoencoder, seq_encoder, CONFIG.ae_clbs['early_stopping'], 'autoencoder_checkpoint.hdf5')
+        return seq_autoencoder, seq_encoder
 
 
 class SiameseClassifier(CustomModel):
     def __init__(self):
+        siamese = self.build_model()
+        super().__init__(
+            siamese, early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
+        )
+
+    def __call__(self):
+        return self.build_model()
+
+    def build_model(self):
         # Single Branch Input
         branch_input = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
 
@@ -115,6 +137,4 @@ class SiameseClassifier(CustomModel):
         siamese.summary()
         siamese.compile(**CONFIG.sms_ccfg)
 
-        super().__init__(
-            siamese, early_stopping=CONFIG.sms_clbs['early_stopping'], model_checkpoint='siamese_checkpoint.hdf5'
-        )
+        return siamese
