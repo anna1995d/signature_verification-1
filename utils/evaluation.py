@@ -54,8 +54,11 @@ def get_siamese_evaluation_test_data(encoder):
 
 def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts):
     sms = SiameseClassifier()
-    sms.fit(x_tr, y_tr)
-    sms.save(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
+    if CONFIG.sms_md == 'train':
+        sms.fit(x_tr, y_tr)
+        sms.save(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
+    else:
+        sms.load(path=os.path.join(CONFIG.out_dir, 'siamese.hdf5'))
 
     y_pred = (np.mean(np.reshape(sms.predict(x_ts), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
     scores = list(map(

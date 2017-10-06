@@ -21,8 +21,11 @@ def get_autoencoder_train_data():
 
 def load_encoder(x, y):
     attentive_recurrent_autoencoder = AttentiveRecurrentAutoencoder(max_len=x.shape[1])
-    attentive_recurrent_autoencoder.fit(x, y)
-    attentive_recurrent_autoencoder.save(path=os.path.join(CONFIG.out_dir, 'autoencoder.hdf5'))
+    if CONFIG.ae_md == 'train':
+        attentive_recurrent_autoencoder.fit(x, y)
+        attentive_recurrent_autoencoder.save(path=os.path.join(CONFIG.out_dir, 'autoencoder.hdf5'))
+    else:
+        attentive_recurrent_autoencoder.load(path=os.path.join(CONFIG.out_dir, 'autoencoder.hdf5'))
     return attentive_recurrent_autoencoder
 
 

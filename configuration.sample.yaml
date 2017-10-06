@@ -35,6 +35,7 @@ classifiers:
   test_writer_count: 100
 
 siamese:
+  mode: "train"
   train:
     batch_size: 128
     epochs: 1000
@@ -78,6 +79,7 @@ siamese:
   merge_mode: 'subtract'
 
 autoencoder:
+  mode: "train"
   train:
     batch_size: 128
     epochs: 1000

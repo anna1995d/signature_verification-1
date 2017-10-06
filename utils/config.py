@@ -25,6 +25,7 @@ class Configuration(object):
             config = yaml.load(cf)
 
         # Autoencoder Configuration
+        self.ae_md = config['autoencoder']['mode']
         self.ae_tr = config['autoencoder']['train']
 
         self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
@@ -73,6 +74,7 @@ class Configuration(object):
         self.clf_ts_wrt_cnt = config['classifiers']['test_writer_count']
 
         # Siamese Configuration
+        self.sms_md = config['siamese']['mode']
         self.sms_tr = config['siamese']['train']
         self.sms_ts_ref_cnt = config['siamese']['test']['reference_count']
         self.sms_ts_evl_cnt = config['siamese']['test']['evaluation_count']
