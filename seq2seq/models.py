@@ -1,7 +1,7 @@
 import os
 
 from keras import layers
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
 from keras.layers import Masking, Input, RepeatVector, Dropout, Dense
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
@@ -26,7 +26,7 @@ class CustomModel(object):
         raise NotImplementedError('Function build_model is not implemented for class {}!'.format(self.__class__))
 
     def fit(self, x, y):
-        callbacks = [epoch_logger]
+        callbacks = [epoch_logger, TerminateOnNaN()]
         if self.early_stopping is not None:
             callbacks.append(EarlyStopping(**self.early_stopping))
         if self.model_checkpoint is not None:
