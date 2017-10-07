@@ -25,13 +25,17 @@ class CustomModel(object):
     def build_model(self, *args, **kwargs):
         raise NotImplementedError('Function build_model is not implemented for class {}!'.format(self.__class__))
 
-    def fit(self, x, y):
+    def fit(self, x, y, x_cv=None, y_cv=None):
         callbacks = [epoch_logger, TerminateOnNaN()]
         if self.early_stopping is not None:
             callbacks.append(EarlyStopping(**self.early_stopping))
         if self.model_checkpoint is not None:
-            callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint)))
-        self.model.fit(x, y, callbacks=callbacks, **self.train_config)
+            callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint), save_best_only=True))
+        if x_cv is None and y_cv is None:
+            validation_data = None
+        else:
+            validation_data = (x_cv, y_cv)
+        self.model.fit(x, y, validation_data=validation_data, callbacks=callbacks, **self.train_config)
 
     def predict(self, x):
         return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)

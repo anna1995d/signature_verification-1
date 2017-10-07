@@ -13,26 +13,43 @@ from utils.rnn import get_encoded_data
 
 
 def get_siamese_evaluation_train_data(encoder, fold):
-    x, y = list(), list()
+    x, y, x_cv, y_cv = list(), list(), list(), list()
     for writer in range(CONFIG.wrt_cnt):
-        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) == fold:
-            continue
-
         encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer]),
             get_encoded_data(encoder, DATA.frg_x[writer])
         ]
 
-        x.extend(map(lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_genuine, 2)))
-        y.extend(np.ones((comb(len(encoded_genuine), 2, True), 1)))
+        genuine_genuine_x = map(lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_genuine, 2))
+        genuine_genuine_y = np.ones((comb(len(encoded_genuine), 2, True), 1))
 
-        x.extend(map(lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_forgery, 2)))
-        y.extend(np.ones((comb(len(encoded_forgery), 2, True), 1)))
+        forgery_forgery_x = map(lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_forgery, 2))
+        forgery_forgery_y = np.ones((comb(len(encoded_forgery), 2, True), 1))
 
-        x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_forgery)))
-        y.extend(np.zeros((len(encoded_genuine) * len(encoded_forgery), 1)))
+        genuine_forgery_x = map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_forgery))
+        genuine_forgery_y = np.zeros((len(encoded_genuine) * len(encoded_forgery), 1))
 
-    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
+        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) == fold:
+            x_cv.extend(genuine_genuine_x)
+            y_cv.extend(genuine_genuine_y)
+
+            x_cv.extend(forgery_forgery_x)
+            y_cv.extend(forgery_forgery_y)
+
+            x_cv.extend(genuine_forgery_x)
+            y_cv.extend(genuine_forgery_y)
+        else:
+            x.extend(genuine_genuine_x)
+            y.extend(genuine_genuine_y)
+
+            x.extend(forgery_forgery_x)
+            y.extend(forgery_forgery_y)
+
+            x.extend(genuine_forgery_x)
+            y.extend(genuine_forgery_y)
+
+    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y), \
+           list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2))), np.concatenate(y_cv)
 
 
 def get_siamese_evaluation_test_data(encoder, fold):
@@ -58,18 +75,18 @@ def get_siamese_evaluation_test_data(encoder, fold):
     return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
 
 
-def get_optimized_evaluation(x_tr, y_tr, x_ts, y_ts, fold):
+def get_optimized_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold):
     sms = SiameseClassifier(fold)
     if CONFIG.sms_md == 'train':
-        sms.fit(x_tr, y_tr)
+        sms.fit(x_train, y_train, x_cv, y_cv)
         sms.save(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
-    y_pred = (np.mean(np.reshape(sms.predict(x_ts), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
-    scores = list(map(
-        float, classification_report(y_true=y_ts, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt).split('\n')[-2].split()[3:6]
-    ))
+    y_pred = (np.mean(np.reshape(sms.predict(x_test), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
+    scores = list(map(float, classification_report(
+        y_true=y_test, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt
+    ).split('\n')[-2].split()[3:6]))
 
     return dict(zip(CONFIG.evaluation, scores))
 
