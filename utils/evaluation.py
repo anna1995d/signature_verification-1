@@ -29,7 +29,7 @@ def get_siamese_evaluation_train_data(encoder, fold):
         genuine_forgery_x = map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_forgery))
         genuine_forgery_y = np.zeros((len(encoded_genuine) * len(encoded_forgery), 1))
 
-        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) == fold:
+        if 0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) or (fold < 0 and writer >= CONFIG.tr_wrt_cnt):
             x_cv.extend(genuine_genuine_x)
             y_cv.extend(genuine_genuine_y)
 
@@ -49,13 +49,13 @@ def get_siamese_evaluation_train_data(encoder, fold):
             y.extend(genuine_forgery_y)
 
     return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y), \
-           list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2))), np.concatenate(y_cv)
+        list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2))), np.concatenate(y_cv)
 
 
 def get_siamese_evaluation_test_data(encoder, fold):
     x, y = list(), list()
     for writer in range(CONFIG.wrt_cnt):
-        if writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) != fold:
+        if 0 <= fold != writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) or (fold < 0 and writer < CONFIG.tr_wrt_cnt):
             continue
 
         reference, encoded_genuine, encoded_forgery = [

@@ -48,6 +48,7 @@ class Configuration(object):
         self.rnd_sd = config['general']['random_seed']
         self.configure_numpy()
         self.spt_cnt = config['general']['split_count']
+        self.tr_wrt_cnt = config['general']['train_writer_count']
         self.ref_smp_cnt = config['general']['reference_sample_count']
         self.clf_rpt_dgt = config['general']['classification_report_digits']
         self.dir_temp = config['general']['directory_template'].format(
