@@ -60,10 +60,8 @@ def get_siamese_evaluation_test_data(encoder, fold):
 
         reference, encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.sms_ts_ref_cnt]),
-            get_encoded_data(
-                encoder, DATA.gen_x[writer][CONFIG.sms_ts_ref_cnt:CONFIG.sms_ts_ref_cnt + CONFIG.sms_ts_evl_cnt]
-            ),
-            get_encoded_data(encoder, DATA.frg_x[writer][:CONFIG.sms_ts_evl_cnt])
+            get_encoded_data(encoder, DATA.gen_x[writer][CONFIG.sms_ts_ref_cnt:]),
+            get_encoded_data(encoder, DATA.frg_x[writer])
         ]
 
         x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_genuine)))

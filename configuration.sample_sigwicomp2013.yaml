@@ -41,8 +41,7 @@ siamese:
     verbose: 1
 
   test:
-    reference_count: 9
-    evaluation_count: 15
+    reference_count: 12
 
   compile_config:
     loss: "binary_crossentropy"
