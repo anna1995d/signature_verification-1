@@ -29,12 +29,39 @@ def get_siamese_evaluation_train_data(encoder, fold):
         genuine_forgery_x = map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_forgery))
         genuine_forgery_y = np.zeros((len(encoded_genuine) * len(encoded_forgery), 1))
 
-        if 0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) or (fold < 0 and writer >= CONFIG.tr_wrt_cnt):
+        if 0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt):
             x_cv.extend(genuine_genuine_x)
             y_cv.extend(genuine_genuine_y)
 
             x_cv.extend(forgery_forgery_x)
             y_cv.extend(forgery_forgery_y)
+
+            x_cv.extend(genuine_forgery_x)
+            y_cv.extend(genuine_forgery_y)
+        elif fold < 0 and writer >= CONFIG.tr_wrt_cnt:
+            genuine_genuine_x = map(
+                lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_genuine[:CONFIG.ref_smp_cnt], 2)
+            )
+            genuine_genuine_y = np.ones((comb(len(encoded_genuine[:CONFIG.ref_smp_cnt]), 2, True), 1))
+
+            x.extend(genuine_genuine_x)
+            y.extend(genuine_genuine_y)
+
+            genuine_genuine_x = map(
+                lambda z: np.array(z, ndmin=3), itertools.combinations(encoded_genuine[CONFIG.ref_smp_cnt:], 2)
+            )
+            genuine_genuine_y = np.ones((comb(len(encoded_genuine[CONFIG.ref_smp_cnt:]), 2, True), 1))
+
+            x_cv.extend(genuine_genuine_x)
+            y_cv.extend(genuine_genuine_y)
+
+            x_cv.extend(forgery_forgery_x)
+            y_cv.extend(forgery_forgery_y)
+
+            genuine_forgery_x = map(
+                lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine[CONFIG.ref_smp_cnt:], encoded_forgery)
+            )
+            genuine_forgery_y = np.zeros((len(encoded_genuine[CONFIG.ref_smp_cnt:]) * len(encoded_forgery), 1))
 
             x_cv.extend(genuine_forgery_x)
             y_cv.extend(genuine_forgery_y)
@@ -59,8 +86,8 @@ def get_siamese_evaluation_test_data(encoder, fold):
             continue
 
         reference, encoded_genuine, encoded_forgery = [
-            get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.sms_ts_ref_cnt]),
-            get_encoded_data(encoder, DATA.gen_x[writer][CONFIG.sms_ts_ref_cnt:]),
+            get_encoded_data(encoder, DATA.gen_x[writer][:CONFIG.ref_smp_cnt]),
+            get_encoded_data(encoder, DATA.gen_x[writer][CONFIG.ref_smp_cnt:]),
             get_encoded_data(encoder, DATA.frg_x[writer])
         ]
 
@@ -81,7 +108,7 @@ def get_optimized_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold)
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
-    y_pred = (np.mean(np.reshape(sms.predict(x_test), (-1, CONFIG.sms_ts_ref_cnt)), axis=1) >= 0.5).astype(np.int32)
+    y_pred = (np.mean(np.reshape(sms.predict(x_test), (-1, CONFIG.ref_smp_cnt)), axis=1) >= 0.5).astype(np.int32)
     scores = list(map(float, classification_report(
         y_true=y_test, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt
     ).split('\n')[-2].split()[3:6]))

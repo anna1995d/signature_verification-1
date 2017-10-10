@@ -2,7 +2,7 @@ general:
   random_seed: 100
   split_count: 0
   train_writer_count: 11
-  reference_sample_count: 5
+  reference_sample_count: 12
   classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
@@ -39,9 +39,6 @@ siamese:
     epochs: 1000
     validation_split: 0.0
     verbose: 1
-
-  test:
-    reference_count: 12
 
   compile_config:
     loss: "binary_crossentropy"
