@@ -9,6 +9,7 @@ from keras.models import Model
 from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import epoch_logger
 from utils.config import CONFIG
+from utils.data import CustomSequence, CustomTwoBranchSequence
 
 
 class CustomModel(object):
@@ -31,11 +32,26 @@ class CustomModel(object):
             callbacks.append(EarlyStopping(**self.early_stopping))
         if self.model_checkpoint is not None:
             callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint), save_best_only=True))
+
+        batch_size = self.train_config.pop('batch_size')
+        if type(x) == list or type(x) == tuple:
+            generator = CustomTwoBranchSequence(x, y, batch_size)
+        else:
+            generator = CustomSequence(x, y, batch_size)
+
         if x_cv is None and y_cv is None:
             validation_data = None
         else:
-            validation_data = (x_cv, y_cv)
-        self.model.fit(x, y, validation_data=validation_data, callbacks=callbacks, **self.train_config)
+            if type(x) == list or type(x) == tuple:
+                validation_data = CustomTwoBranchSequence(x_cv, y_cv, batch_size)
+            else:
+                validation_data = CustomSequence(x_cv, y_cv, batch_size)
+
+        self.model.fit_generator(
+            generator=generator, steps_per_epoch=len(generator), validation_data=validation_data,
+            validation_steps=len(validation_data), callbacks=callbacks, **self.train_config
+        )
+        self.train_config['batch_size'] = batch_size
 
     def predict(self, x):
         return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)
@@ -98,34 +114,37 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 
 
 class SiameseClassifier(CustomModel):
-    def __init__(self, fold):
-        siamese = self.build_model()
+    def __init__(self, encoder, fold):
+        siamese = self.build_model(encoder)
         super().__init__(
             CONFIG.sms_tr, siamese,
             early_stopping=CONFIG.sms_clbs['early_stopping'],
             model_checkpoint='siamese_checkpoint_fold{}.hdf5'.format(fold)
         )
 
-    def __call__(self):
-        return self.build_model()
+    def __call__(self, encoder):
+        return self.build_model(encoder)
 
-    def build_model(self):
+    def build_model(self, encoder):
         # Single Branch Input
-        branch_input = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
+        branch_input = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+
+        # Encode
+        enc = encoder(branch_input)
 
         # Single Branch Model
         branch_out = None
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
-            branch_out = Dense(**layer)(Dropout(dropout)(branch_input if branch_out is None else branch_out))
+            branch_out = Dense(**layer)(Dropout(dropout)(enc if branch_out is None else branch_out))
             layer['dropout'] = dropout
-        branch_out = Dropout(CONFIG.sms_drp)(branch_input if branch_out is None else branch_out)
+        branch_out = Dropout(CONFIG.sms_drp)(enc if branch_out is None else branch_out)
 
         model = Model(branch_input, branch_out)
 
         # Siamese Input
-        input_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
-        input_b = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
+        input_a = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+        input_b = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
 
         # Siamese Branches
         branch_a = model(input_a)
