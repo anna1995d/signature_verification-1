@@ -108,7 +108,8 @@ def get_optimized_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold)
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
-    y_pred = (np.mean(np.reshape(sms.predict(x_test), (-1, CONFIG.ref_smp_cnt)), axis=1) >= 0.5).astype(np.int32)
+    y_prb = (np.reshape(sms.predict(x_test), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
+    y_pred = (np.count_nonzero(y_prb, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
     scores = list(map(float, classification_report(
         y_true=y_test, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt
     ).split('\n')[-2].split()[3:6]))

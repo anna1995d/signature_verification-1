@@ -27,7 +27,7 @@ data:
 
   reshaping:
     features: 14
-    sampling_step: 2
+    sampling_step: 5
     window_size: 1
     window_step: 1
     length_threshold: 10000
@@ -39,6 +39,10 @@ siamese:
     epochs: 1000
     validation_split: 0.0
     verbose: 1
+
+  test:
+    probability_threshold: 0.5
+    accept_threshold: 6
 
   compile_config:
     loss: "binary_crossentropy"
@@ -57,13 +61,13 @@ siamese:
   architecture:
     global: &siamese
       activation: "relu"
-      dropout: 0.5
+      dropout: 0.45
 
     before:
       0:
         <<: *siamese
         dropout: 0.0
-        units: 150
+        units: 250
 
     after:
       0:
@@ -100,7 +104,7 @@ autoencoder:
       return_sequences: true
       implementation: 2
       activation: "relu"
-      dropout: 0.6
+      dropout: 0.5
       merge_mode: "concat"
 
     encoder:

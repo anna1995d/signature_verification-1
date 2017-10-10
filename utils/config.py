@@ -74,6 +74,8 @@ class Configuration(object):
         # Siamese Configuration
         self.sms_md = config['siamese']['mode']
         self.sms_tr = config['siamese']['train']
+        self.sms_ts_prb_thr = config['siamese']['test']['probability_threshold']
+        self.sms_ts_acc_thr = config['siamese']['test']['accept_threshold']
 
         self.sms_drp = config['siamese']['architecture']['global']['dropout']
         self.sms_brn_arc = list(map(
