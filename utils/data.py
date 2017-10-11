@@ -9,13 +9,18 @@ class CustomSequence(Sequence):
         self.length = length
         self.max_length = max_length
         self.path = path
+        self.batch = 0
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, batch):
+        self.batch += 1
         f = np.load(self.path.format(batch))
         return f['x'], f['y']
+
+    def __next__(self):
+        return self.__getitem__(self.batch)
 
     def on_epoch_end(self):
         pass
@@ -26,6 +31,7 @@ class CustomTwoBranchSequence(Sequence):
         self.length = length
         self.max_length = max_length
         self.path = path
+        self.batch = 0
 
     def __len__(self):
         return self.length
@@ -33,6 +39,9 @@ class CustomTwoBranchSequence(Sequence):
     def __getitem__(self, batch):
         f = np.load(self.path.format(batch))
         return [f['x_0'], f['x_1']], f['y']
+
+    def __next__(self):
+        return self.__getitem__(self.batch)
 
     def on_epoch_end(self):
         pass
