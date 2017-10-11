@@ -12,11 +12,9 @@
 #$ -l gpu=1
 #$ -l 'arch=*64*'
 #$ -l mem_free=32G,ram_free=32G
-#$ -l "hostname=b*|c*"
-#$ -pe smp 16
+#$ -l "hostname=b1[123456789]*|c*"
+#$ -pe smp 8
 
 source activate sigv
-export CUDA_DEVICE_ORDER=PCI_BUS_ID
-export CUDA_VISIBLE_DEVICES=`free-gpu`
-python -W ignore main.py
+CUDA_VISIBLE_DEVICES=`free-gpu` TF_CPP_MIN_LOG_LEVEL=1 python -W ignore main.py
 source deactivate sigv
