@@ -17,7 +17,7 @@ class CustomSequence(Sequence):
     def __getitem__(self, batch):
         self.batch += 1
         f = np.load(self.path.format(batch))
-        return f['x'], f['y']
+        return f['x'].astype(np.float32), f['y'].astype(np.float32)
 
     def __next__(self):
         return self.__getitem__(self.batch)
@@ -37,8 +37,8 @@ class CustomTwoBranchSequence(Sequence):
         return self.length
 
     def __getitem__(self, batch):
-        f = np.load(self.path.format(batch))
-        return [f['x_0'], f['x_1']], f['y']
+        f = np.load(self.path.format(batch)).astype(np.float32)
+        return [f['x_0'].astype(np.float32), f['x_1'].astype(np.float32)], f['y'].astype(np.float32)
 
     def __next__(self):
         return self.__getitem__(self.batch)
