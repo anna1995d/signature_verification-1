@@ -44,14 +44,14 @@ def get_generator(x, y, path, batch_size):
         for batch in range(batches):
             start = batch * batch_size
             end = (batch + 1) * batch_size if (batch + 1) * batch_size < len(x[0]) else None
-            np.savez(path.format(batch), x_0=x[0][start:end], x_1=x[1][start:end], y=x[start:end])
-        return CustomTwoBranchSequence(batches, x.shape[1], path)
+            np.savez(path.format(batch), x_0=x[0][start:end], x_1=x[1][start:end], y=y[start:end])
+        return CustomTwoBranchSequence(batches, x[0].shape[1], path)
     else:
         batches = (len(x) + (batch_size - 1)) // batch_size
         for batch in range(batches):
             start = batch * batch_size
             end = (batch + 1) * batch_size if (batch + 1) * batch_size < len(x) else None
-            np.savez(path.format(batch), x=x[start:end], y=x[start:end])
+            np.savez(path.format(batch), x=x[start:end], y=y[start:end])
         return CustomSequence(batches, x.shape[1], path)
 
 
