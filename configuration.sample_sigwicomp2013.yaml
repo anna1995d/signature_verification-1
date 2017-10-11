@@ -6,6 +6,7 @@ general:
   classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
   output_directory_template: "./models/{dir}"
+  temporary_directory_template: "./tmp/{dir}"
 
 logger:
   log_format: "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s"

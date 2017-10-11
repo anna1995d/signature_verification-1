@@ -57,7 +57,8 @@ class Configuration(object):
             darc='x'.join(map(lambda x: str(x['units']), self.dec_arc)),
             epc=self.ae_tr['epochs']
         )
-        self.out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
+        out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
+        tmp_dir_temp = os.path.join(self.path, config['general']['temporary_directory_template'])
 
         # Data Configuration
         self.ftr = config['data']['reshaping']['features']
@@ -101,7 +102,8 @@ class Configuration(object):
 
         # Export Configuration
         self.evaluation = config['export']['evaluation']
-        self.out_dir = self.out_dir_temp.format(dir=self.dir_temp)
+        self.out_dir = out_dir_temp.format(dir=self.dir_temp)
+        self.tmp_dir = tmp_dir_temp.format(dir=self.dir_temp)
 
 
 CONFIG = Configuration()

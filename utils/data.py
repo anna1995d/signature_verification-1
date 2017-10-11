@@ -1,40 +1,58 @@
+import numpy as np
 from keras.utils import Sequence
 
 from data import Data
 
 
 class CustomSequence(Sequence):
-    def __init__(self, x, y, batch_size):
-        self.x, self.y = x, y
-        self.batch_size = batch_size
+    def __init__(self, length, max_length, path):
+        self.length = length
+        self.max_length = max_length
+        self.path = path
 
     def __len__(self):
-        return (len(self.x) + (self.batch_size - 1)) // self.batch_size
+        return self.length
 
-    def __getitem__(self, idx):
-        start = idx * self.batch_size
-        end = idx * (self.batch_size + 1) if idx * (self.batch_size + 1) >= len(self.x) else None
-        return self.x[start:end], self.y[start:end]
+    def __getitem__(self, batch):
+        f = np.load(self.path.format(batch))
+        return f['x'], f['y']
 
     def on_epoch_end(self):
         pass
 
 
 class CustomTwoBranchSequence(Sequence):
-    def __init__(self, x, y, batch_size):
-        self.x, self.y = x, y
-        self.batch_size = batch_size
+    def __init__(self, length, max_length, path):
+        self.length = length
+        self.max_length = max_length
+        self.path = path
 
     def __len__(self):
-        return (len(self.x[0]) + (self.batch_size - 1)) // self.batch_size
+        return self.length
 
-    def __getitem__(self, idx):
-        start = idx * self.batch_size
-        end = idx * (self.batch_size + 1) if idx * (self.batch_size + 1) >= len(self.x) else None
-        return [self.x[0][start:end], self.x[1][start:end]], self.y[start:end]
+    def __getitem__(self, batch):
+        f = np.load(self.path.format(batch))
+        return [f['x_0'], f['x_1']], f['y']
 
     def on_epoch_end(self):
         pass
+
+
+def get_generator(x, y, path, batch_size):
+    if type(x) == list or type(y) == list:
+        batches = (len(x[0]) + (batch_size - 1)) // batch_size
+        for batch in range(batches):
+            start = batch * batch_size
+            end = batch * (batch_size + 1) if batch * (batch_size + 1) >= len(x[0]) else None
+            np.savez(path.format(batch), x_0=x[0][start:end], x_1=x[1][start:end], y=x[start:end])
+        return CustomTwoBranchSequence(batches, x.shape[1], path)
+    else:
+        batches = (len(x) + (batch_size - 1)) // batch_size
+        for batch in range(batches):
+            start = batch * batch_size
+            end = batch * (batch_size + 1) if batch * (batch_size + 1) >= len(x) else None
+            np.savez(path.format(batch), x=x[start:end], y=x[start:end])
+        return CustomSequence(batches, x.shape[1], path)
 
 
 DATA = Data()

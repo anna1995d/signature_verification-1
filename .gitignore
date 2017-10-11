@@ -135,8 +135,7 @@ ENV/
 .idea/
 .vscode/
 models/*
-!logs
-logs/*
+tmp/*
 !PLACEHOLDER
 screenlog.*
 old_models_*/

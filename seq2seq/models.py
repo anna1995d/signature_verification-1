@@ -9,7 +9,6 @@ from keras.models import Model
 from seq2seq.layers import AttentionWithContext
 from seq2seq.logging import epoch_logger
 from utils.config import CONFIG
-from utils.data import CustomSequence, CustomTwoBranchSequence
 
 
 class CustomModel(object):
@@ -26,7 +25,7 @@ class CustomModel(object):
     def build_model(self, *args, **kwargs):
         raise NotImplementedError('Function build_model is not implemented for class {}!'.format(self.__class__))
 
-    def fit(self, x, y, x_cv=None, y_cv=None):
+    def fit_generator(self, tr_generator, cv_generator):
         callbacks = [epoch_logger, TerminateOnNaN()]
         if self.early_stopping is not None:
             callbacks.append(EarlyStopping(**self.early_stopping))
@@ -34,27 +33,16 @@ class CustomModel(object):
             callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint), save_best_only=True))
 
         batch_size = self.train_config.pop('batch_size')
-        if type(x) == list or type(x) == tuple:
-            generator = CustomTwoBranchSequence(x, y, batch_size)
-        else:
-            generator = CustomSequence(x, y, batch_size)
-
-        if x_cv is None and y_cv is None:
-            validation_data = None
-        else:
-            if type(x) == list or type(x) == tuple:
-                validation_data = CustomTwoBranchSequence(x_cv, y_cv, batch_size)
-            else:
-                validation_data = CustomSequence(x_cv, y_cv, batch_size)
-
         self.model.fit_generator(
-            generator=generator, steps_per_epoch=len(generator), validation_data=validation_data,
-            validation_steps=len(validation_data), callbacks=callbacks, **self.train_config
+            generator=tr_generator, steps_per_epoch=len(tr_generator),
+            validation_data=cv_generator, validation_steps=len(cv_generator),
+            callbacks=callbacks, **self.train_config
         )
         self.train_config['batch_size'] = batch_size
 
-    def predict(self, x):
-        return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)
+    def predict_generator(self, ts_generator):
+        predictor = self.model if self.predictor is None else self.predictor
+        return predictor.predict_generator(generator=ts_generator, steps=len(ts_generator))
 
     def save(self, path):
         self.model.save_weights(path)
