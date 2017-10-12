@@ -140,7 +140,7 @@ class SiameseClassifier(CustomModel):
             dropout = layer.pop('dropout')
             output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
             layer['dropout'] = dropout
-        output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(output))
+        output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(merged if output is None else output))
 
         # Classifier
         siamese = Model([input_a, input_b], output)
