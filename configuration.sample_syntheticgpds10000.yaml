@@ -38,8 +38,9 @@ siamese:
   train:
     batch_size: 128
     epochs: 1000
-    workers: 16
-    use_multiprocessing: true
+    workers: 1
+    use_multiprocessing: false
+    max_queue_size: 1
     verbose: 1
 
   test:
@@ -83,8 +84,9 @@ autoencoder:
   train:
     batch_size: 128
     epochs: 1000
-    workers: 16
-    use_multiprocessing: true
+    workers: 1
+    use_multiprocessing: false
+    max_queue_size: 1
     verbose: 1
 
   compile_config:
