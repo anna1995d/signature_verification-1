@@ -109,7 +109,7 @@ def get_siamese_data_generators(fold):
     ]
     ts_generator = get_generator(x_ts, y_ts, path + '.npz', CONFIG.ae_tr['batch_size'])
 
-    return tr_generator, cv_generator, ts_generator, np.concatenate(y_ts)
+    return tr_generator, cv_generator, ts_generator, y_ts
 
 
 def get_optimized_evaluation(encoder, tr_generator, cv_generator, ts_generator, y_true, fold):
