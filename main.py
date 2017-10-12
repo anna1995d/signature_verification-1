@@ -18,6 +18,8 @@ def process_model():
         ))
         evaluation.save_evaluation(evaluations)
 
+    io.clean_directories()
+
 
 if __name__ == '__main__':
     process_model()
