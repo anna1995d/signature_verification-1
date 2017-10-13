@@ -73,7 +73,7 @@ siamese:
         units: 75
 
   activation: "sigmoid"
-  merge_mode: 'subtract'
+  merge_mode: "subtract"
 
 autoencoder:
   mode: "train"
