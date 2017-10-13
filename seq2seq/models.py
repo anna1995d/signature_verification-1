@@ -2,7 +2,7 @@ import os
 
 from keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
-from keras.layers import Masking, Input, RepeatVector, Dropout, Dense, BatchNormalization
+from keras.layers import Masking, Input, RepeatVector, Dropout, Dense
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -117,10 +117,11 @@ class SiameseClassifier(CustomModel):
         leg_out = None
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
-            leg_out = BatchNormalization()(Dropout(dropout)(Dense(**layer)(leg_in if leg_out is None else leg_out)))
+            leg_out = Dense(**layer)(Dropout(dropout)(leg_in if leg_out is None else leg_out))
             layer['dropout'] = dropout
+        leg_out = Dropout(CONFIG.sms_drp)(leg_in if leg_out is None else leg_out)
 
-        leg = Model(leg_in, leg_in if leg_out is None else leg_out)
+        leg = Model(leg_in, leg_out)
 
         # Siamese Input
         in_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
@@ -134,15 +135,15 @@ class SiameseClassifier(CustomModel):
         merged = getattr(layers, CONFIG.sms_mrg_md)([leg_a, leg_b])
 
         # Classifier
-        out = None
+        output = None
         for layer in CONFIG.sms_clf_arc:
             dropout = layer.pop('dropout')
-            out = BatchNormalization()(Dropout(dropout)(Dense(**layer)(merged if out is None else out)))
+            output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
             layer['dropout'] = dropout
-        out = Dense(1, activation=CONFIG.sms_act)(merged if out is None else out)
+        output = Dense(1, activation=CONFIG.sms_act)(Dropout(CONFIG.sms_drp)(merged if output is None else output))
 
         # Classifier
-        siamese = Model([in_a, in_b], out)
+        siamese = Model([in_a, in_b], output)
         siamese.summary()
         siamese.compile(**CONFIG.sms_ccfg)
 
