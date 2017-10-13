@@ -37,7 +37,6 @@ siamese:
   train:
     batch_size: 128
     epochs: 1000
-    validation_split: 0.0
     verbose: 1
 
   test:
@@ -66,7 +65,6 @@ siamese:
     before:
       0:
         <<: *siamese
-        dropout: 0.0
         units: 250
 
     after:
@@ -74,6 +72,7 @@ siamese:
         <<: *siamese
         units: 75
 
+  activation: "sigmoid"
   merge_mode: 'subtract'
 
 autoencoder:
@@ -81,7 +80,6 @@ autoencoder:
   train:
     batch_size: 128
     epochs: 1000
-    validation_split: 0.0
     verbose: 1
 
   compile_config:

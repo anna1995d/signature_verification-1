@@ -29,6 +29,7 @@ class Configuration(object):
         self.ae_tr = config['autoencoder']['train']
 
         self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
+        self.ae_mrg_md = config['autoencoder']['architecture']['global']['merge_mode']
         self.enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
         ))
@@ -74,6 +75,7 @@ class Configuration(object):
         # Siamese Configuration
         self.sms_md = config['siamese']['mode']
         self.sms_tr = config['siamese']['train']
+        self.sms_act = config['siamese']['activation']
         self.sms_ts_prb_thr = config['siamese']['test']['probability_threshold']
         self.sms_ts_acc_thr = config['siamese']['test']['accept_threshold']
 

@@ -2,7 +2,7 @@ import os
 
 from keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
-from keras.layers import Masking, Input, RepeatVector, Dropout, Dense
+from keras.layers import Masking, Input, RepeatVector, Dropout, Dense, BatchNormalization
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -110,40 +110,39 @@ class SiameseClassifier(CustomModel):
         return self.build_model()
 
     def build_model(self):
-        # Single Branch Input
-        branch_input = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
+        # Single Leg Input
+        leg_in = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
 
-        # Single Branch Model
-        branch_out = None
+        # Single Leg Model
+        leg_out = None
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
-            branch_out = Dense(**layer)(Dropout(dropout)(branch_input if branch_out is None else branch_out))
+            leg_out = BatchNormalization()(Dropout(dropout)(Dense(**layer)(leg_in if leg_out is None else leg_out)))
             layer['dropout'] = dropout
-        branch_out = Dropout(CONFIG.sms_drp)(branch_input if branch_out is None else branch_out)
 
-        model = Model(branch_input, branch_out)
+        leg = Model(leg_in, leg_in if leg_out is None else leg_out)
 
         # Siamese Input
-        input_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
-        input_b = Input(shape=(CONFIG.enc_arc[-1]['units'] * 2,))
+        in_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
+        in_b = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
 
-        # Siamese Branches
-        branch_a = model(input_a)
-        branch_b = model(input_b)
+        # Siamese Legs
+        leg_a = leg(in_a)
+        leg_b = leg(in_b)
 
         # Merged Branches
-        merged = getattr(layers, CONFIG.sms_mrg_md)([branch_a, branch_b])
+        merged = getattr(layers, CONFIG.sms_mrg_md)([leg_a, leg_b])
 
         # Classifier
-        output = None
+        out = None
         for layer in CONFIG.sms_clf_arc:
             dropout = layer.pop('dropout')
-            output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
+            out = BatchNormalization()(Dropout(dropout)(Dense(**layer)(merged if out is None else out)))
             layer['dropout'] = dropout
-        output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(merged if output is None else output))
+        out = Dense(1, activation=CONFIG.sms_act)(merged if out is None else out)
 
         # Classifier
-        siamese = Model([input_a, input_b], output)
+        siamese = Model([in_a, in_b], out)
         siamese.summary()
         siamese.compile(**CONFIG.sms_ccfg)
 
