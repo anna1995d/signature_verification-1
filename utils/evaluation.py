@@ -41,7 +41,7 @@ def get_siamese_data(encoder, fold):
             y_cv.extend(np.zeros((len(encoded_genuine[CONFIG.ref_smp_cnt:]) * len(encoded_forgery), 1)))
 
             x_cv.extend(map(
-                lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine[encoded_forgery, CONFIG.ref_smp_cnt:])
+                lambda z: np.array(z, ndmin=3), itertools.product(encoded_forgery, encoded_genuine[CONFIG.ref_smp_cnt:])
             ))
             y_cv.extend(np.zeros((len(encoded_forgery) * len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)))
 

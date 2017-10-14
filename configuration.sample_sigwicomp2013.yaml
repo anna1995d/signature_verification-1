@@ -65,6 +65,7 @@ siamese:
     before:
       0:
         <<: *siamese
+        dropout: 0.0
         units: 250
 
     after:
