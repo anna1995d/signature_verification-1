@@ -43,7 +43,6 @@ class Data(object):
     @staticmethod
     def extract_sample(dataset, writer, sample):
         data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)][::CONFIG.smp_stp].astype(np.float32)
-        # TODO: Check the old format
         features = Data.normalize(Data.extract_features(data))
         flatten_features = features.flatten()
         step = CONFIG.win_stp * CONFIG.ftr

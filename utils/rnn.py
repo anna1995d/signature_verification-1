@@ -26,7 +26,13 @@ def get_autoencoder_train_data(fold):
         else:
             x.append(sequence.pad_sequences(gen_x, maxlen=DATA.max_len))
             y.append(sequence.pad_sequences(gen_y, maxlen=DATA.max_len))
-    return np.concatenate(x), np.concatenate(y), np.concatenate(x_cv), np.concatenate(y_cv)
+
+    x = np.concatenate(x)
+    y = np.concatenate(y)
+    x_cv = np.concatenate(x_cv)
+    y_cv = np.concatenate(y_cv)
+
+    return x, y, x_cv, y_cv
 
 
 def load_encoder(x, y, x_cv, y_cv, fold):

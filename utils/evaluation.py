@@ -75,8 +75,12 @@ def get_siamese_evaluation_train_data(encoder, fold):
             x.extend(genuine_forgery_x)
             y.extend(genuine_forgery_y)
 
-    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y), \
-        list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2))), np.concatenate(y_cv)
+    x = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2)))
+    y = np.concatenate(y)
+    x_cv = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2)))
+    y_cv = np.concatenate(y_cv)
+
+    return x, y, x_cv, y_cv
 
 
 def get_siamese_evaluation_test_data(encoder, fold):
@@ -97,7 +101,10 @@ def get_siamese_evaluation_test_data(encoder, fold):
         x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(reference, encoded_forgery)))
         y.extend(np.zeros((len(encoded_forgery), 1)))
 
-    return list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y)
+    x = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2)))
+    y = np.concatenate(y)
+
+    return x, y
 
 
 def get_optimized_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold):
@@ -109,10 +116,11 @@ def get_optimized_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold)
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
     y_prb = (np.reshape(sms.predict(x_test), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
-    y_pred = (np.count_nonzero(y_prb, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    scores = list(map(float, classification_report(
-        y_true=y_test, y_pred=y_pred, digits=CONFIG.clf_rpt_dgt
-    ).split('\n')[-2].split()[3:6]))
+    y_prd = (np.count_nonzero(y_prb, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
+    report = classification_report(y_true=y_test, y_pred=y_prd, digits=CONFIG.clf_rpt_dgt)
+    scores = list(map(float, report.split('\n')[-2].split()[3:6]))
+
+    print(report)
 
     return dict(zip(CONFIG.evaluation, scores))
 
