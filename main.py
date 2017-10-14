@@ -5,7 +5,7 @@ from utils.config import CONFIG
 
 
 def process_model():
-    io.prepare_output_directory()
+    io.prepare_directories()
 
     evaluations = list()
     for fold in range(CONFIG.spt_cnt) if CONFIG.spt_cnt > 0 else [-1]:

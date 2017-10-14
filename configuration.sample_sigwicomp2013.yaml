@@ -40,8 +40,8 @@ siamese:
     verbose: 1
 
   test:
-    probability_threshold: 0.5
-    accept_threshold: 6
+    probability_threshold: 0.49
+    accept_threshold: 10
 
   compile_config:
     loss: "binary_crossentropy"

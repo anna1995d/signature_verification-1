@@ -89,7 +89,7 @@ class Data(object):
         frg_min_len = min(map(len, np.concatenate(self.frg_y)))
         logger.info('Forged min length: {frg_min_len}'.format(frg_min_len=frg_min_len))
 
-        self.max_len = max(gen_max_len, frg_max_len)
+        self.max_len = gen_max_len
 
     def get_train_data(self, writer):
         if len(self.gen_x[writer]) > 0 or len(self.frg_x[writer]) > 0:
