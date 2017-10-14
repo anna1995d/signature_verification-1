@@ -29,6 +29,7 @@ class Configuration(object):
         self.ae_tr = config['autoencoder']['train']
 
         self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
+        self.ae_mrg_md = config['autoencoder']['architecture']['global']['merge_mode']
         self.enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
         ))
