@@ -77,10 +77,10 @@ def get_siamese_data(encoder, fold):
     return x, y, x_cv, y_cv, x_ts, y_ts
 
 
-def get_evaluation(x_train, y_train, x_cv, y_cv, x_test, y_test, fold):
+def get_evaluation(x, y, x_cv, y_cv, x_test, y_test, fold):
     sms = SiameseClassifier(fold)
     if CONFIG.sms_md == 'train':
-        sms.fit(x_train, y_train, x_cv, y_cv)
+        sms.fit(x, y, x_cv, y_cv)
         sms.save(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
