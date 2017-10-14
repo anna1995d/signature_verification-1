@@ -77,7 +77,7 @@ def get_siamese_data(encoder, fold):
     return x, y, x_cv, y_cv, x_ts, y_ts
 
 
-def get_evaluation(x, y, x_cv, y_cv, x_test, y_test, fold):
+def get_evaluation(x, y, x_cv, y_cv, x_ts, y_ts, fold):
     sms = SiameseClassifier(fold)
     if CONFIG.sms_md == 'train':
         sms.fit(x, y, x_cv, y_cv)
@@ -85,9 +85,9 @@ def get_evaluation(x, y, x_cv, y_cv, x_test, y_test, fold):
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
-    y_prb = (np.reshape(sms.predict(x_test), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
+    y_prb = (np.reshape(sms.predict(x_ts), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
     y_prd = (np.count_nonzero(y_prb, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report = classification_report(y_true=y_test, y_pred=y_prd, digits=CONFIG.clf_rpt_dgt)
+    report = classification_report(y_true=y_ts, y_pred=y_prd, digits=CONFIG.clf_rpt_dgt)
     scores = list(map(float, report.split('\n')[-2].split()[3:6]))
 
     print(report)
