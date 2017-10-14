@@ -25,24 +25,20 @@ class CustomModel(object):
     def build_model(self, *args, **kwargs):
         raise NotImplementedError('Function build_model is not implemented for class {}!'.format(self.__class__))
 
-    def fit_generator(self, tr_generator, cv_generator):
+    def fit(self, x, y, x_cv=None, y_cv=None):
         callbacks = [epoch_logger, TerminateOnNaN()]
         if self.early_stopping is not None:
             callbacks.append(EarlyStopping(**self.early_stopping))
         if self.model_checkpoint is not None:
             callbacks.append(ModelCheckpoint(os.path.join(CONFIG.out_dir, self.model_checkpoint), save_best_only=True))
+        if x_cv is None and y_cv is None:
+            validation_data = None
+        else:
+            validation_data = (x_cv, y_cv)
+        self.model.fit(x, y, validation_data=validation_data, callbacks=callbacks, **self.train_config)
 
-        batch_size = self.train_config.pop('batch_size')
-        self.model.fit_generator(
-            generator=tr_generator, steps_per_epoch=len(tr_generator),
-            validation_data=cv_generator, validation_steps=len(cv_generator),
-            callbacks=callbacks, **self.train_config
-        )
-        self.train_config['batch_size'] = batch_size
-
-    def predict_generator(self, ts_generator):
-        predictor = self.model if self.predictor is None else self.predictor
-        return predictor.predict_generator(generator=ts_generator, steps=len(ts_generator))
+    def predict(self, x):
+        return self.model.predict(x) if self.predictor is None else self.predictor.predict(x)
 
     def save(self, path):
         self.model.save_weights(path)
@@ -114,32 +110,32 @@ class SiameseClassifier(CustomModel):
         return self.build_model(encoder)
 
     def build_model(self, encoder):
-        # Single Branch Input
-        branch_input = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+        # Single Leg Input
+        leg_in = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
 
         # Encode
-        enc = encoder(branch_input)
+        enc = encoder(leg_in)
 
-        # Single Branch Model
-        branch_out = None
+        # Single Leg Model
+        leg_out = None
         for layer in CONFIG.sms_brn_arc:
             dropout = layer.pop('dropout')
-            branch_out = Dense(**layer)(Dropout(dropout)(enc if branch_out is None else branch_out))
+            leg_out = Dense(**layer)(Dropout(dropout)(enc if leg_out is None else leg_out))
             layer['dropout'] = dropout
-        branch_out = Dropout(CONFIG.sms_drp)(enc if branch_out is None else branch_out)
+        leg_out = Dropout(CONFIG.sms_drp)(enc if leg_out is None else leg_out)
 
-        model = Model(branch_input, branch_out)
+        leg = Model(leg_in, leg_out)
 
         # Siamese Input
-        input_a = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
-        input_b = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+        in_a = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+        in_b = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
 
-        # Siamese Branches
-        branch_a = model(input_a)
-        branch_b = model(input_b)
+        # Siamese Legs
+        leg_a = leg(in_a)
+        leg_b = leg(in_b)
 
         # Merged Branches
-        merged = getattr(layers, CONFIG.sms_mrg_md)([branch_a, branch_b])
+        merged = getattr(layers, CONFIG.sms_mrg_md)([leg_a, leg_b])
 
         # Classifier
         output = None
@@ -147,10 +143,10 @@ class SiameseClassifier(CustomModel):
             dropout = layer.pop('dropout')
             output = Dense(**layer)(Dropout(dropout)(merged if output is None else output))
             layer['dropout'] = dropout
-        output = Dense(1, activation='sigmoid')(Dropout(CONFIG.sms_drp)(output))
+        output = Dense(1, activation=CONFIG.sms_act)(Dropout(CONFIG.sms_drp)(merged if output is None else output))
 
         # Classifier
-        siamese = Model([input_a, input_b], output)
+        siamese = Model([in_a, in_b], output)
         siamese.summary()
         siamese.compile(**CONFIG.sms_ccfg)
 

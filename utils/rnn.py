@@ -5,10 +5,10 @@ from keras.preprocessing import sequence
 
 from seq2seq.models import AttentiveRecurrentAutoencoder
 from utils.config import CONFIG
-from utils.data import DATA, get_generator
+from utils.data import DATA
 
 
-def get_autoencoder_data_generators(fold):
+def get_autoencoder_data(fold):
     x, y, x_cv, y_cv = list(), list(), list(), list()
     for writer in range(CONFIG.wrt_cnt):
         (train_x, train_y) = DATA.get_train_data(writer)
@@ -27,19 +27,18 @@ def get_autoencoder_data_generators(fold):
             x.append(sequence.pad_sequences(train_x, maxlen=DATA.max_len))
             y.append(sequence.pad_sequences(train_y, maxlen=DATA.max_len))
 
-    x, y, path = np.concatenate(x), np.concatenate(y), os.path.join(CONFIG.tmp_dir, 'ae_tr_batch_{}')
-    tr_generator = get_generator(x, y, path + '.npz', CONFIG.ae_tr['batch_size'])
+    x = np.concatenate(x)
+    y = np.concatenate(y)
+    x_cv = np.concatenate(x_cv)
+    y_cv = np.concatenate(y_cv)
 
-    x_cv, y_cv, path = np.concatenate(x_cv), np.concatenate(y_cv), os.path.join(CONFIG.tmp_dir, 'ae_cv_batch_{}')
-    cv_generator = get_generator(x_cv, y_cv, path + '.npz', CONFIG.ae_tr['batch_size'])
-
-    return tr_generator, cv_generator
+    return x, y, x_cv, y_cv
 
 
-def get_encoder(tr_generator, cv_generator, fold):
-    attentive_recurrent_autoencoder = AttentiveRecurrentAutoencoder(tr_generator.max_length, fold)
+def get_encoder(x, y, x_cv, y_cv, fold):
+    attentive_recurrent_autoencoder = AttentiveRecurrentAutoencoder(x.shape[1], fold)
     if CONFIG.ae_md == 'train':
-        attentive_recurrent_autoencoder.fit_generator(tr_generator, cv_generator)
+        attentive_recurrent_autoencoder.fit(x, y, x_cv, y_cv)
         attentive_recurrent_autoencoder.save(os.path.join(CONFIG.out_dir, 'autoencoder_fold{}.hdf5').format(fold))
     else:
         attentive_recurrent_autoencoder.load(os.path.join(CONFIG.out_dir, 'autoencoder_fold{}.hdf5').format(fold))

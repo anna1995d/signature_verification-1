@@ -58,7 +58,6 @@ class Configuration(object):
             epc=self.ae_tr['epochs']
         )
         out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
-        tmp_dir_temp = os.path.join(self.path, config['general']['temporary_directory_template'])
 
         # Data Configuration
         self.ftr = config['data']['reshaping']['features']
@@ -75,6 +74,7 @@ class Configuration(object):
         # Siamese Configuration
         self.sms_md = config['siamese']['mode']
         self.sms_tr = config['siamese']['train']
+        self.sms_act = config['siamese']['activation']
         self.sms_ts_prb_thr = config['siamese']['test']['probability_threshold']
         self.sms_ts_acc_thr = config['siamese']['test']['accept_threshold']
 
@@ -103,7 +103,6 @@ class Configuration(object):
         # Export Configuration
         self.evaluation = config['export']['evaluation']
         self.out_dir = out_dir_temp.format(dir=self.dir_temp)
-        self.tmp_dir = tmp_dir_temp.format(dir=self.dir_temp)
 
 
 CONFIG = Configuration()

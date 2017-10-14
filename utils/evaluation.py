@@ -9,10 +9,10 @@ from sklearn.metrics import classification_report
 
 from seq2seq.models import SiameseClassifier
 from utils.config import CONFIG
-from utils.data import DATA, get_generator
+from utils.data import DATA
 
 
-def get_siamese_data_generators(fold):
+def get_siamese_data(fold):
     x, y, x_cv, y_cv, x_ts, y_ts = list(), list(), list(), list(), list(), list()
     for writer in range(CONFIG.wrt_cnt):
         genuine, forgery = [
@@ -91,40 +91,27 @@ def get_siamese_data_generators(fold):
         x_ts.extend(map(lambda z: np.array(z, ndmin=4), itertools.product(reference, forgery)))
         y_ts.extend(np.zeros((len(forgery), 1)))
 
-    x, y, path = [
-        list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2))), np.concatenate(y),
-        os.path.join(CONFIG.tmp_dir, 'sm_tr_batch_{}')
-    ]
-    tr_generator = get_generator(x, y, path + '.npz', CONFIG.ae_tr['batch_size'])
+    x = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2)))
+    y = np.concatenate(y)
+    x_cv = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2)))
+    y_cv = np.concatenate(y_cv)
+    x_ts = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_ts), 0, 1), 2)))
+    y_ts = np.concatenate(y_ts)
 
-    x_cv, y_cv, path = [
-        list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2))), np.concatenate(y_cv),
-        os.path.join(CONFIG.tmp_dir, 'sm_cv_batch_{}')
-    ]
-    cv_generator = get_generator(x_cv, y_cv, path + '.npz', CONFIG.ae_tr['batch_size'])
-
-    x_ts, y_ts, path = [
-        list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_ts), 0, 1), 2))), np.concatenate(y_ts),
-        os.path.join(CONFIG.tmp_dir, 'sm_ts_batch_{}')
-    ]
-    ts_generator = get_generator(x_ts, y_ts, path + '.npz', CONFIG.ae_tr['batch_size'])
-
-    return tr_generator, cv_generator, ts_generator, y_ts
+    return x, y, x_cv, y_cv, x_ts, y_ts
 
 
-def get_optimized_evaluation(encoder, tr_generator, cv_generator, ts_generator, y_true, fold):
+def get_optimized_evaluation(encoder, x, y, x_cv, y_cv, x_ts, y_ts, fold):
     sms = SiameseClassifier(encoder, fold)
     if CONFIG.sms_md == 'train':
-        sms.fit_generator(tr_generator, cv_generator)
+        sms.fit(x, y, x_cv, y_cv)
         sms.save(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
     else:
         sms.load(os.path.join(CONFIG.out_dir, 'siamese_fold{}.hdf5').format(fold))
 
-    y_prb = (
-        np.reshape(sms.predict_generator(ts_generator), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr
-    ).astype(np.int32)
+    y_prb = (np.reshape(sms.predict(x_ts), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
     y_prd = (np.count_nonzero(y_prb, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report = classification_report(y_true=y_true, y_pred=y_prd, digits=CONFIG.clf_rpt_dgt)
+    report = classification_report(y_true=y_ts, y_pred=y_prd, digits=CONFIG.clf_rpt_dgt)
     scores = list(map(float, report.split('\n')[-2].split()[3:6]))
 
     print(report)
