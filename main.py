@@ -9,14 +9,11 @@ def process_model():
 
     evaluations = list()
     for fold in range(CONFIG.spt_cnt) if CONFIG.spt_cnt > 0 else [-1]:
-        x, y, x_cv, y_cv = rnn.get_autoencoder_train_data(fold)
-        encoder = rnn.load_encoder(x, y, x_cv, y_cv, fold if fold != -1 else "")
+        x, y, x_cv, y_cv = rnn.get_autoencoder_data(fold)
+        encoder = rnn.get_encoder(x, y, x_cv, y_cv, fold if fold != -1 else "")
 
-        x_train, y_train, x_cv, y_cv = evaluation.get_siamese_evaluation_train_data(encoder, fold)
-        x_test, y_test = evaluation.get_siamese_evaluation_test_data(encoder, fold)
-        evaluations.append(evaluation.get_optimized_evaluation(
-            x_train, y_train, x_cv, y_cv, x_test, y_test, fold if fold != -1 else ""
-        ))
+        x, y, x_cv, y_cv, x_ts, y_ts = evaluation.get_siamese_data(encoder, fold)
+        evaluations.append(evaluation.get_evaluation(x, y, x_cv, y_cv, x_ts, y_ts, fold if fold != -1 else ""))
         evaluation.save_evaluation(evaluations)
 
 
