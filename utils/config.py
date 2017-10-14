@@ -2,15 +2,11 @@ import errno
 import logging
 import os
 
-import numpy as np
 import yaml
 from keras import optimizers
 
 
 class Configuration(object):
-    def configure_numpy(self):
-        np.random.seed(self.rnd_sd)
-
     def configure_logger(self):
         if not os.path.exists(os.path.dirname(self.log_fl)):
             os.mkdir(os.path.dirname(self.log_fl))
@@ -46,8 +42,6 @@ class Configuration(object):
         self.ae_clbs = config['autoencoder']['callbacks']
 
         # General Configuration
-        self.rnd_sd = config['general']['random_seed']
-        self.configure_numpy()
         self.spt_cnt = config['general']['split_count']
         self.tr_wrt_cnt = config['general']['train_writer_count']
         self.ref_smp_cnt = config['general']['reference_sample_count']

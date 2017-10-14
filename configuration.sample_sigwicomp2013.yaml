@@ -1,5 +1,4 @@
 general:
-  random_seed: 100
   split_count: 0
   train_writer_count: 11
   reference_sample_count: 12

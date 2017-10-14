@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from utils import io, rnn, evaluation
-from utils.config import CONFIG
 
+def process():
+    from utils import io, rnn, evaluation
+    from utils.config import CONFIG
 
-def process_model():
     io.prepare_directories()
 
     evaluations = list()
@@ -18,4 +18,9 @@ def process_model():
 
 
 if __name__ == '__main__':
-    process_model()
+    import os
+    import numpy as np
+
+    np.random.seed(os.getenv('SEED'))
+
+    process()
