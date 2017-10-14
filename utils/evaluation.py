@@ -4,7 +4,6 @@ import os
 
 import numpy as np
 from keras.preprocessing import sequence
-from scipy.special import comb
 from sklearn.metrics import classification_report
 
 from seq2seq.models import SiameseClassifier
@@ -20,76 +19,45 @@ def get_siamese_data(fold):
             sequence.pad_sequences(DATA.frg_x[writer], maxlen=DATA.max_len)
         ]
 
-        genuine_genuine_x = map(lambda z: np.array(z, ndmin=4), itertools.combinations(genuine, 2))
-        genuine_genuine_y = np.ones((comb(len(genuine), 2, True), 1))
+        if (fold < 0 and writer >= CONFIG.tr_wrt_cnt) or (0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt)):
+            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                genuine[:CONFIG.ref_smp_cnt], genuine[:CONFIG.ref_smp_cnt]
+            )))
+            y.extend(np.ones((CONFIG.ref_smp_cnt * CONFIG.ref_smp_cnt, 1)))
 
-        forgery_forgery_x = map(lambda z: np.array(z, ndmin=4), itertools.combinations(forgery, 2))
-        forgery_forgery_y = np.ones((comb(len(forgery), 2, True), 1))
+            x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                genuine[CONFIG.ref_smp_cnt:], genuine[CONFIG.ref_smp_cnt:]
+            )))
+            y_cv.extend(np.ones((len(genuine[CONFIG.ref_smp_cnt:]) * len(genuine[CONFIG.ref_smp_cnt:]), 1)))
 
-        genuine_forgery_x = map(lambda z: np.array(z, ndmin=4), itertools.product(genuine, forgery))
-        genuine_forgery_y = np.zeros((len(genuine) * len(forgery), 1))
+            x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(forgery, forgery)))
+            y_cv.extend(np.ones((len(forgery) * len(forgery), 1)))
 
-        if 0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt):
-            x_cv.extend(genuine_genuine_x)
-            y_cv.extend(genuine_genuine_y)
+            x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(genuine[CONFIG.ref_smp_cnt:], forgery)))
+            y_cv.extend(np.zeros((len(genuine[CONFIG.ref_smp_cnt:]) * len(forgery), 1)))
 
-            x_cv.extend(forgery_forgery_x)
-            y_cv.extend(forgery_forgery_y)
+            x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(genuine[forgery, CONFIG.ref_smp_cnt:])))
+            y_cv.extend(np.zeros((len(forgery) * len(genuine[CONFIG.ref_smp_cnt:]), 1)))
 
-            x_cv.extend(genuine_forgery_x)
-            y_cv.extend(genuine_forgery_y)
-        elif fold < 0 and writer >= CONFIG.tr_wrt_cnt:
-            genuine_genuine_x = map(
-                lambda z: np.array(z, ndmin=4), itertools.combinations(genuine[:CONFIG.ref_smp_cnt], 2)
-            )
-            genuine_genuine_y = np.ones((comb(len(genuine[:CONFIG.ref_smp_cnt]), 2, True), 1))
+            x_ts.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                genuine[:CONFIG.ref_smp_cnt], genuine[CONFIG.ref_smp_cnt:]
+            )))
+            y_ts.extend(np.ones((len(genuine[CONFIG.ref_smp_cnt:]), 1)))
 
-            x.extend(genuine_genuine_x)
-            y.extend(genuine_genuine_y)
-
-            genuine_genuine_x = map(
-                lambda z: np.array(z, ndmin=4), itertools.combinations(genuine[CONFIG.ref_smp_cnt:], 2)
-            )
-            genuine_genuine_y = np.ones((comb(len(genuine[CONFIG.ref_smp_cnt:]), 2, True), 1))
-
-            x_cv.extend(genuine_genuine_x)
-            y_cv.extend(genuine_genuine_y)
-
-            x_cv.extend(forgery_forgery_x)
-            y_cv.extend(forgery_forgery_y)
-
-            genuine_forgery_x = map(
-                lambda z: np.array(z, ndmin=4), itertools.product(genuine[CONFIG.ref_smp_cnt:], forgery)
-            )
-            genuine_forgery_y = np.zeros((len(genuine[CONFIG.ref_smp_cnt:]) * len(forgery), 1))
-
-            x_cv.extend(genuine_forgery_x)
-            y_cv.extend(genuine_forgery_y)
+            x_ts.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(genuine[:CONFIG.ref_smp_cnt], forgery)))
+            y_ts.extend(np.zeros((len(forgery), 1)))
         else:
-            x.extend(genuine_genuine_x)
-            y.extend(genuine_genuine_y)
+            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(genuine, genuine)))
+            y.extend(np.ones((len(genuine) * len(genuine), 1)))
 
-            x.extend(forgery_forgery_x)
-            y.extend(forgery_forgery_y)
+            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(forgery, forgery)))
+            y.extend(np.ones((len(forgery) * len(forgery), 1)))
 
-            x.extend(genuine_forgery_x)
-            y.extend(genuine_forgery_y)
+            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(genuine, forgery)))
+            y.extend(np.zeros((len(genuine) * len(forgery), 1)))
 
-    for writer in range(CONFIG.wrt_cnt):
-        if 0 <= fold != writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt) or (fold < 0 and writer < CONFIG.tr_wrt_cnt):
-            continue
-
-        reference, genuine, forgery = [
-            sequence.pad_sequences(DATA.gen_x[writer][:CONFIG.ref_smp_cnt], maxlen=DATA.max_len),
-            sequence.pad_sequences(DATA.gen_x[writer][CONFIG.ref_smp_cnt:], maxlen=DATA.max_len),
-            sequence.pad_sequences(DATA.frg_x[writer], maxlen=DATA.max_len)
-        ]
-
-        x_ts.extend(map(lambda z: np.array(z, ndmin=4), itertools.product(reference, genuine)))
-        y_ts.extend(np.ones((len(genuine), 1)))
-
-        x_ts.extend(map(lambda z: np.array(z, ndmin=4), itertools.product(reference, forgery)))
-        y_ts.extend(np.zeros((len(forgery), 1)))
+            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(forgery, genuine)))
+            y.extend(np.zeros((len(forgery) * len(genuine), 1)))
 
     x = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x), 0, 1), 2)))
     y = np.concatenate(y)
@@ -101,7 +69,7 @@ def get_siamese_data(fold):
     return x, y, x_cv, y_cv, x_ts, y_ts
 
 
-def get_optimized_evaluation(encoder, x, y, x_cv, y_cv, x_ts, y_ts, fold):
+def get_evaluation(encoder, x, y, x_cv, y_cv, x_ts, y_ts, fold):
     sms = SiameseClassifier(encoder, fold)
     if CONFIG.sms_md == 'train':
         sms.fit(x, y, x_cv, y_cv)

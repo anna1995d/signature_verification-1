@@ -14,10 +14,7 @@ def get_autoencoder_data(fold):
         (train_x, train_y) = DATA.get_train_data(writer)
         if train_x is None and train_y is None:
             continue
-        if 0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt):
-            x_cv.append(sequence.pad_sequences(train_x, maxlen=DATA.max_len))
-            y_cv.append(sequence.pad_sequences(train_y, maxlen=DATA.max_len))
-        elif fold < 0 and writer >= CONFIG.tr_wrt_cnt:
+        if (fold < 0 and writer >= CONFIG.tr_wrt_cnt) or (0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt)):
             x.append(sequence.pad_sequences(train_x[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len))
             y.append(sequence.pad_sequences(train_y[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len))
 
