@@ -57,7 +57,7 @@ class Configuration(object):
         # Data Configuration
         self.ftr = config['data']['reshaping']['features']
         self.smp_stp = config['data']['reshaping']['sampling_step']
-        self.win_sze = config['data']['reshaping']['window_size']
+        self.win_rds = config['data']['reshaping']['window_radius']
         self.win_stp = config['data']['reshaping']['window_step']
         self.len_thr = config['data']['reshaping']['length_threshold']
 

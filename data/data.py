@@ -43,12 +43,10 @@ class Data(object):
     @staticmethod
     def extract_sample(dataset, writer, sample):
         data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)].astype(np.float32)
-        features = Data.normalize(Data.extract_features(data))
-        flatten_features = features.flatten()
-        step = CONFIG.win_stp * CONFIG.ftr
-        window = CONFIG.win_sze * CONFIG.ftr
-        iterator = range(0, flatten_features.shape[0] - window + 1, step)
-        return np.concatenate([flatten_features[i:i + window].reshape((1, -1)) for i in iterator], axis=0), features
+        y = Data.normalize(Data.extract_features(data))
+        iterator = range(CONFIG.win_rds, len(y) - CONFIG.win_rds, CONFIG.win_stp)
+        x = np.concatenate([y[i - CONFIG.win_rds:i + CONFIG.win_rds + 1].reshape((1, -1)) for i in iterator], axis=0)
+        return x, y[CONFIG.win_rds:len(y) - CONFIG.win_rds:CONFIG.win_stp]
 
     @staticmethod
     def extract_writer(dataset, writer, start=0, stop=CONFIG.gen_smp_cnt + CONFIG.frg_smp_cnt):

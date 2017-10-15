@@ -62,7 +62,7 @@ class AttentiveRecurrentAutoencoder(CustomModel):
         cell = getattr(layers, CONFIG.ct)
 
         # Input
-        network_input = Input(shape=(None, CONFIG.ftr * CONFIG.win_sze))
+        network_input = Input(shape=(None, CONFIG.ftr * (CONFIG.win_rds * 2 + 1)))
         mask = Masking()(network_input)
 
         # Encoder

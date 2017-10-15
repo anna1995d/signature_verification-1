@@ -27,9 +27,9 @@ data:
   reshaping:
     features: 14
     sampling_step: 5
-    window_size: 1
+    window_radius: 0
     window_step: 1
-    length_threshold: 10000
+    length_threshold: 20000
 
 siamese:
   mode: "train"
