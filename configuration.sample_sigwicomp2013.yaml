@@ -29,7 +29,7 @@ data:
     sampling_step: 5
     window_radius: 0
     window_step: 1
-    length_threshold: 20000
+    length_threshold: 10000
 
 siamese:
   mode: "train"
