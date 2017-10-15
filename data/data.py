@@ -42,7 +42,7 @@ class Data(object):
 
     @staticmethod
     def extract_sample(dataset, writer, sample):
-        data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)][::CONFIG.smp_stp].astype(np.float32)
+        data = dataset['U{wrt}S{smp}'.format(wrt=writer, smp=sample)].astype(np.float32)
         features = Data.normalize(Data.extract_features(data))
         flatten_features = features.flatten()
         step = CONFIG.win_stp * CONFIG.ftr
@@ -60,7 +60,7 @@ class Data(object):
                 logger.info('Ignore sequence: Writer #{wrt}, Length {len}'.format(wrt=writer, len=len(y)))
                 continue
 
-            xs.append(x), ys.append(y)
+            xs.append(x[::CONFIG.smp_stp]), ys.append(y[::CONFIG.smp_stp])
         return xs, ys
 
     def __init__(self):
