@@ -66,14 +66,16 @@ class Data(object):
 
         self.gen_x, self.gen_y, self.frg_x, self.frg_y = list(), list(), list(), list()
         for writer in range(CONFIG.wrt_cnt):
+            if writer % 10 == 0:
+                logger.info('Loading data: Writer #{wrt}'.format(wrt=writer))
+
+            writer += (CONFIG.gap - CONFIG.tr_wrt_cnt) if writer >= CONFIG.tr_wrt_cnt else 0
+
             x, y = Data.extract_writer(dataset, writer, stop=CONFIG.gen_smp_cnt)
             self.gen_x.append(x), self.gen_y.append(y)
 
             x, y = Data.extract_writer(dataset, writer, start=CONFIG.gen_smp_cnt)
             self.frg_x.append(x), self.frg_y.append(y)
-
-            if writer % 100 == 0:
-                logger.info('Loading data: Writer #{wrt}'.format(wrt=writer))
 
         gen_max_len = max(map(len, np.concatenate(self.gen_y)))
         logger.info('Genuine max length: {gen_max_len}'.format(gen_max_len=gen_max_len))

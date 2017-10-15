@@ -20,6 +20,7 @@ export:
 data:
   reading:
     writer_count: 500
+    gap: 5000
     genuine_sample_count: 24
     forged_sample_count: 30
     dataset_path: "./datasets/syntheticgpds10000.npz"

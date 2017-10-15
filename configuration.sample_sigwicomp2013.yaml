@@ -20,6 +20,7 @@ export:
 data:
   reading:
     writer_count: 31
+    gap: 0
     genuine_sample_count: 42
     forged_sample_count: 36
     dataset_path: "./datasets/sigwicomp2013.npz"
