@@ -62,6 +62,7 @@ class Configuration(object):
         self.len_thr = config['data']['reshaping']['length_threshold']
 
         self.wrt_cnt = config['data']['reading']['writer_count']
+        self.gap = config['data']['reading']['gap']
         self.gen_smp_cnt = config['data']['reading']['genuine_sample_count']
         self.frg_smp_cnt = config['data']['reading']['forged_sample_count']
         self.dataset_path = os.path.join(self.path, config['data']['reading']['dataset_path'])
