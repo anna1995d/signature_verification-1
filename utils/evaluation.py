@@ -21,10 +21,7 @@ def get_siamese_data(encoder, fold):
 
         if (fold < 0 and writer >= CONFIG.tr_wrt_cnt) or (0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt)):
             mean = np.mean(encoded_genuine[:CONFIG.ref_smp_cnt], axis=0)
-            std = np.std(encoded_genuine[:CONFIG.ref_smp_cnt], axis=0, ddof=1) + np.finfo(np.float32).eps
-
-            encoded_genuine = (encoded_genuine - mean) / std
-            encoded_forgery = (encoded_forgery - mean) / std
+            encoded_genuine, encoded_forgery = encoded_genuine - mean, encoded_forgery - mean
 
             x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[:CONFIG.ref_smp_cnt]
@@ -72,10 +69,7 @@ def get_siamese_data(encoder, fold):
             y_ts_2.extend(np.zeros((len(encoded_forgery), 1)))
         else:
             mean = np.mean(encoded_genuine, axis=0)
-            std = np.std(encoded_genuine, ddof=1) + np.finfo(np.float32).eps
-
-            encoded_genuine = (encoded_genuine - mean) / std
-            encoded_forgery = (encoded_forgery - mean) / std
+            encoded_genuine, encoded_forgery = encoded_genuine - mean, encoded_forgery - mean
 
             x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine, encoded_genuine)))
             y.extend(np.ones((len(encoded_genuine) * len(encoded_genuine), 1)))
