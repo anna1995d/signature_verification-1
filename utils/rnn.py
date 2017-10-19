@@ -15,22 +15,14 @@ def get_autoencoder_data(fold):
         if train_x is None and train_y is None:
             continue
         if (fold < 0 and writer >= CONFIG.tr_wrt_cnt) or (0 <= fold == writer // (CONFIG.wrt_cnt // CONFIG.spt_cnt)):
-            x.append(sequence.pad_sequences(
-                train_x[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len, padding='post', truncating='post'
-            ))
-            y.append(sequence.pad_sequences(
-                train_y[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len, padding='post', truncating='post'
-            ))
+            x.append(sequence.pad_sequences(train_x[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len))
+            y.append(sequence.pad_sequences(train_y[:CONFIG.ref_smp_cnt], maxlen=DATA.max_len))
 
-            x_cv.append(sequence.pad_sequences(
-                train_x[CONFIG.ref_smp_cnt:], maxlen=DATA.max_len, padding='post', truncating='post'
-            ))
-            y_cv.append(sequence.pad_sequences(
-                train_y[CONFIG.ref_smp_cnt:], maxlen=DATA.max_len, padding='post', truncating='post'
-            ))
+            x_cv.append(sequence.pad_sequences(train_x[CONFIG.ref_smp_cnt:], maxlen=DATA.max_len))
+            y_cv.append(sequence.pad_sequences(train_y[CONFIG.ref_smp_cnt:], maxlen=DATA.max_len))
         else:
-            x.append(sequence.pad_sequences(train_x, maxlen=DATA.max_len, padding='post', truncating='post'))
-            y.append(sequence.pad_sequences(train_y, maxlen=DATA.max_len, padding='post', truncating='post'))
+            x.append(sequence.pad_sequences(train_x, maxlen=DATA.max_len))
+            y.append(sequence.pad_sequences(train_y, maxlen=DATA.max_len))
 
     x = np.concatenate(x)
     y = np.concatenate(y)
