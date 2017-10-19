@@ -109,7 +109,6 @@ autoencoder:
     encoder:
       0:
         <<: *autoencoder
-        go_backwards: true
         dropout: 0.0
         units: 100
       1:
