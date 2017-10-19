@@ -12,7 +12,7 @@ from utils.rnn import get_encoded_data
 
 
 def get_siamese_data(encoder, fold):
-    x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2 = list(), list(), list(), list(), list(), list(), list(), list()
+    x, y, x_cv, y_cv, x_ts_1, y_ts, x_ts_2 = list(), list(), list(), list(), list(), list(), list()
     for writer in range(CONFIG.wrt_cnt):
         encoded_genuine, encoded_forgery = [
             get_encoded_data(encoder, DATA.gen_x[writer]),
@@ -51,22 +51,19 @@ def get_siamese_data(encoder, fold):
             x_ts_1.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[CONFIG.ref_smp_cnt:]
             )))
-            y_ts_1.extend(np.ones((len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)))
+            y_ts.extend(np.ones((len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)))
 
             x_ts_1.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[:CONFIG.ref_smp_cnt], encoded_forgery
             )))
-            y_ts_1.extend(np.zeros((len(encoded_forgery), 1)))
+            y_ts.extend(np.zeros((len(encoded_forgery), 1)))
 
             x_ts_2.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[CONFIG.ref_smp_cnt:], encoded_genuine[:CONFIG.ref_smp_cnt]
             )))
-            y_ts_2.extend(np.ones((len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)))
-
             x_ts_2.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_forgery, encoded_genuine[:CONFIG.ref_smp_cnt]
             )))
-            y_ts_2.extend(np.zeros((len(encoded_forgery), 1)))
         else:
             mean = np.mean(encoded_genuine, axis=0)
             encoded_genuine, encoded_forgery = encoded_genuine - mean, encoded_forgery - mean
@@ -88,14 +85,13 @@ def get_siamese_data(encoder, fold):
     x_cv = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_cv), 0, 1), 2)))
     y_cv = np.concatenate(y_cv)
     x_ts_1 = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_ts_1), 0, 1), 2)))
-    y_ts_1 = np.concatenate(y_ts_1)
+    y_ts = np.concatenate(y_ts)
     x_ts_2 = list(map(np.squeeze, np.split(np.swapaxes(np.concatenate(x_ts_2), 0, 1), 2)))
-    y_ts_2 = np.concatenate(y_ts_2)
 
-    return x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2
+    return x, y, x_cv, y_cv, x_ts_1, y_ts, x_ts_2
 
 
-def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
+def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts, x_ts_2, fold):
     sms = SiameseClassifier(fold)
     if CONFIG.sms_md == 'train':
         sms.fit(x, y, x_cv, y_cv)
@@ -105,14 +101,15 @@ def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
 
     y_prb_1 = (np.reshape(sms.predict(x_ts_1), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
     y_prd_1 = (np.count_nonzero(y_prb_1, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report_1 = classification_report(y_true=y_ts_1, y_pred=y_prd_1, digits=CONFIG.clf_rpt_dgt)
+    report_1 = classification_report(y_true=y_ts, y_pred=y_prd_1, digits=CONFIG.clf_rpt_dgt)
     scores_1 = list(map(float, report_1.split('\n')[-2].split()[3:6]))
 
     print(report_1)
 
     y_prb_2 = (np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
     y_prd_2 = (np.count_nonzero(y_prb_2, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report_2 = classification_report(y_true=y_ts_2, y_pred=y_prd_2, digits=CONFIG.clf_rpt_dgt)
+    report_2 = classification_report(y_true=y_ts, y_pred=y_prd_2, digits=CONFIG.clf_rpt_dgt)
+    scores_2 = list(map(float, report_2.split('\n')[-2].split()[3:6]))
 
     print(report_2)
 
@@ -121,7 +118,8 @@ def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
         np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr * 2
     ).astype(np.int32)
     y_prd_3 = (np.count_nonzero(y_prb_3, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report_3 = classification_report(y_true=y_ts_1, y_pred=y_prd_3, digits=CONFIG.clf_rpt_dgt)
+    report_3 = classification_report(y_true=y_ts, y_pred=y_prd_3, digits=CONFIG.clf_rpt_dgt)
+    scores_3 = list(map(float, report_3.split('\n')[-2].split()[3:6]))
 
     print(report_3)
 
@@ -130,7 +128,8 @@ def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
                    np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt))) >= CONFIG.sms_ts_prb_thr
     ).astype(np.int32)
     y_prd_4 = (np.count_nonzero(y_prb_4, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report_4 = classification_report(y_true=y_ts_1, y_pred=y_prd_4, digits=CONFIG.clf_rpt_dgt)
+    report_4 = classification_report(y_true=y_ts, y_pred=y_prd_4, digits=CONFIG.clf_rpt_dgt)
+    scores_4 = list(map(float, report_4.split('\n')[-2].split()[3:6]))
 
     print(report_4)
 
@@ -139,11 +138,14 @@ def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
                    np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt))) >= CONFIG.sms_ts_prb_thr
     ).astype(np.int32)
     y_prd_5 = (np.count_nonzero(y_prb_5, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
-    report_5 = classification_report(y_true=y_ts_1, y_pred=y_prd_5, digits=CONFIG.clf_rpt_dgt)
+    report_5 = classification_report(y_true=y_ts, y_pred=y_prd_5, digits=CONFIG.clf_rpt_dgt)
+    scores_5 = list(map(float, report_5.split('\n')[-2].split()[3:6]))
 
     print(report_5)
 
-    return dict(zip(CONFIG.evaluation, scores_1))
+    return dict(zip(CONFIG.evaluation, scores_1)), dict(zip(CONFIG.evaluation, scores_2)), \
+        dict(zip(CONFIG.evaluation, scores_3)), dict(zip(CONFIG.evaluation, scores_4)), \
+        dict(zip(CONFIG.evaluation, scores_5))
 
 
 def save_evaluation(evaluation):
