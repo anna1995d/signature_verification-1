@@ -2,7 +2,7 @@ import os
 
 from keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
-from keras.layers import Masking, Input, RepeatVector, Dropout, Dense
+from keras.layers import Masking, Input, RepeatVector, Dropout, Dense, TimeDistributed
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
 
@@ -67,7 +67,7 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 
         # Encoder
         encoder = None
-        for layer in CONFIG.enc_arc:
+        for layer in CONFIG.ae_enc_arc:
             merge_mode = layer.pop('merge_mode')
             encoder = Bidirectional(cell(**layer), merge_mode=merge_mode)(mask if encoder is None else encoder)
             layer['merge_mode'] = merge_mode
@@ -81,13 +81,17 @@ class AttentiveRecurrentAutoencoder(CustomModel):
 
         # Decoder
         decoder = None
-        for layer in CONFIG.dec_arc:
+        for layer in CONFIG.ae_dec_arc:
             merge_mode = layer.pop('merge_mode')
             decoder = Bidirectional(cell(**layer), merge_mode=merge_mode)(repeat if decoder is None else decoder)
             layer['merge_mode'] = merge_mode
 
+        dropout = CONFIG.ae_out.pop('dropout')
+        out = TimeDistributed(Dense(CONFIG.ftr, **CONFIG.ae_out))(Dropout(dropout)(decoder))
+        CONFIG.ae_out['dropout'] = dropout
+
         # Autoencoder
-        seq_autoencoder = Model(network_input, decoder)
+        seq_autoencoder = Model(network_input, out)
         seq_autoencoder.summary()
         seq_autoencoder.compile(**CONFIG.ae_ccfg)
 
@@ -111,7 +115,7 @@ class SiameseClassifier(CustomModel):
 
     def build_model(self):
         # Single Leg Input
-        leg_in = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
+        leg_in = Input(shape=(CONFIG.ae_enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
 
         # Single Leg Model
         leg_out = None
@@ -124,8 +128,8 @@ class SiameseClassifier(CustomModel):
         leg = Model(leg_in, leg_out)
 
         # Siamese Input
-        in_a = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
-        in_b = Input(shape=(CONFIG.enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
+        in_a = Input(shape=(CONFIG.ae_enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
+        in_b = Input(shape=(CONFIG.ae_enc_arc[-1]['units'] * (2 if CONFIG.ae_mrg_md == 'concat' else 1),))
 
         # Siamese Legs
         leg_a = leg(in_a)

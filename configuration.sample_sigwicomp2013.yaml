@@ -111,15 +111,15 @@ autoencoder:
         <<: *autoencoder
         go_backwards: true
         dropout: 0.0
-        units: 32
-      1:
-        <<: *autoencoder
-        units: 32
+        units: 64
 
     decoder:
       0:
         <<: *autoencoder
-        merge_mode: "ave"
-        units: 14
+        dropout: 0.0
+        units: 64
+
+    output:
+      dropout: 0.0
 
     cell_type: "LSTM"
