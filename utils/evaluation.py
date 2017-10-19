@@ -113,9 +113,35 @@ def get_evaluation(x, y, x_cv, y_cv, x_ts_1, y_ts_1, x_ts_2, y_ts_2, fold):
     y_prb_2 = (np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr).astype(np.int32)
     y_prd_2 = (np.count_nonzero(y_prb_2, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
     report_2 = classification_report(y_true=y_ts_2, y_pred=y_prd_2, digits=CONFIG.clf_rpt_dgt)
-    scores_2 = list(map(float, report_2.split('\n')[-2].split()[3:6]))
 
     print(report_2)
+
+    y_prb_3 = (
+        np.reshape(sms.predict(x_ts_1), (-1, CONFIG.ref_smp_cnt)) +
+        np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt)) >= CONFIG.sms_ts_prb_thr * 2
+    ).astype(np.int32)
+    y_prd_3 = (np.count_nonzero(y_prb_3, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
+    report_3 = classification_report(y_true=y_ts_1, y_pred=y_prd_3, digits=CONFIG.clf_rpt_dgt)
+
+    print(report_3)
+
+    y_prb_4 = (
+        np.maximum(np.reshape(sms.predict(x_ts_1), (-1, CONFIG.ref_smp_cnt)),
+                   np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt))) >= CONFIG.sms_ts_prb_thr
+    ).astype(np.int32)
+    y_prd_4 = (np.count_nonzero(y_prb_4, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
+    report_4 = classification_report(y_true=y_ts_1, y_pred=y_prd_4, digits=CONFIG.clf_rpt_dgt)
+
+    print(report_4)
+
+    y_prb_5 = (
+        np.minimum(np.reshape(sms.predict(x_ts_1), (-1, CONFIG.ref_smp_cnt)),
+                   np.reshape(sms.predict(x_ts_2), (-1, CONFIG.ref_smp_cnt))) >= CONFIG.sms_ts_prb_thr
+    ).astype(np.int32)
+    y_prd_5 = (np.count_nonzero(y_prb_5, axis=1) >= CONFIG.sms_ts_acc_thr).astype(np.int32)
+    report_5 = classification_report(y_true=y_ts_1, y_pred=y_prd_5, digits=CONFIG.clf_rpt_dgt)
+
+    print(report_5)
 
     return dict(zip(CONFIG.evaluation, scores_1))
 
