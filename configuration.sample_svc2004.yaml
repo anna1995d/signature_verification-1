@@ -1,0 +1,125 @@
+general:
+  split_count: 5
+  train_writer_count: 32
+  reference_sample_count: 5
+  classification_report_digits: 4
+  directory_template: "b{ct}-{earc}-{darc}-{epc}"
+  output_directory_template: "./models/{dir}"
+
+logger:
+  log_format: "(%(asctime)s) %(name)s [%(levelname)s]: %(message)s"
+  log_file: "./models/{dir}/seq2seq.log"
+  log_level: "info"
+
+export:
+  evaluation:
+    - "Precision"
+    - "Recall"
+    - "F1"
+
+data:
+  reading:
+    writer_count: 40
+    gap: 0
+    genuine_sample_count: 20
+    forged_sample_count: 20
+    dataset_path: "./datasets/svc2004.npz"
+
+  reshaping:
+    features: 14
+    sampling_step: 2
+    window_radius: 0
+    window_step: 1
+    length_threshold: 10000
+
+siamese:
+  mode: "train"
+  train:
+    batch_size: 128
+    epochs: 1000
+    verbose: 1
+
+  test:
+    probability_threshold: 0.5
+    accept_threshold: 3
+
+  compile_config:
+    loss: "binary_crossentropy"
+    optimizer:
+      name: "adam"
+      args: {}
+    metrics:
+      - "acc"
+
+  callbacks:
+    early_stopping:
+      monitor: "loss"
+      patience: 50
+      verbose: 1
+
+  architecture:
+    global: &siamese
+      activation: "relu"
+      dropout: 0.5
+
+    before:
+      0:
+        <<: *siamese
+        dropout: 0.0
+        units: 128
+
+    after:
+      0:
+        <<: *siamese
+        units: 128
+
+  activation: "sigmoid"
+  merge_mode: "subtract"
+
+autoencoder:
+  mode: "train"
+  train:
+    batch_size: 128
+    epochs: 1000
+    verbose: 1
+
+  compile_config:
+    loss: "mape"
+    optimizer:
+      name: "adam"
+      args: {}
+    metrics:
+      - "mae"
+      - "mse"
+
+  callbacks:
+    early_stopping:
+      monitor: "loss"
+      patience: 10
+      verbose: 1
+
+  architecture:
+    global: &autoencoder
+      return_sequences: true
+      implementation: 2
+      activation: "relu"
+      dropout: 0.5
+      merge_mode: "concat"
+
+    encoder:
+      0:
+        <<: *autoencoder
+        go_backwards: true
+        dropout: 0.0
+        units: 64
+
+    decoder:
+      0:
+        <<: *autoencoder
+        dropout: 0.0
+        units: 64
+
+    output:
+      dropout: 0.0
+
+    cell_type: "LSTM"
