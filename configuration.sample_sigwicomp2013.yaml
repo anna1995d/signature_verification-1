@@ -54,7 +54,7 @@ siamese:
   callbacks:
     early_stopping:
       monitor: "loss"
-      patience: 10
+      patience: 50
       verbose: 1
 
   architecture:
@@ -66,12 +66,12 @@ siamese:
       0:
         <<: *siamese
         dropout: 0.0
-        units: 64
+        units: 128
 
     after:
       0:
         <<: *siamese
-        units: 64
+        units: 128
 
   activation: "sigmoid"
   merge_mode: "subtract"
