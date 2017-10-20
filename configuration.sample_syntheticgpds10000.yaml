@@ -1,6 +1,6 @@
 general:
   split_count: 5
-  train_writer_count: 400
+  train_writer_count: 150
   reference_sample_count: 9
   classification_report_digits: 4
   directory_template: "b{ct}-{earc}-{darc}-{epc}"
@@ -19,7 +19,7 @@ export:
 
 data:
   reading:
-    writer_count: 500
+    writer_count: 300
     gap: 5000
     genuine_sample_count: 24
     forged_sample_count: 30
@@ -65,12 +65,12 @@ siamese:
     before:
       0:
         <<: *siamese
-        units: 150
+        units: 256
 
     after:
       0:
         <<: *siamese
-        units: 75
+        units: 256
 
   activation: "sigmoid"
   merge_mode: "subtract"
@@ -110,19 +110,15 @@ autoencoder:
         <<: *autoencoder
         go_backwards: true
         dropout: 0.0
-        units: 100
-      1:
-        <<: *autoencoder
-        units: 150
+        units: 128
 
     decoder:
       0:
         <<: *autoencoder
         dropout: 0.0
-        units: 100
-      1:
-        <<: *autoencoder
-        merge_mode: "ave"
-        units: 14
+        units: 128
+
+    output:
+      dropout: 0.0
 
     cell_type: "LSTM"
