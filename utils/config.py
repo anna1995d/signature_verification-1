@@ -26,12 +26,13 @@ class Configuration(object):
 
         self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
         self.ae_mrg_md = config['autoencoder']['architecture']['global']['merge_mode']
-        self.enc_arc = list(map(
+        self.ae_enc_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['encoder'].items()), key=lambda x: x[0])
         ))
-        self.dec_arc = list(map(
+        self.ae_dec_arc = list(map(
             lambda x: x[1], sorted(list(config['autoencoder']['architecture']['decoder'].items()), key=lambda x: x[0])
         ))
+        self.ae_out = config['autoencoder']['architecture']['output']
         self.ct = config['autoencoder']['architecture']['cell_type']
 
         self.ae_ccfg = config['autoencoder']['compile_config']
@@ -48,8 +49,8 @@ class Configuration(object):
         self.clf_rpt_dgt = config['general']['classification_report_digits']
         self.dir_temp = config['general']['directory_template'].format(
             ct=self.ct,
-            earc='x'.join(map(lambda x: str(x['units']), self.enc_arc)),
-            darc='x'.join(map(lambda x: str(x['units']), self.dec_arc)),
+            earc='x'.join(map(lambda x: str(x['units']), self.ae_enc_arc)),
+            darc='x'.join(map(lambda x: str(x['units']), self.ae_dec_arc)),
             epc=self.ae_tr['epochs']
         )
         out_dir_temp = os.path.join(self.path, config['general']['output_directory_template'])
