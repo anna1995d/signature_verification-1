@@ -12,10 +12,8 @@ def process():
         x, y, x_cv, y_cv = rnn.get_autoencoder_data(fold)
         encoder = rnn.get_encoder(x, y, x_cv, y_cv, fold if fold != -1 else "")
 
-        x, y, x_cv, y_cv, x_ts_1, y_ts, x_ts_2 = evaluation.get_siamese_data(encoder, fold)
-        evaluations.extend(evaluation.get_evaluation(
-            x, y, x_cv, y_cv, x_ts_1, y_ts, x_ts_2, fold if fold != -1 else ""
-        ))
+        x, y, x_cv, y_cv, x_ts, y_ts = evaluation.get_siamese_data(encoder, fold)
+        evaluations.extend(evaluation.get_evaluation(x, y, x_cv, y_cv, x_ts, y_ts, fold if fold != -1 else ""))
         evaluation.save_evaluation(evaluations)
 
 
