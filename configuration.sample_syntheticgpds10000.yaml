@@ -1,5 +1,5 @@
 general:
-  split_count: 5
+  split_count: 0
   train_writer_count: 150
   reference_sample_count: 9
   classification_report_digits: 4
