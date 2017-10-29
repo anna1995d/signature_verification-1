@@ -29,24 +29,31 @@ def get_siamese_data(encoder, fold):
             y.extend(np.ones((CONFIG.ref_smp_cnt * CONFIG.ref_smp_cnt, 1)))
 
             x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
-                encoded_genuine[CONFIG.ref_smp_cnt:], encoded_genuine[CONFIG.ref_smp_cnt:]
+                encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[CONFIG.ref_smp_cnt:]
             )))
             y_cv.extend(np.ones(
-                (len(encoded_genuine[CONFIG.ref_smp_cnt:]) * len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)
+                (len(encoded_genuine[:CONFIG.ref_smp_cnt]) * len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)
+            ))
+
+            x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                encoded_genuine[CONFIG.ref_smp_cnt:], encoded_genuine[:CONFIG.ref_smp_cnt]
+            )))
+            y_cv.extend(np.ones(
+                (len(encoded_genuine[:CONFIG.ref_smp_cnt]) * len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)
             ))
 
             x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(encoded_forgery, encoded_forgery)))
             y_cv.extend(np.ones((len(encoded_forgery) * len(encoded_forgery), 1)))
 
             x_cv.extend(map(
-                lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine[CONFIG.ref_smp_cnt:], encoded_forgery)
+                lambda z: np.array(z, ndmin=3), itertools.product(encoded_genuine[:CONFIG.ref_smp_cnt], encoded_forgery)
             ))
-            y_cv.extend(np.zeros((len(encoded_genuine[CONFIG.ref_smp_cnt:]) * len(encoded_forgery), 1)))
+            y_cv.extend(np.zeros((len(encoded_genuine[:CONFIG.ref_smp_cnt]) * len(encoded_forgery), 1)))
 
             x_cv.extend(map(
-                lambda z: np.array(z, ndmin=3), itertools.product(encoded_forgery, encoded_genuine[CONFIG.ref_smp_cnt:])
+                lambda z: np.array(z, ndmin=3), itertools.product(encoded_forgery, encoded_genuine[:CONFIG.ref_smp_cnt])
             ))
-            y_cv.extend(np.zeros((len(encoded_forgery) * len(encoded_genuine[CONFIG.ref_smp_cnt:]), 1)))
+            y_cv.extend(np.zeros((len(encoded_forgery) * len(encoded_genuine[:CONFIG.ref_smp_cnt]), 1)))
 
             x_ts.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[CONFIG.ref_smp_cnt:]
