@@ -67,12 +67,12 @@ siamese:
     before:
       0:
         <<: *siamese
-        units: 256
+        units: 128
 
     after:
       0:
         <<: *siamese
-        units: 256
+        units: 128
 
   activation: "sigmoid"
   merge_mode: "subtract"
@@ -82,7 +82,7 @@ autoencoder:
   use_reference_samples: true
 
   train:
-    batch_size: 128
+    batch_size: 64
     epochs: 1000
     verbose: 1
 
@@ -106,7 +106,7 @@ autoencoder:
       return_sequences: true
       implementation: 2
       activation: "relu"
-      dropout: 0.6
+      dropout: 0.65
       merge_mode: "concat"
 
     encoder:
@@ -114,13 +114,19 @@ autoencoder:
         <<: *autoencoder
         go_backwards: true
         dropout: 0.0
-        units: 128
+        units: 64
+      1:
+        <<: *autoencoder
+        units: 64
 
     decoder:
       0:
         <<: *autoencoder
         dropout: 0.0
-        units: 128
+        units: 64
+      1:
+        <<: *autoencoder
+        units: 64
 
     output:
       dropout: 0.0
