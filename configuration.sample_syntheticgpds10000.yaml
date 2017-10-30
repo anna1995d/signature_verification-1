@@ -83,7 +83,7 @@ autoencoder:
 
   train:
     batch_size: 64
-    epochs: 1000
+    epochs: 50
     verbose: 1
 
   compile_config:
@@ -98,7 +98,7 @@ autoencoder:
   callbacks:
     early_stopping:
       monitor: "loss"
-      patience: 10
+      patience: 5
       verbose: 1
 
   architecture:
