@@ -23,10 +23,16 @@ def get_siamese_data(encoder, fold):
             mean = np.mean(encoded_genuine[:CONFIG.ref_smp_cnt], axis=0)
             encoded_genuine, encoded_forgery = encoded_genuine - mean, encoded_forgery - mean
 
-            x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
-                encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[:CONFIG.ref_smp_cnt]
-            )))
-            y.extend(np.ones((CONFIG.ref_smp_cnt * CONFIG.ref_smp_cnt, 1)))
+            if CONFIG.sms_use_ref_smp:
+                x.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                    encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[:CONFIG.ref_smp_cnt]
+                )))
+                y.extend(np.ones((CONFIG.ref_smp_cnt * CONFIG.ref_smp_cnt, 1)))
+            else:
+                x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
+                    encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[:CONFIG.ref_smp_cnt]
+                )))
+                y_cv.extend(np.ones((CONFIG.ref_smp_cnt * CONFIG.ref_smp_cnt, 1)))
 
             x_cv.extend(map(lambda z: np.array(z, ndmin=3), itertools.product(
                 encoded_genuine[:CONFIG.ref_smp_cnt], encoded_genuine[CONFIG.ref_smp_cnt:]

@@ -22,6 +22,7 @@ class Configuration(object):
 
         # Autoencoder Configuration
         self.ae_md = config['autoencoder']['mode']
+        self.ae_use_ref_smp = config['autoencoder']['use_reference_samples']
         self.ae_tr = config['autoencoder']['train']
 
         self.ae_drp = config['autoencoder']['architecture']['global']['dropout']
@@ -70,6 +71,7 @@ class Configuration(object):
 
         # Siamese Configuration
         self.sms_md = config['siamese']['mode']
+        self.sms_use_ref_smp = config['siamese']['use_reference_samples']
         self.sms_tr = config['siamese']['train']
         self.sms_act = config['siamese']['activation']
         self.sms_ts_prb_thr = config['siamese']['test']['probability_threshold']

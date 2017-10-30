@@ -34,6 +34,8 @@ data:
 
 siamese:
   mode: "train"
+  use_reference_samples: true
+
   train:
     batch_size: 128
     epochs: 1000
@@ -78,6 +80,8 @@ siamese:
 
 autoencoder:
   mode: "train"
+  use_reference_samples: true
+
   train:
     batch_size: 128
     epochs: 1000
